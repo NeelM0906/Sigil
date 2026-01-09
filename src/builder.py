@@ -30,13 +30,17 @@ Exports:
 
 from __future__ import annotations
 
+import logging
 import os
+import signal
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
 
 from deepagents import create_deep_agent
 from deepagents.backends import FilesystemBackend
+from langgraph.graph.state import CompiledStateGraph
 
 from .prompts import (
     BUILDER_SYSTEM_PROMPT,
@@ -45,6 +49,9 @@ from .prompts import (
     PROMPT_ENGINEER_SYSTEM_PROMPT,
 )
 from .tools import BUILDER_TOOLS
+
+# Configure module logger
+logger = logging.getLogger(__name__)
 
 
 # -----------------------------------------------------------------------------
@@ -71,8 +78,8 @@ N8N_WORKFLOWS_DIR = DATASET_ROOT / "n8n_workflows"
 def create_builder(
     model: str = DEFAULT_MODEL,
     root_dir: str | Path | None = None,
-    virtual_mode: bool = False,
-) -> object:
+    virtual_mode: bool = True,  # Sandbox filesystem paths under root_dir for production safety
+) -> CompiledStateGraph:
     """Create and configure the ACTi Agent Builder.
 
     Creates a deepagents-based meta-agent configured with:
@@ -86,9 +93,9 @@ def create_builder(
         root_dir: Root directory for filesystem access. If None, defaults to
             the Bland-Agents-Dataset directory (parent of acti-agent-builder).
             This gives the agent access to bland_dataset/ and n8n_workflows/.
-        virtual_mode: If True, sandbox all filesystem paths under root_dir.
-            If False (default), allow access to absolute paths.
-            Set to True for safer sandboxed operation.
+        virtual_mode: If True (default), sandbox all filesystem paths under root_dir
+            for production safety. If False, allow access to absolute paths.
+            Set to False only for development/testing with trusted inputs.
 
     Returns:
         A configured deepagents agent instance ready for invocation.
@@ -165,6 +172,15 @@ def _run_cli() -> None:
     Type 'quit' or 'exit' to end the session.
     """
     from langchain_core.messages import HumanMessage
+
+    # Set up signal handlers for graceful shutdown
+    def signal_handler(sig, frame):
+        print("\nShutting down gracefully...")
+        logger.info("CLI shutdown via signal %s", sig)
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
 
     print("=" * 60)
     print("ACTi Agent Builder - Interactive CLI")

@@ -8,9 +8,11 @@ from __future__ import annotations
 
 import re
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field, field_validator
+
+from .prompts import DEFAULT_MODEL
 
 
 class Stratum(str, Enum):
@@ -73,7 +75,7 @@ class AgentConfig(BaseModel):
         examples=[["voice", "calendar"], ["websearch", "crm"]],
     )
     model: str = Field(
-        default="anthropic:claude-opus-4-5-20251101",
+        default=DEFAULT_MODEL,
         description="Model identifier for the agent's LLM backbone",
     )
     stratum: Optional[Stratum] = Field(
@@ -103,6 +105,20 @@ class AgentConfig(BaseModel):
                 f"Invalid tool(s): {invalid_tools}. "
                 f"Valid options: {valid_tools}"
             )
+        return v
+
+    @field_validator("model")
+    @classmethod
+    def validate_model_format(cls, v: str) -> str:
+        """Validate model follows provider:model-name pattern."""
+        if ":" not in v:
+            raise ValueError(
+                "Model must follow 'provider:model-name' format "
+                "(e.g., 'anthropic:claude-opus-4-5-20251101')"
+            )
+        provider, model_name = v.split(":", 1)
+        if not provider or not model_name:
+            raise ValueError("Model must have non-empty provider and model name")
         return v
 
     model_config = {
@@ -153,13 +169,29 @@ class RunAgentRequest(BaseModel):
     )
 
 
+class ToolCall(BaseModel):
+    """Record of a tool invocation during agent execution."""
+    tool_name: str = Field(
+        ...,
+        description="Name of the tool that was called",
+    )
+    arguments: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Arguments passed to the tool",
+    )
+    result: Optional[str] = Field(
+        default=None,
+        description="Result returned by the tool",
+    )
+
+
 class AgentResponse(BaseModel):
     """Response from an agent execution."""
     message: str = Field(
         ...,
         description="Agent's response message",
     )
-    tool_calls: list[dict] = Field(
+    tool_calls: list[ToolCall] = Field(
         default_factory=list,
         description="List of tool calls made during execution",
     )
@@ -197,3 +229,17 @@ class ToolListResponse(BaseModel):
         ...,
         description="List of available tool categories",
     )
+
+
+__all__ = [
+    "Stratum",
+    "MCP_TOOL_CATEGORIES",
+    "AgentConfig",
+    "CreateAgentRequest",
+    "RunAgentRequest",
+    "ToolCall",
+    "AgentResponse",
+    "CreateAgentResponse",
+    "ToolInfo",
+    "ToolListResponse",
+]

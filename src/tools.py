@@ -20,15 +20,24 @@ Tools Provided:
 
 from __future__ import annotations
 
+import asyncio
 import json
+import logging
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+import aiofiles
+import portalocker
 from langchain_core.tools import tool
 from pydantic import ValidationError
 
+from .prompts import DEFAULT_MODEL
 from .schemas import AgentConfig, MCP_TOOL_CATEGORIES, Stratum
+
+# Configure module logger
+logger = logging.getLogger(__name__)
 
 
 # -----------------------------------------------------------------------------
@@ -106,13 +115,140 @@ def _serialize_config_with_metadata(config: AgentConfig) -> dict:
     return data
 
 
+# -----------------------------------------------------------------------------
+# File Locking for Concurrent Access (Fix #4)
+# -----------------------------------------------------------------------------
+
+def _write_config_safely(path: Path, content: str) -> None:
+    """Write content to a file with exclusive locking for concurrent access safety.
+
+    Args:
+        path: The file path to write to.
+        content: The content to write.
+
+    Raises:
+        OSError: If the file cannot be written.
+        portalocker.LockException: If the file cannot be locked.
+    """
+    with open(path, 'w', encoding='utf-8') as f:
+        portalocker.lock(f, portalocker.LOCK_EX)
+        try:
+            f.write(content)
+        finally:
+            portalocker.unlock(f)
+
+
+def _read_config_safely(path: Path) -> str:
+    """Read content from a file with shared locking for concurrent access safety.
+
+    Args:
+        path: The file path to read from.
+
+    Returns:
+        The file content as a string.
+
+    Raises:
+        OSError: If the file cannot be read.
+        portalocker.LockException: If the file cannot be locked.
+    """
+    with open(path, 'r', encoding='utf-8') as f:
+        portalocker.lock(f, portalocker.LOCK_SH)
+        try:
+            return f.read()
+        finally:
+            portalocker.unlock(f)
+
+
+# -----------------------------------------------------------------------------
+# Async Support for Tools (Fix #3)
+# -----------------------------------------------------------------------------
+
+# Thread pool executor for running sync tools asynchronously
+_executor = ThreadPoolExecutor(max_workers=4)
+
+
+async def _read_config_async(path: Path) -> str:
+    """Read a configuration file asynchronously.
+
+    Args:
+        path: The file path to read from.
+
+    Returns:
+        The file content as a string.
+    """
+    async with aiofiles.open(path, 'r', encoding='utf-8') as f:
+        return await f.read()
+
+
+async def _write_config_async(path: Path, content: str) -> None:
+    """Write content to a configuration file asynchronously.
+
+    Args:
+        path: The file path to write to.
+        content: The content to write.
+    """
+    async with aiofiles.open(path, 'w', encoding='utf-8') as f:
+        await f.write(content)
+
+
+async def get_agent_config_async(name: str) -> str:
+    """Async variant of get_agent_config for FastAPI integration.
+
+    Args:
+        name: The name of the agent to retrieve.
+
+    Returns:
+        The agent configuration or error message.
+    """
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(_executor, get_agent_config.func, name)
+
+
+async def create_agent_config_async(
+    name: str,
+    description: str,
+    system_prompt: str,
+    tools: Optional[list[str]] = None,
+    model: str = DEFAULT_MODEL,
+    stratum: Optional[str] = None,
+) -> str:
+    """Async variant of create_agent_config for FastAPI integration.
+
+    Args:
+        name: Unique identifier for the agent.
+        description: What the agent does.
+        system_prompt: Complete system prompt.
+        tools: List of MCP tool category names.
+        model: Model identifier.
+        stratum: ACTi stratum classification.
+
+    Returns:
+        Success confirmation or error message.
+    """
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(
+        _executor,
+        lambda: create_agent_config.func(name, description, system_prompt, tools, model, stratum)
+    )
+
+
+async def list_created_agents_async() -> str:
+    """Async variant of list_created_agents for FastAPI integration.
+
+    Returns:
+        Formatted list of created agents.
+    """
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(_executor, list_created_agents.func)
+
+
 @tool
 def create_agent_config(
     name: str,
     description: str,
     system_prompt: str,
     tools: Optional[list[str]] = None,
-    model: str = "anthropic:claude-opus-4-5-20251101",
+    model: str = DEFAULT_MODEL,
     stratum: Optional[str] = None,
 ) -> str:
     """Create and save a new agent configuration to disk.
@@ -247,14 +383,17 @@ def create_agent_config(
         return f"ERROR: Failed to create output directory: {e}"
 
     # Save configuration to JSON file with metadata
-    output_path = OUTPUT_DIR / _generate_filename(config.name)
+    # Validate path to prevent directory traversal attacks
+    output_path = (OUTPUT_DIR / _generate_filename(config.name)).resolve()
+    if not str(output_path).startswith(str(OUTPUT_DIR.resolve())):
+        return "ERROR: Invalid agent name - path traversal detected"
     try:
         serialized = _serialize_config_with_metadata(config)
-        output_path.write_text(
-            json.dumps(serialized, indent=2, ensure_ascii=False),
-            encoding="utf-8",
-        )
-    except (OSError, TypeError) as e:
+        content = json.dumps(serialized, indent=2, ensure_ascii=False)
+        _write_config_safely(output_path, content)
+        logger.info(f"Created agent configuration: {config.name} at {output_path}")
+    except (OSError, TypeError, portalocker.LockException) as e:
+        logger.error(f"Failed to save configuration file {output_path}: {e}")
         return f"ERROR: Failed to save configuration file: {e}"
 
     # Build success message with configuration summary
@@ -458,7 +597,10 @@ def get_agent_config(name: str) -> str:
           ...
         }"
     """
-    config_path = OUTPUT_DIR / f"{name}.json"
+    # Validate path to prevent directory traversal attacks
+    config_path = (OUTPUT_DIR / f"{name}.json").resolve()
+    if not str(config_path).startswith(str(OUTPUT_DIR.resolve())):
+        return "ERROR: Invalid agent name - path traversal detected"
 
     if not config_path.exists():
         # List available agents to help the user
@@ -481,7 +623,7 @@ def get_agent_config(name: str) -> str:
         )
 
     try:
-        content = config_path.read_text(encoding="utf-8")
+        content = _read_config_safely(config_path)
         config_data = json.loads(content)
 
         # Format the output with a clear header
@@ -492,6 +634,7 @@ def get_agent_config(name: str) -> str:
         stratum = config_data.get("stratum", "Not classified")
         tools_summary = ", ".join(tools) if tools else "none"
 
+        logger.debug(f"Retrieved agent configuration: {name}")
         return (
             f"Agent Configuration: {name}\n"
             f"{'=' * 50}\n\n"
@@ -504,9 +647,11 @@ def get_agent_config(name: str) -> str:
         )
 
     except json.JSONDecodeError as e:
+        logger.warning(f"Corrupted JSON in agent config {config_path}: {e}")
         return f"ERROR: Failed to parse agent config file (corrupted JSON): {e}"
 
-    except OSError as e:
+    except (OSError, portalocker.LockException) as e:
+        logger.error(f"Failed to read agent config file {config_path}: {e}")
         return f"ERROR: Failed to read agent config file: {e}"
 
 
@@ -649,4 +794,23 @@ BUILDER_TOOLS = [
     list_available_tools,
     get_agent_config,
     list_created_agents,
+]
+
+# Async variants for FastAPI integration
+ASYNC_TOOLS = {
+    "get_agent_config": get_agent_config_async,
+    "create_agent_config": create_agent_config_async,
+    "list_created_agents": list_created_agents_async,
+}
+
+__all__ = [
+    "BUILDER_TOOLS",
+    "ASYNC_TOOLS",
+    "create_agent_config",
+    "list_available_tools",
+    "get_agent_config",
+    "list_created_agents",
+    "get_agent_config_async",
+    "create_agent_config_async",
+    "list_created_agents_async",
 ]

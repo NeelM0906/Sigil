@@ -1,6 +1,9 @@
 """Task 1.3: Verify deepagents works with a minimal hello-world agent."""
 
+import os
 from pathlib import Path
+
+import pytest
 from dotenv import load_dotenv
 
 # Load .env from project root
@@ -11,6 +14,15 @@ from deepagents import create_deep_agent
 from langchain_core.messages import HumanMessage
 
 
+# Skip condition for integration tests
+_skip_integration = pytest.mark.skipif(
+    not os.environ.get("ANTHROPIC_API_KEY") or
+    os.environ.get("SKIP_INTEGRATION_TESTS", "").lower() == "true",
+    reason="Requires real ANTHROPIC_API_KEY and integration tests enabled"
+)
+
+
+@_skip_integration
 def test_hello_world():
     """Create a minimal agent and verify it responds."""
     print("Creating deepagents agent...")
@@ -26,15 +38,13 @@ def test_hello_world():
     # Extract AI response
     ai_messages = [msg for msg in result.get("messages", []) if msg.type == "ai"]
 
-    if ai_messages:
-        response = ai_messages[-1].content
-        print(f"\n[PASS] Agent responded: {response}")
-        return True
-    else:
-        print("\n[FAIL] No AI response received")
-        return False
+    assert ai_messages, "Expected AI response messages but none were received"
+    response = ai_messages[-1].content
+    print(f"\n[PASS] Agent responded: {response}")
+    assert "messages" in result
 
 
+@_skip_integration
 def test_with_opus():
     """Test with Claude Opus model (used for main builder)."""
     print("\nTesting with Claude Opus...")
@@ -49,13 +59,10 @@ def test_with_opus():
 
     ai_messages = [msg for msg in result.get("messages", []) if msg.type == "ai"]
 
-    if ai_messages:
-        response = ai_messages[-1].content
-        print(f"[PASS] Opus responded: {response}")
-        return True
-    else:
-        print("[FAIL] No Opus response received")
-        return False
+    assert ai_messages, "Expected AI response from Opus but none were received"
+    response = ai_messages[-1].content
+    print(f"[PASS] Opus responded: {response}")
+    assert "messages" in result
 
 
 if __name__ == "__main__":
@@ -63,12 +70,15 @@ if __name__ == "__main__":
     print("Task 1.3: deepagents Hello World Test")
     print("=" * 50)
 
-    success1 = test_hello_world()
-    success2 = test_with_opus()
-
-    print("\n" + "=" * 50)
-    if success1 and success2:
+    try:
+        test_hello_world()
+        test_with_opus()
+        print("\n" + "=" * 50)
         print("[PASS] All tests passed! deepagents is working correctly.")
-    else:
-        print("[FAIL] Some tests failed. Check output above.")
+    except AssertionError as e:
+        print("\n" + "=" * 50)
+        print(f"[FAIL] Test failed: {e}")
+    except Exception as e:
+        print("\n" + "=" * 50)
+        print(f"[ERROR] Test error: {e}")
     print("=" * 50)

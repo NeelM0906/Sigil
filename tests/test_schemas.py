@@ -459,12 +459,21 @@ class TestAgentResponse:
         assert response.metadata is None
 
     def test_valid_response_with_tool_calls(self):
-        """Verify AgentResponse with tool calls."""
+        """Verify AgentResponse with tool calls (ToolCall schema - fix #8)."""
         response = AgentResponse(
             message="I searched the web for you",
-            tool_calls=[{"tool": "websearch", "result": "Found 10 results"}],
+            tool_calls=[
+                {
+                    "tool_name": "websearch",
+                    "arguments": {"query": "test search"},
+                    "result": "Found 10 results",
+                }
+            ],
         )
         assert len(response.tool_calls) == 1
+        assert response.tool_calls[0].tool_name == "websearch"
+        assert response.tool_calls[0].arguments == {"query": "test search"}
+        assert response.tool_calls[0].result == "Found 10 results"
 
     def test_valid_response_with_metadata(self):
         """Verify AgentResponse with metadata."""

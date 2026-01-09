@@ -172,13 +172,13 @@ class TestCreateBuilderFilesystemBackend:
         call_kwargs = mock_filesystem_backend.call_args.kwargs
         assert call_kwargs["root_dir"] == str(temp_output_dir.resolve())
 
-    def test_virtual_mode_default_false(
+    def test_virtual_mode_default_true(
         self, mock_deep_agent, mock_filesystem_backend
     ):
-        """Verify virtual_mode defaults to False."""
+        """Verify virtual_mode defaults to True (security fix #2)."""
         create_builder()
         call_kwargs = mock_filesystem_backend.call_args.kwargs
-        assert call_kwargs["virtual_mode"] is False
+        assert call_kwargs["virtual_mode"] is True
 
     def test_virtual_mode_can_be_enabled(
         self, mock_deep_agent, mock_filesystem_backend
