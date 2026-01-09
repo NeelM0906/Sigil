@@ -238,7 +238,7 @@ Detailed API documentation is available in the `docs/` directory:
 ## Roadmap
 
 - [x] **Phase 1: Foundation** - Builder agent with config generation
-- [ ] **Phase 2: MCP Integration** - Real tool execution via MCP servers
+- [x] **Phase 2: MCP Integration** - Real tool execution via MCP servers
 - [ ] **Phase 3: API Backend** - FastAPI server for frontend integration
 - [ ] **Phase 4: Frontend** - Web UI for agent creation and management
 
