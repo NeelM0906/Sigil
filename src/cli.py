@@ -84,7 +84,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Coroutine, Optional, TypeVar
 
 from dotenv import load_dotenv
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+
+from .tools import extract_text_from_content, validate_and_patch_messages, reset_tool_history
 
 if TYPE_CHECKING:
     from langgraph.graph.state import CompiledStateGraph
@@ -593,6 +595,10 @@ HISTORY_DIR = ACTI_DIR / "history"
 # Maximum messages to keep per agent history
 MAX_HISTORY_MESSAGES = 100
 
+# Maximum messages per conversation before forced reset (Fix 9)
+# This prevents infinite loops from consuming too much memory/context
+MAX_MESSAGES_PER_CONVERSATION = 100
+
 
 class SessionMode(str, Enum):
     """Current interaction mode for the session."""
@@ -618,10 +624,20 @@ def _serialize_message(msg: Any) -> dict:
         Dictionary representation of the message.
     """
     if hasattr(msg, "type"):
-        return {
+        serialized = {
             "type": msg.type,
             "content": msg.content,
         }
+        # Preserve tool_calls if present (for AIMessage)
+        if hasattr(msg, "tool_calls") and msg.tool_calls:
+            serialized["tool_calls"] = msg.tool_calls
+        # Preserve tool_call_id if present (for ToolMessage)
+        if hasattr(msg, "tool_call_id"):
+            serialized["tool_call_id"] = msg.tool_call_id
+        # Preserve name if present (for ToolMessage)
+        if hasattr(msg, "name"):
+            serialized["name"] = msg.name
+        return serialized
     elif isinstance(msg, dict):
         return msg
     else:
@@ -643,7 +659,14 @@ def _deserialize_message(data: dict) -> Any:
     if msg_type == "human":
         return HumanMessage(content=content)
     elif msg_type == "ai":
-        return AIMessage(content=content)
+        # Restore tool_calls if present
+        tool_calls = data.get("tool_calls", [])
+        return AIMessage(content=content, tool_calls=tool_calls if tool_calls else None)
+    elif msg_type == "tool":
+        # Restore ToolMessage with tool_call_id and name
+        tool_call_id = data.get("tool_call_id", "")
+        name = data.get("name", "tool")
+        return ToolMessage(content=content, tool_call_id=tool_call_id, name=name)
     else:
         return HumanMessage(content=content)
 
@@ -1205,7 +1228,7 @@ async def cmd_create(session: Session, prompt: str) -> None:
         ]
 
         if ai_messages:
-            response = ai_messages[-1].content
+            response = extract_text_from_content(ai_messages[-1].content)
             print(f"{Colors.BRIGHT_MAGENTA}Builder:{Colors.RESET} {response}")
             # Update messages with full conversation
             session.builder_messages = result.get("messages", session.builder_messages)
@@ -1425,7 +1448,7 @@ async def cmd_run(session: Session, args: str) -> None:
         ]
 
         if ai_messages:
-            response = ai_messages[-1].content
+            response = extract_text_from_content(ai_messages[-1].content)
             print()
             print(f"{Colors.BRIGHT_GREEN}{name}:{Colors.RESET} {response}")
         else:
@@ -1654,7 +1677,7 @@ Respond with ONLY the JSON object, no other text."""
         ]
 
         if ai_messages:
-            response = ai_messages[-1].content
+            response = extract_text_from_content(ai_messages[-1].content)
 
             # Try to extract JSON from response
             import re
@@ -2385,10 +2408,15 @@ async def _stream_agent_response(
     updated_messages = messages.copy()
     active_tools: set = set()
 
+    # Validate and patch messages before sending to API
+    # This ensures no dangling tool_use blocks without corresponding tool_results
+    patched_messages = validate_and_patch_messages(messages)
+
     try:
         async for event in agent.astream_events(
-            {"messages": messages},
+            {"messages": patched_messages},
             version="v2",
+            config={"recursion_limit": 100},  # Fix: Propagate recursion limit to streaming API
         ):
             event_type = event.get("event", "")
             event_name = event.get("name", "")
@@ -2406,16 +2434,8 @@ async def _stream_agent_response(
                 if chunk and hasattr(chunk, "content"):
                     content = chunk.content
                     if content:
-                        # Handle both string and list content (content blocks)
-                        if isinstance(content, list):
-                            # Extract text from content blocks
-                            text_parts = []
-                            for block in content:
-                                if isinstance(block, dict) and block.get("type") == "text":
-                                    text_parts.append(block.get("text", ""))
-                                elif isinstance(block, str):
-                                    text_parts.append(block)
-                            content = "".join(text_parts)
+                        # Normalize Anthropic content blocks to string
+                        content = extract_text_from_content(content)
                         if content:
                             print(content, end="", flush=True)
                             full_response += content
@@ -2474,7 +2494,7 @@ async def _stream_agent_response(
             if hasattr(msg, "type") and msg.type == "ai"
         ]
         if ai_messages:
-            full_response = ai_messages[-1].content
+            full_response = extract_text_from_content(ai_messages[-1].content)
 
     return full_response, updated_messages
 
@@ -2496,7 +2516,11 @@ async def _batch_agent_response(
     Returns:
         Tuple of (response text, updated messages).
     """
-    result = await agent.ainvoke({"messages": messages})
+    # Validate and patch messages before sending to API
+    # This ensures no dangling tool_use blocks without corresponding tool_results
+    patched_messages = validate_and_patch_messages(messages)
+
+    result = await agent.ainvoke({"messages": patched_messages})
 
     ai_messages = [
         msg for msg in result.get("messages", [])
@@ -2505,7 +2529,7 @@ async def _batch_agent_response(
 
     response = ""
     if ai_messages:
-        response = ai_messages[-1].content
+        response = extract_text_from_content(ai_messages[-1].content)
         print()
         print(f"{label_color}{agent_label}:{Colors.RESET} {response}")
     else:
@@ -2577,6 +2601,20 @@ async def handle_chat_message(session: Session, message: str) -> None:
             )
             return
 
+        # Fix 9: Message count safeguard to prevent infinite loops
+        if len(session.builder_messages) > MAX_MESSAGES_PER_CONVERSATION:
+            logger.warning(
+                f"Conversation exceeded {MAX_MESSAGES_PER_CONVERSATION} messages, "
+                "forcing reset to prevent infinite loop"
+            )
+            print()
+            print(warning(f"Conversation exceeded message limit ({MAX_MESSAGES_PER_CONVERSATION})."))
+            print("This usually means the builder is in a loop.")
+            print("Starting fresh conversation...")
+            print()
+            session.builder_messages = []
+            reset_tool_history()  # Also reset tool call tracking
+
         session.builder_messages.append(HumanMessage(content=message))
 
         try:
@@ -2631,6 +2669,20 @@ async def handle_chat_message(session: Session, message: str) -> None:
                 "Use /load <name> to load an agent, or /list to see available agents."
             )
             return
+
+        # Fix 9: Message count safeguard for agent conversations
+        if len(session.agent_messages) > MAX_MESSAGES_PER_CONVERSATION:
+            logger.warning(
+                f"Agent conversation exceeded {MAX_MESSAGES_PER_CONVERSATION} messages, "
+                "forcing reset to prevent infinite loop"
+            )
+            print()
+            print(warning(f"Conversation exceeded message limit ({MAX_MESSAGES_PER_CONVERSATION})."))
+            print("This usually means the agent is in a loop.")
+            print("Starting fresh conversation with this agent...")
+            print()
+            session.agent_messages = []
+            reset_tool_history()  # Also reset tool call tracking
 
         session.agent_messages.append(HumanMessage(content=message))
         agent_name = session.active_agent_name or "Agent"
@@ -2873,6 +2925,9 @@ async def main_async() -> None:
         session = Session()
         is_restored = False
 
+    # Reset tool call history for fresh session (Fix 8a/9)
+    reset_tool_history()
+
     # Configure streaming based on TTY mode
     if is_tty:
         session.streaming = StreamingConfig.for_tty()
@@ -2899,8 +2954,11 @@ async def main_async() -> None:
     print(info("Initializing builder agent..."))
     try:
         from .builder import create_builder
-        session.builder = create_builder()
-        print(success("Builder ready."))
+        # Fix 10: Apply strict recursion limit for interactive CLI to prevent infinite loops
+        # max_turns=10 means the builder can make at most 10 rounds of tool calls
+        # This translates to recursion_limit=50 (10 * 5) in the underlying graph
+        session.builder = create_builder(max_turns=10)
+        print(success("Builder ready (max_turns=10)."))
     except ImportError as e:
         print_error(
             f"Failed to import builder module: {e}",

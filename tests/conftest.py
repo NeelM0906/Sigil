@@ -19,6 +19,25 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from src.schemas import AgentConfig, Stratum
+from src.tools import reset_tool_history
+
+
+# -----------------------------------------------------------------------------
+# Test Isolation Fixtures (Fix 8a)
+# -----------------------------------------------------------------------------
+
+@pytest.fixture(autouse=True)
+def reset_tool_call_history():
+    """Reset tool call history before each test.
+
+    This fixture runs automatically before every test to ensure that the
+    retry loop detection (Fix 8a) doesn't trigger false positives when
+    execute_created_agent is called multiple times across different tests.
+    """
+    reset_tool_history()
+    yield
+    # Also reset after the test to clean up
+    reset_tool_history()
 
 
 # -----------------------------------------------------------------------------

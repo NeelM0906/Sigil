@@ -497,6 +497,7 @@ async def create_agent_with_tools(
     *,
     skip_unavailable: bool = False,
     timeout: float = 30.0,
+    max_turns: int = 10,
 ) -> CompiledStateGraph:
     """Create a deepagent instance with real MCP tools attached.
 
@@ -510,6 +511,12 @@ async def create_agent_with_tools(
             If False (default), raise an error if any requested tools
             are unavailable.
         timeout: Connection timeout per MCP server in seconds.
+        max_turns: Maximum number of tool call rounds (default 10).
+            This limits how many times the agent can call tools before
+            being forced to stop. Each "turn" may involve multiple internal
+            LangGraph steps, so the recursion_limit is set to max_turns * 5.
+            This prevents infinite loops where agents keep calling tools
+            without providing a final response.
 
     Returns:
         A CompiledStateGraph (deepagent) configured with:
@@ -597,7 +604,19 @@ async def create_agent_with_tools(
         system_prompt=agent_config.system_prompt,
     )
 
-    return agent
+    # Apply recursion limit configuration to prevent infinite loops
+    # Each "turn" can involve multiple internal LangGraph steps, so we multiply by 5
+    recursion_limit = max_turns * 5
+    logger.debug(
+        "Applying recursion_limit=%d (max_turns=%d) to agent '%s'",
+        recursion_limit,
+        max_turns,
+        agent_config.name,
+    )
+
+    return agent.with_config({
+        "recursion_limit": recursion_limit,
+    })
 
 
 # =============================================================================

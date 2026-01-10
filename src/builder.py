@@ -48,7 +48,7 @@ from .prompts import (
     PATTERN_ANALYZER_SYSTEM_PROMPT,
     PROMPT_ENGINEER_SYSTEM_PROMPT,
 )
-from .tools import BUILDER_TOOLS
+from .tools import BUILDER_TOOLS, extract_text_from_content
 
 # Configure module logger
 logger = logging.getLogger(__name__)
@@ -79,6 +79,7 @@ def create_builder(
     model: str = DEFAULT_MODEL,
     root_dir: str | Path | None = None,
     virtual_mode: bool = True,  # Sandbox filesystem paths under root_dir for production safety
+    max_turns: int = 15,  # Maximum tool call rounds before forced stop
 ) -> CompiledStateGraph:
     """Create and configure the ACTi Agent Builder.
 
@@ -96,9 +97,16 @@ def create_builder(
         virtual_mode: If True (default), sandbox all filesystem paths under root_dir
             for production safety. If False, allow access to absolute paths.
             Set to False only for development/testing with trusted inputs.
+        max_turns: Maximum number of tool call rounds before forcing termination.
+            This prevents infinite agent loops. Each "turn" may involve multiple
+            internal steps; the underlying recursion_limit is set to max_turns * 5.
+            Valid range: 1-50. Default: 15.
 
     Returns:
         A configured deepagents agent instance ready for invocation.
+
+    Raises:
+        ValueError: If max_turns is outside the valid range (1-50).
 
     Example:
         >>> builder = create_builder()
@@ -107,6 +115,20 @@ def create_builder(
         ... })
         >>> print(result["messages"][-1].content)
     """
+    # Validate max_turns parameter
+    if not 1 <= max_turns <= 50:
+        raise ValueError(
+            f"max_turns must be between 1 and 50, got {max_turns}. "
+            "Use lower values (5-10) for interactive CLI, higher (15-30) for complex tasks."
+        )
+
+    # Calculate recursion_limit from max_turns
+    # Each "turn" may involve multiple internal graph steps (LLM call, tool execution, etc.)
+    recursion_limit = max_turns * 5
+    logger.info(
+        f"Creating builder agent with max_turns={max_turns} (recursion_limit={recursion_limit})"
+    )
+
     # Determine root directory for filesystem access
     if root_dir is None:
         # Default to Bland-Agents-Dataset directory for access to reference patterns
@@ -156,6 +178,14 @@ def create_builder(
         system_prompt=BUILDER_SYSTEM_PROMPT,
         backend=backend,
         subagents=subagents,
+    )
+
+    # Apply hard recursion limit to prevent infinite loops
+    # This is a structural fix - prompts alone cannot prevent runaway behavior
+    builder = builder.with_config({"recursion_limit": recursion_limit})
+
+    logger.debug(
+        f"Builder agent created successfully with recursion_limit={recursion_limit}"
     )
 
     return builder
@@ -233,7 +263,7 @@ def _run_cli() -> None:
             ]
 
             if ai_messages:
-                response = ai_messages[-1].content
+                response = extract_text_from_content(ai_messages[-1].content)
                 print(response)
                 # Update messages with full conversation
                 messages = result.get("messages", messages)

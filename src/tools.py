@@ -44,6 +44,76 @@ logger = logging.getLogger(__name__)
 
 
 # -----------------------------------------------------------------------------
+# Retry Loop Detection (Fix 8a)
+# -----------------------------------------------------------------------------
+
+# Module-level tracking of tool calls to detect retry loops
+_tool_call_history: dict[str, int] = {}
+
+
+def _record_tool_call(tool_name: str) -> None:
+    """Record that a tool was called.
+
+    Increments the call count for the specified tool.
+    Used to detect retry loops where the same tool is called repeatedly.
+
+    Args:
+        tool_name: The name of the tool being called.
+    """
+    global _tool_call_history
+    _tool_call_history[tool_name] = _tool_call_history.get(tool_name, 0) + 1
+    logger.debug(f"Tool call recorded: {tool_name} (count: {_tool_call_history[tool_name]})")
+
+
+def _detect_retry_loop(tool_name: str, max_consecutive: int = 3) -> bool:
+    """Check if a tool has been called too many times in a row.
+
+    Returns True if the same tool has been called more than max_consecutive times,
+    indicating a likely retry loop that should be interrupted.
+
+    Args:
+        tool_name: The name of the tool to check.
+        max_consecutive: Maximum allowed consecutive calls before detecting a loop.
+            Default is 3, meaning the 4th consecutive call triggers loop detection.
+
+    Returns:
+        True if a retry loop is detected, False otherwise.
+    """
+    count = _tool_call_history.get(tool_name, 0)
+    is_loop = count > max_consecutive
+    if is_loop:
+        logger.warning(
+            f"Retry loop detected for {tool_name}: called {count} times "
+            f"(max allowed: {max_consecutive})"
+        )
+    return is_loop
+
+
+def reset_tool_history() -> None:
+    """Reset the tool call history.
+
+    Call this at the start of a new conversation or task to clear
+    the retry loop detection state. This prevents false positives
+    when the same tool is legitimately called across different tasks.
+    """
+    global _tool_call_history
+    _tool_call_history = {}
+    logger.debug("Tool call history reset")
+
+
+def get_tool_call_count(tool_name: str) -> int:
+    """Get the current call count for a specific tool.
+
+    Args:
+        tool_name: The name of the tool to check.
+
+    Returns:
+        The number of times the tool has been called since the last reset.
+    """
+    return _tool_call_history.get(tool_name, 0)
+
+
+# -----------------------------------------------------------------------------
 # Configuration
 # -----------------------------------------------------------------------------
 
@@ -82,6 +152,103 @@ def _format_validation_error(error: ValidationError) -> str:
         loc = " -> ".join(str(x) for x in err["loc"])
         messages.append(f"  - {loc}: {err['msg']}")
     return "\n".join(messages)
+
+
+def extract_text_from_content(content: str | list | Any) -> str:
+    """Extract text from LangChain message content.
+
+    Handles both string content and Anthropic-style content blocks. This is
+    necessary because Anthropic's Messages API returns content as a list of
+    content blocks (supporting tool_use, extended thinking, citations, etc.),
+    while OpenAI returns simple strings.
+
+    Args:
+        content: Message content - can be string or list of content blocks.
+            Content blocks are dicts with 'type' and type-specific fields.
+
+    Returns:
+        Extracted text as a single string. Multiple text blocks are joined
+        with newlines.
+
+    Examples:
+        >>> extract_text_from_content("Hello world")
+        'Hello world'
+        >>> extract_text_from_content([{"type": "text", "text": "Hello"}])
+        'Hello'
+        >>> extract_text_from_content([
+        ...     {"type": "tool_use", "id": "123", "name": "search"},
+        ...     {"type": "text", "text": "Results here"}
+        ... ])
+        'Results here'
+    """
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        text_parts = []
+        for block in content:
+            if isinstance(block, dict):
+                if block.get("type") == "text":
+                    text_parts.append(block.get("text", ""))
+            elif isinstance(block, str):
+                text_parts.append(block)
+        return "\n".join(text_parts)
+    return str(content)
+
+
+def validate_and_patch_messages(messages: list) -> list:
+    """Validate and patch message structure before sending to Anthropic API.
+
+    This function ensures that every tool_use block is followed by a tool_result.
+    If dangling tool_use blocks are found (from partial execution), they are either
+    removed or have synthetic ToolMessage results added.
+
+    Anthropic's Messages API requires strict structure:
+        AIMessage (with tool_use) → must be followed by → ToolMessage (with tool_result)
+
+    Args:
+        messages: List of LangChain message objects.
+
+    Returns:
+        Patched list of messages with valid structure.
+    """
+    if not messages:
+        return messages
+
+    patched = []
+    i = 0
+    while i < len(messages):
+        msg = messages[i]
+
+        # Check if this is an AIMessage with tool_use blocks
+        if hasattr(msg, "type") and msg.type == "ai" and hasattr(msg, "tool_calls") and msg.tool_calls:
+            patched.append(msg)
+
+            # Look for corresponding ToolMessages in the next position
+            tool_call_ids = {tc.get("id") if isinstance(tc, dict) else tc.id for tc in msg.tool_calls}
+            next_is_tool_result = False
+
+            if i + 1 < len(messages):
+                next_msg = messages[i + 1]
+                if hasattr(next_msg, "type") and next_msg.type == "tool":
+                    next_is_tool_result = True
+
+            # If no tool_result follows, add synthetic ones
+            if not next_is_tool_result:
+                for tool_call in msg.tool_calls:
+                    tool_id = tool_call.get("id") if isinstance(tool_call, dict) else tool_call.id
+                    # Add a synthetic tool_result to maintain message structure
+                    synthetic_result = ToolMessage(
+                        tool_call_id=tool_id,
+                        content="[Tool execution was interrupted or incomplete]",
+                        name=tool_call.get("name") if isinstance(tool_call, dict) else tool_call.name,
+                    )
+                    patched.append(synthetic_result)
+        else:
+            patched.append(msg)
+
+        i += 1
+
+    return patched
 
 
 def _generate_filename(agent_name: str, include_timestamp: bool = False) -> str:
@@ -921,7 +1088,8 @@ def _extract_tool_calls_from_messages(messages: list[Any]) -> list[dict[str, Any
             # Find the matching tool call and add result
             for tc in tool_calls:
                 if hasattr(msg, 'tool_call_id') and tc.get("id") == msg.tool_call_id:
-                    tc["result"] = msg.content[:500] if len(msg.content) > 500 else msg.content
+                    content_str = extract_text_from_content(msg.content)
+                    tc["result"] = content_str[:500] if len(content_str) > 500 else content_str
                     break
     return tool_calls
 
@@ -930,6 +1098,7 @@ async def _execute_agent_async(
     agent_config: AgentConfig,
     task: str,
     timeout: float,
+    max_turns: int = 10,
 ) -> dict[str, Any]:
     """Execute an agent with a task asynchronously.
 
@@ -937,6 +1106,9 @@ async def _execute_agent_async(
         agent_config: The agent configuration to instantiate.
         task: The task/message to send to the agent.
         timeout: Maximum execution time in seconds.
+        max_turns: Maximum number of tool call rounds (default 10).
+            This limits how many times the agent can call tools before
+            being forced to stop. Helps prevent infinite loops.
 
     Returns:
         Dictionary with execution results including response, tools used, and timing.
@@ -961,7 +1133,12 @@ async def _execute_agent_async(
     try:
         # Create the agent with MCP tools (skip unavailable tools gracefully)
         agent = await asyncio.wait_for(
-            create_agent_with_tools(agent_config, skip_unavailable=True, timeout=timeout / 2),
+            create_agent_with_tools(
+                agent_config,
+                skip_unavailable=True,
+                timeout=timeout / 2,
+                max_turns=max_turns,
+            ),
             timeout=timeout / 2,
         )
 
@@ -978,7 +1155,7 @@ async def _execute_agent_async(
         if messages:
             final_message = messages[-1]
             if hasattr(final_message, 'content'):
-                result["response"] = final_message.content
+                result["response"] = extract_text_from_content(final_message.content)
             else:
                 result["response"] = str(final_message)
 
@@ -1000,7 +1177,7 @@ async def _execute_agent_async(
 
 
 @tool
-def execute_created_agent(agent_name: str, task: str, timeout: int = 60) -> str:
+def execute_created_agent(agent_name: str, task: str, timeout: int = 60, max_turns: int = 10) -> str:
     """Execute a task with a created agent using real MCP tools.
 
     Use this tool to TEST agents immediately after creating them. This allows
@@ -1027,6 +1204,13 @@ def execute_created_agent(agent_name: str, task: str, timeout: int = 60) -> str:
         timeout: Maximum time in seconds for execution (default 60).
             Increase for complex tasks or slow tool integrations.
             Range: 10-300 seconds recommended.
+
+        max_turns: Maximum number of tool call rounds (default 10).
+            This limits how many times the agent can call tools before
+            being forced to stop. Helps prevent infinite loops where
+            agents keep calling tools without providing a final answer.
+            Each "turn" may involve multiple internal steps; the underlying
+            recursion_limit is set to max_turns * 5.
 
     Returns:
         A structured result containing:
@@ -1077,6 +1261,28 @@ def execute_created_agent(agent_name: str, task: str, timeout: int = 60) -> str:
         - For long-running tasks, increase the timeout parameter
         - Use this to validate agent behavior before deploying to production
     """
+    # Record this tool call for retry loop detection (Fix 8a)
+    _record_tool_call("execute_created_agent")
+
+    # Check for retry loop before proceeding (Fix 8a)
+    if _detect_retry_loop("execute_created_agent", max_consecutive=3):
+        call_count = get_tool_call_count("execute_created_agent")
+        logger.error(
+            f"Retry loop detected: execute_created_agent called {call_count} times consecutively"
+        )
+        return json.dumps({
+            "status": "loop_detected",
+            "response": "",
+            "agent_name": agent_name,
+            "execution_time_ms": 0,
+            "reason": (
+                f"Retry loop detected: execute_created_agent has been called {call_count} times "
+                "consecutively. This indicates the builder is stuck in a retry loop. "
+                "STOP calling this tool and report the issue to the user. "
+                "Ask them to simplify their request or try a different approach."
+            )
+        }, indent=2)
+
     # Validate path to prevent directory traversal attacks
     config_path = (OUTPUT_DIR / f"{agent_name}.json").resolve()
     if not str(config_path).startswith(str(OUTPUT_DIR.resolve())):
@@ -1138,14 +1344,20 @@ def execute_created_agent(agent_name: str, task: str, timeout: int = 60) -> str:
     # Execute the agent
     logger.info(f"Executing agent '{agent_name}' with task: {task[:100]}...")
 
+    # Validate max_turns
+    if max_turns < 1:
+        return "ERROR: max_turns must be at least 1."
+    if max_turns > 50:
+        return "ERROR: max_turns cannot exceed 50."
+
     try:
-        result = asyncio.run(_execute_agent_async(agent_config, task, float(timeout)))
+        result = asyncio.run(_execute_agent_async(agent_config, task, float(timeout), max_turns))
     except RuntimeError as e:
         # Handle case where event loop is already running
         if "cannot be called from a running event loop" in str(e):
             import nest_asyncio
             nest_asyncio.apply()
-            result = asyncio.run(_execute_agent_async(agent_config, task, float(timeout)))
+            result = asyncio.run(_execute_agent_async(agent_config, task, float(timeout), max_turns))
         else:
             raise
 
@@ -1153,81 +1365,53 @@ def execute_created_agent(agent_name: str, task: str, timeout: int = 60) -> str:
     if result["success"]:
         _update_execution_metadata(config_path)
 
-    # Format the output
-    lines = [
-        f"Execution Results: {agent_name}",
-        "=" * 50,
-        "",
-        f"Task: {task}",
-        "",
-        f"Status: {'SUCCESS' if result['success'] else 'FAILED'}",
-        "",
-    ]
+    # Build structured JSON response (Fix 8b)
+    # This makes success/error status unambiguous so the builder knows when NOT to retry
+    execution_time_ms = int(result["execution_time_seconds"] * 1000)
 
-    # Add response
-    if result["response"]:
-        lines.append("Response:")
-        # Indent the response for readability
-        response_lines = result["response"].split("\n")
-        for line in response_lines:
-            lines.append(f"  {line}")
-        lines.append("")
-
-    # Add tools used
-    if result["tools_used"]:
-        lines.append("Tools Used:")
-        for i, tool_info in enumerate(result["tools_used"], 1):
-            lines.append(f"  {i}. {tool_info.get('tool_name', 'unknown')}")
-            if tool_info.get("arguments"):
-                args_str = json.dumps(tool_info["arguments"], indent=4)
-                # Indent each line of the JSON
-                for arg_line in args_str.split("\n"):
-                    lines.append(f"       {arg_line}")
-            if tool_info.get("result"):
-                lines.append(f"     Result: {tool_info['result'][:200]}...")
-        lines.append("")
-    else:
-        lines.append("Tools Used: None")
-        lines.append("")
-
-    # Add timing
-    lines.append(f"Execution Time: {result['execution_time_seconds']} seconds")
-    lines.append("")
-
-    # Add errors if any
-    if result["errors"]:
-        lines.append("Errors:")
-        for error in result["errors"]:
-            lines.append(f"  - {error}")
-        lines.append("")
-
-    # Add warnings if any
-    if result["warnings"]:
-        lines.append("Warnings:")
-        for warning in result["warnings"]:
-            lines.append(f"  - {warning}")
-        lines.append("")
-
-    # Add next steps
+    # Determine status and reason
     if result["success"]:
-        lines.extend([
-            "=" * 50,
-            "The agent executed successfully. You can:",
-            f"  - Run another task: execute_created_agent('{agent_name}', '<new task>')",
-            f"  - Review config: get_agent_config('{agent_name}')",
-            "  - Create a new agent: create_agent_config(...)",
-        ])
+        status = "success"
+        reason = "Agent completed task successfully"
+    elif result["errors"]:
+        # Check for timeout specifically
+        has_timeout = any("timed out" in err.lower() for err in result["errors"])
+        status = "timeout" if has_timeout else "error"
+        reason = "; ".join(result["errors"])
     else:
-        lines.extend([
-            "=" * 50,
-            "Troubleshooting:",
-            f"  - Review agent config: get_agent_config('{agent_name}')",
-            "  - Check MCP tool credentials in .env file",
-            "  - Try increasing the timeout for slow operations",
-            "  - Simplify the task to isolate the issue",
-        ])
+        status = "error"
+        reason = "Unknown error occurred"
 
-    return "\n".join(lines)
+    # Build the response text with human-readable summary
+    response_parts = []
+    if result["response"]:
+        response_parts.append(result["response"])
+
+    if result["tools_used"]:
+        tools_summary = [f"[Tools used: {', '.join(t.get('tool_name', 'unknown') for t in result['tools_used'])}]"]
+        response_parts.append("\n".join(tools_summary))
+
+    if result["warnings"]:
+        response_parts.append(f"Warnings: {'; '.join(result['warnings'])}")
+
+    response_text = "\n\n".join(response_parts) if response_parts else ""
+
+    # Create structured output
+    structured_response = {
+        "status": status,
+        "response": response_text,
+        "agent_name": agent_name,
+        "execution_time_ms": execution_time_ms,
+        "reason": reason,
+    }
+
+    # Log the structured response for debugging
+    logger.info(
+        f"execute_created_agent completed: status={status}, agent={agent_name}, "
+        f"time={execution_time_ms}ms"
+    )
+
+    return json.dumps(structured_response, indent=2)
 
 
 # -----------------------------------------------------------------------------
@@ -1648,13 +1832,14 @@ def clone_agent_config(source_name: str, new_name: str) -> str:
     )
 
 
-async def execute_created_agent_async(agent_name: str, task: str, timeout: int = 60) -> str:
+async def execute_created_agent_async(agent_name: str, task: str, timeout: int = 60, max_turns: int = 10) -> str:
     """Async variant of execute_created_agent for FastAPI integration.
 
     Args:
         agent_name: Name of the agent to execute.
         task: The task/message to send to the agent.
         timeout: Maximum execution time in seconds.
+        max_turns: Maximum number of tool call rounds (default 10).
 
     Returns:
         Structured result string with execution details.
@@ -1662,7 +1847,7 @@ async def execute_created_agent_async(agent_name: str, task: str, timeout: int =
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(
         _executor,
-        lambda: execute_created_agent.func(agent_name, task, timeout)
+        lambda: execute_created_agent.func(agent_name, task, timeout, max_turns)
     )
 
 
@@ -1701,4 +1886,7 @@ __all__ = [
     "create_agent_config_async",
     "list_created_agents_async",
     "execute_created_agent_async",
+    # Retry loop detection (Fix 8a)
+    "reset_tool_history",
+    "get_tool_call_count",
 ]

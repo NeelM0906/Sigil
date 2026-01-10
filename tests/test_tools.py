@@ -580,6 +580,7 @@ class TestExecuteCreatedAgent:
                 "timeout": 2,
             })
 
+            # Error is returned as plain text (not JSON) for validation errors
             assert "ERROR" in result
             assert "at least 5 seconds" in result
 
@@ -592,11 +593,13 @@ class TestExecuteCreatedAgent:
                 "timeout": 700,
             })
 
+            # Error is returned as plain text (not JSON) for validation errors
             assert "ERROR" in result
             assert "exceed 600 seconds" in result
 
     def test_loads_agent_config_successfully(self, populated_agents_dir: Path):
         """Verify agent config is loaded correctly before execution."""
+        import json
         with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
             # Mock the async execution to avoid actual MCP connection
             with patch("src.tools.asyncio.run") as mock_asyncio_run:
@@ -616,11 +619,15 @@ class TestExecuteCreatedAgent:
                     "task": "Test task",
                 })
 
-                assert "Execution Results: rti_researcher" in result
-                assert "SUCCESS" in result
+                # Result is now JSON (Fix 8b)
+                parsed = json.loads(result)
+                assert parsed["status"] == "success"
+                assert parsed["agent_name"] == "rti_researcher"
+                assert "response" in parsed
 
     def test_returns_structured_output(self, populated_agents_dir: Path):
-        """Verify the output contains all expected sections."""
+        """Verify the output contains all expected sections (Fix 8b - JSON output)."""
+        import json
         with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
             # Mock execution
             with patch("src.tools.asyncio.run") as mock_asyncio_run:
@@ -642,15 +649,20 @@ class TestExecuteCreatedAgent:
                     "task": "Test the structured output",
                 })
 
-                assert "Execution Results:" in result
-                assert "Task:" in result
-                assert "Status:" in result
-                assert "Response:" in result
-                assert "Tools Used:" in result
-                assert "Execution Time:" in result
+                # Result is now JSON (Fix 8b)
+                parsed = json.loads(result)
+                assert "status" in parsed
+                assert "response" in parsed
+                assert "agent_name" in parsed
+                assert "execution_time_ms" in parsed
+                assert "reason" in parsed
+                assert parsed["status"] == "success"
+                # Tools should be mentioned in the response
+                assert "test_tool" in parsed["response"]
 
     def test_handles_execution_errors_gracefully(self, populated_agents_dir: Path):
-        """Verify errors during execution are reported properly."""
+        """Verify errors during execution are reported properly (Fix 8b - JSON output)."""
+        import json
         with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
             # Mock execution with error
             with patch("src.tools.asyncio.run") as mock_asyncio_run:
@@ -670,11 +682,12 @@ class TestExecuteCreatedAgent:
                     "task": "Test error handling",
                 })
 
-                assert "FAILED" in result
-                assert "Errors:" in result
-                assert "Connection failed" in result
-                assert "Tool not available" in result
-                assert "Troubleshooting:" in result
+                # Result is now JSON (Fix 8b)
+                parsed = json.loads(result)
+                assert parsed["status"] == "error"
+                # Errors should be in the reason field
+                assert "Connection failed" in parsed["reason"]
+                assert "Tool not available" in parsed["reason"]
 
     def test_tool_has_correct_signature(self):
         """Verify execute_created_agent has the expected parameter signature."""
@@ -697,6 +710,7 @@ class TestExecuteCreatedAgent:
 
     def test_default_timeout_is_60(self, populated_agents_dir: Path):
         """Verify the default timeout is 60 seconds."""
+        import json
         with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
             # Mock execution and capture the timeout used
             with patch("src.tools.asyncio.run") as mock_asyncio_run:
@@ -711,15 +725,78 @@ class TestExecuteCreatedAgent:
                     "warnings": [],
                 }
 
-                execute_created_agent.invoke({
+                result = execute_created_agent.invoke({
                     "agent_name": "rti_researcher",
                     "task": "Test without explicit timeout",
                 })
 
                 # Verify asyncio.run was called
                 assert mock_asyncio_run.called
-                # The coroutine should have been called with the default timeout
-                # We can verify by checking the call was made
+                # Result should be valid JSON (Fix 8b)
+                parsed = json.loads(result)
+                assert parsed["status"] == "success"
+
+    def test_error_max_turns_too_low(self, populated_agents_dir: Path):
+        """Verify error when max_turns is below minimum."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            result = execute_created_agent.invoke({
+                "agent_name": "rti_researcher",
+                "task": "Test task",
+                "max_turns": 0,
+            })
+
+            assert "ERROR" in result
+            assert "at least 1" in result
+
+    def test_error_max_turns_too_high(self, populated_agents_dir: Path):
+        """Verify error when max_turns exceeds maximum."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            result = execute_created_agent.invoke({
+                "agent_name": "rti_researcher",
+                "task": "Test task",
+                "max_turns": 51,
+            })
+
+            assert "ERROR" in result
+            assert "exceed 50" in result
+
+    def test_max_turns_parameter_in_signature(self):
+        """Verify execute_created_agent has max_turns parameter."""
+        tool = execute_created_agent
+        schema = tool.args_schema.schema()
+        properties = schema.get("properties", {})
+
+        assert "max_turns" in properties
+        # max_turns should have a default value and not be required
+        required = schema.get("required", [])
+        assert "max_turns" not in required or properties["max_turns"].get("default") is not None
+
+    def test_default_max_turns_is_10(self, populated_agents_dir: Path):
+        """Verify the default max_turns is 10."""
+        import json
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            with patch("src.tools.asyncio.run") as mock_asyncio_run:
+                mock_asyncio_run.return_value = {
+                    "success": True,
+                    "agent_name": "rti_researcher",
+                    "task": "Test",
+                    "response": "Response",
+                    "tools_used": [],
+                    "execution_time_seconds": 1.0,
+                    "errors": [],
+                    "warnings": [],
+                }
+
+                result = execute_created_agent.invoke({
+                    "agent_name": "rti_researcher",
+                    "task": "Test without explicit max_turns",
+                })
+
+                # Verify asyncio.run was called with max_turns=10 (default)
+                assert mock_asyncio_run.called
+                # Result should be valid JSON (Fix 8b)
+                parsed = json.loads(result)
+                assert parsed["status"] == "success"
 
 
 # -----------------------------------------------------------------------------
