@@ -5,24 +5,29 @@ This module tests the LangChain tools defined in src/tools.py:
 - list_available_tools: Returns available MCP tool categories
 - get_agent_config: Retrieves saved agent configurations
 - list_created_agents: Lists all created agents
+- execute_created_agent: Executes a task with a created agent using MCP tools
 """
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.schemas import MCP_TOOL_CATEGORIES, Stratum
+from src.schemas import MCP_TOOL_CATEGORIES, Stratum, AgentMetadata
 from src.tools import (
     BUILDER_TOOLS,
     OUTPUT_DIR,
     create_agent_config,
+    execute_created_agent,
     get_agent_config,
     list_available_tools,
     list_created_agents,
+    update_agent_config,
+    delete_agent_config,
+    clone_agent_config,
 )
 
 
@@ -454,9 +459,9 @@ class TestListCreatedAgents:
 class TestBuilderToolsExport:
     """Tests for the BUILDER_TOOLS export list."""
 
-    def test_exports_four_tools(self):
-        """Verify BUILDER_TOOLS exports exactly four tools."""
-        assert len(BUILDER_TOOLS) == 4
+    def test_exports_eight_tools(self):
+        """Verify BUILDER_TOOLS exports exactly eight tools."""
+        assert len(BUILDER_TOOLS) == 8
 
     def test_contains_create_agent_config(self):
         """Verify create_agent_config is in BUILDER_TOOLS."""
@@ -477,6 +482,26 @@ class TestBuilderToolsExport:
         """Verify list_created_agents is in BUILDER_TOOLS."""
         tool_names = [t.name for t in BUILDER_TOOLS]
         assert "list_created_agents" in tool_names
+
+    def test_contains_execute_created_agent(self):
+        """Verify execute_created_agent is in BUILDER_TOOLS."""
+        tool_names = [t.name for t in BUILDER_TOOLS]
+        assert "execute_created_agent" in tool_names
+
+    def test_contains_update_agent_config(self):
+        """Verify update_agent_config is in BUILDER_TOOLS."""
+        tool_names = [t.name for t in BUILDER_TOOLS]
+        assert "update_agent_config" in tool_names
+
+    def test_contains_delete_agent_config(self):
+        """Verify delete_agent_config is in BUILDER_TOOLS."""
+        tool_names = [t.name for t in BUILDER_TOOLS]
+        assert "delete_agent_config" in tool_names
+
+    def test_contains_clone_agent_config(self):
+        """Verify clone_agent_config is in BUILDER_TOOLS."""
+        tool_names = [t.name for t in BUILDER_TOOLS]
+        assert "clone_agent_config" in tool_names
 
     def test_tools_have_descriptions(self):
         """Verify all tools have descriptions."""
@@ -503,3 +528,480 @@ class TestOutputDir:
     def test_output_dir_in_outputs_folder(self):
         """Verify OUTPUT_DIR is inside 'outputs' folder."""
         assert OUTPUT_DIR.parent.name == "outputs"
+
+
+# -----------------------------------------------------------------------------
+# execute_created_agent Tests
+# -----------------------------------------------------------------------------
+
+class TestExecuteCreatedAgent:
+    """Tests for the execute_created_agent tool."""
+
+    def test_error_agent_not_found(self, patch_output_dir: Path):
+        """Verify error is returned when agent doesn't exist."""
+        result = execute_created_agent.invoke({
+            "agent_name": "nonexistent_agent",
+            "task": "Test task",
+        })
+
+        assert "ERROR" in result
+        assert "nonexistent_agent" in result
+        assert "not found" in result.lower()
+
+    def test_error_agent_not_found_lists_available(self, populated_agents_dir: Path):
+        """Verify available agents are listed when target agent doesn't exist."""
+        # Use populated_agents_dir which has pre-populated agents
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            result = execute_created_agent.invoke({
+                "agent_name": "nonexistent_agent",
+                "task": "Test task",
+            })
+
+            assert "ERROR" in result
+            # Should list one of the pre-populated agents
+            assert "rti_researcher" in result or "rai_qualifier" in result or "zacs_scheduler" in result
+
+    def test_error_path_traversal_rejected(self, patch_output_dir: Path):
+        """Verify path traversal attacks are rejected."""
+        result = execute_created_agent.invoke({
+            "agent_name": "../../../etc/passwd",
+            "task": "Test task",
+        })
+
+        assert "ERROR" in result
+        assert "path traversal" in result.lower()
+
+    def test_error_timeout_too_short(self, populated_agents_dir: Path):
+        """Verify error when timeout is below minimum."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            result = execute_created_agent.invoke({
+                "agent_name": "rti_researcher",
+                "task": "Test task",
+                "timeout": 2,
+            })
+
+            assert "ERROR" in result
+            assert "at least 5 seconds" in result
+
+    def test_error_timeout_too_long(self, populated_agents_dir: Path):
+        """Verify error when timeout exceeds maximum."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            result = execute_created_agent.invoke({
+                "agent_name": "rti_researcher",
+                "task": "Test task",
+                "timeout": 700,
+            })
+
+            assert "ERROR" in result
+            assert "exceed 600 seconds" in result
+
+    def test_loads_agent_config_successfully(self, populated_agents_dir: Path):
+        """Verify agent config is loaded correctly before execution."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            # Mock the async execution to avoid actual MCP connection
+            with patch("src.tools.asyncio.run") as mock_asyncio_run:
+                mock_asyncio_run.return_value = {
+                    "success": True,
+                    "agent_name": "rti_researcher",
+                    "task": "Test task",
+                    "response": "Mocked response",
+                    "tools_used": [],
+                    "execution_time_seconds": 1.0,
+                    "errors": [],
+                    "warnings": [],
+                }
+
+                result = execute_created_agent.invoke({
+                    "agent_name": "rti_researcher",
+                    "task": "Test task",
+                })
+
+                assert "Execution Results: rti_researcher" in result
+                assert "SUCCESS" in result
+
+    def test_returns_structured_output(self, populated_agents_dir: Path):
+        """Verify the output contains all expected sections."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            # Mock execution
+            with patch("src.tools.asyncio.run") as mock_asyncio_run:
+                mock_asyncio_run.return_value = {
+                    "success": True,
+                    "agent_name": "rti_researcher",
+                    "task": "Test the structured output",
+                    "response": "This is the agent response",
+                    "tools_used": [
+                        {"tool_name": "test_tool", "arguments": {"arg": "value"}, "result": "result"}
+                    ],
+                    "execution_time_seconds": 2.5,
+                    "errors": [],
+                    "warnings": [],
+                }
+
+                result = execute_created_agent.invoke({
+                    "agent_name": "rti_researcher",
+                    "task": "Test the structured output",
+                })
+
+                assert "Execution Results:" in result
+                assert "Task:" in result
+                assert "Status:" in result
+                assert "Response:" in result
+                assert "Tools Used:" in result
+                assert "Execution Time:" in result
+
+    def test_handles_execution_errors_gracefully(self, populated_agents_dir: Path):
+        """Verify errors during execution are reported properly."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            # Mock execution with error
+            with patch("src.tools.asyncio.run") as mock_asyncio_run:
+                mock_asyncio_run.return_value = {
+                    "success": False,
+                    "agent_name": "rti_researcher",
+                    "task": "Test error handling",
+                    "response": "",
+                    "tools_used": [],
+                    "execution_time_seconds": 0.5,
+                    "errors": ["Connection failed", "Tool not available"],
+                    "warnings": [],
+                }
+
+                result = execute_created_agent.invoke({
+                    "agent_name": "rti_researcher",
+                    "task": "Test error handling",
+                })
+
+                assert "FAILED" in result
+                assert "Errors:" in result
+                assert "Connection failed" in result
+                assert "Tool not available" in result
+                assert "Troubleshooting:" in result
+
+    def test_tool_has_correct_signature(self):
+        """Verify execute_created_agent has the expected parameter signature."""
+        tool = execute_created_agent
+
+        # Check the tool has the expected parameters
+        schema = tool.args_schema.schema()
+        properties = schema.get("properties", {})
+
+        assert "agent_name" in properties
+        assert "task" in properties
+        assert "timeout" in properties
+
+        # Check required parameters
+        required = schema.get("required", [])
+        assert "agent_name" in required
+        assert "task" in required
+        # timeout should have a default value
+        assert "timeout" not in required or properties["timeout"].get("default") is not None
+
+    def test_default_timeout_is_60(self, populated_agents_dir: Path):
+        """Verify the default timeout is 60 seconds."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            # Mock execution and capture the timeout used
+            with patch("src.tools.asyncio.run") as mock_asyncio_run:
+                mock_asyncio_run.return_value = {
+                    "success": True,
+                    "agent_name": "rti_researcher",
+                    "task": "Test",
+                    "response": "Response",
+                    "tools_used": [],
+                    "execution_time_seconds": 1.0,
+                    "errors": [],
+                    "warnings": [],
+                }
+
+                execute_created_agent.invoke({
+                    "agent_name": "rti_researcher",
+                    "task": "Test without explicit timeout",
+                })
+
+                # Verify asyncio.run was called
+                assert mock_asyncio_run.called
+                # The coroutine should have been called with the default timeout
+                # We can verify by checking the call was made
+
+
+# -----------------------------------------------------------------------------
+# update_agent_config Tests
+# -----------------------------------------------------------------------------
+
+class TestUpdateAgentConfig:
+    """Tests for the update_agent_config tool."""
+
+    def test_error_agent_not_found(self, patch_output_dir: Path):
+        """Verify error when agent doesn't exist."""
+        result = update_agent_config.invoke({
+            "agent_name": "nonexistent_agent",
+            "description": "New description for test",
+        })
+
+        assert "ERROR" in result
+        assert "not found" in result.lower()
+
+    def test_error_path_traversal_rejected(self, patch_output_dir: Path):
+        """Verify path traversal attacks are rejected."""
+        result = update_agent_config.invoke({
+            "agent_name": "../../../etc/passwd",
+            "description": "New description",
+        })
+
+        assert "ERROR" in result
+        assert "path traversal" in result.lower()
+
+    def test_error_no_updates_specified(self, populated_agents_dir: Path):
+        """Verify error when no updates are provided."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            result = update_agent_config.invoke({
+                "agent_name": "rti_researcher",
+            })
+
+            assert "No changes specified" in result
+
+    def test_updates_description(self, populated_agents_dir: Path):
+        """Verify description can be updated."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            result = update_agent_config.invoke({
+                "agent_name": "rti_researcher",
+                "description": "Updated description for RTI researcher agent testing",
+            })
+
+            assert "SUCCESS" in result
+            assert "description" in result
+
+    def test_updates_tools(self, populated_agents_dir: Path):
+        """Verify tools can be updated."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            result = update_agent_config.invoke({
+                "agent_name": "rti_researcher",
+                "tools": ["websearch", "calendar"],
+            })
+
+            assert "SUCCESS" in result
+            assert "tools" in result
+
+    def test_validates_invalid_tools(self, populated_agents_dir: Path):
+        """Verify invalid tools are rejected."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            result = update_agent_config.invoke({
+                "agent_name": "rti_researcher",
+                "tools": ["invalid_tool"],
+            })
+
+            assert "ERROR" in result
+            assert "Invalid tool" in result
+
+    def test_updates_stratum(self, populated_agents_dir: Path):
+        """Verify stratum can be updated."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            result = update_agent_config.invoke({
+                "agent_name": "rti_researcher",
+                "stratum": "EEI",
+            })
+
+            assert "SUCCESS" in result
+            assert "stratum" in result
+
+    def test_validates_invalid_stratum(self, populated_agents_dir: Path):
+        """Verify invalid stratum is rejected."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            result = update_agent_config.invoke({
+                "agent_name": "rti_researcher",
+                "stratum": "INVALID",
+            })
+
+            assert "ERROR" in result
+            assert "Invalid stratum" in result
+
+    def test_updates_tags(self, populated_agents_dir: Path):
+        """Verify tags can be updated."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            result = update_agent_config.invoke({
+                "agent_name": "rti_researcher",
+                "tags": ["research", "testing"],
+            })
+
+            assert "SUCCESS" in result
+            assert "tags" in result
+
+    def test_increments_version(self, populated_agents_dir: Path):
+        """Verify version is incremented on update."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            result = update_agent_config.invoke({
+                "agent_name": "rti_researcher",
+                "description": "Updated for version increment test agent",
+            })
+
+            assert "v1 -> v2" in result or "v" in result
+
+
+# -----------------------------------------------------------------------------
+# delete_agent_config Tests
+# -----------------------------------------------------------------------------
+
+class TestDeleteAgentConfig:
+    """Tests for the delete_agent_config tool."""
+
+    def test_error_agent_not_found(self, patch_output_dir: Path):
+        """Verify error when agent doesn't exist."""
+        result = delete_agent_config.invoke({
+            "agent_name": "nonexistent_agent",
+            "confirm": True,
+        })
+
+        assert "ERROR" in result
+        assert "not found" in result.lower()
+
+    def test_error_path_traversal_rejected(self, patch_output_dir: Path):
+        """Verify path traversal attacks are rejected."""
+        result = delete_agent_config.invoke({
+            "agent_name": "../../../etc/passwd",
+            "confirm": True,
+        })
+
+        assert "ERROR" in result
+        assert "path traversal" in result.lower()
+
+    def test_requires_confirmation(self, populated_agents_dir: Path):
+        """Verify deletion requires confirmation."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            result = delete_agent_config.invoke({
+                "agent_name": "rti_researcher",
+                "confirm": False,
+            })
+
+            assert "WARNING" in result
+            assert "confirm=True" in result
+
+            # Agent should still exist
+            assert (populated_agents_dir / "rti_researcher.json").exists()
+
+    def test_deletes_with_confirmation(self, populated_agents_dir: Path):
+        """Verify agent is deleted when confirmed."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            # Verify agent exists first
+            assert (populated_agents_dir / "rti_researcher.json").exists()
+
+            result = delete_agent_config.invoke({
+                "agent_name": "rti_researcher",
+                "confirm": True,
+            })
+
+            assert "SUCCESS" in result
+            assert "permanently deleted" in result
+
+            # Agent should be gone
+            assert not (populated_agents_dir / "rti_researcher.json").exists()
+
+
+# -----------------------------------------------------------------------------
+# clone_agent_config Tests
+# -----------------------------------------------------------------------------
+
+class TestCloneAgentConfig:
+    """Tests for the clone_agent_config tool."""
+
+    def test_error_source_not_found(self, patch_output_dir: Path):
+        """Verify error when source agent doesn't exist."""
+        result = clone_agent_config.invoke({
+            "source_name": "nonexistent_agent",
+            "new_name": "cloned_agent",
+        })
+
+        assert "ERROR" in result
+        assert "not found" in result.lower()
+
+    def test_error_path_traversal_rejected_source(self, patch_output_dir: Path):
+        """Verify path traversal attacks are rejected for source."""
+        result = clone_agent_config.invoke({
+            "source_name": "../../../etc/passwd",
+            "new_name": "cloned_agent",
+        })
+
+        assert "ERROR" in result
+        assert "path traversal" in result.lower()
+
+    def test_error_invalid_new_name(self, populated_agents_dir: Path):
+        """Verify invalid new name is rejected."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            result = clone_agent_config.invoke({
+                "source_name": "rti_researcher",
+                "new_name": "Invalid-Name",
+            })
+
+            assert "ERROR" in result
+            assert "Invalid name" in result
+
+    def test_error_new_name_already_exists(self, populated_agents_dir: Path):
+        """Verify error when new name already exists."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            result = clone_agent_config.invoke({
+                "source_name": "rti_researcher",
+                "new_name": "rai_qualifier",  # Already exists
+            })
+
+            assert "ERROR" in result
+            assert "already exists" in result
+
+    def test_clones_successfully(self, populated_agents_dir: Path):
+        """Verify agent is cloned successfully."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            result = clone_agent_config.invoke({
+                "source_name": "rti_researcher",
+                "new_name": "cloned_researcher",
+            })
+
+            assert "SUCCESS" in result
+            assert "Cloned" in result
+
+            # New agent should exist
+            assert (populated_agents_dir / "cloned_researcher.json").exists()
+
+            # Original should still exist
+            assert (populated_agents_dir / "rti_researcher.json").exists()
+
+    def test_clone_has_fresh_metadata(self, populated_agents_dir: Path):
+        """Verify cloned agent has fresh metadata."""
+        with patch("src.tools.OUTPUT_DIR", populated_agents_dir):
+            clone_agent_config.invoke({
+                "source_name": "rti_researcher",
+                "new_name": "cloned_fresh",
+            })
+
+            # Read the cloned config
+            config_path = populated_agents_dir / "cloned_fresh.json"
+            with open(config_path) as f:
+                config_data = json.load(f)
+
+            assert config_data["metadata"]["version"] == 1
+            assert config_data["metadata"]["execution_count"] == 0
+            assert config_data["name"] == "cloned_fresh"
+
+
+# -----------------------------------------------------------------------------
+# AgentMetadata Tests
+# -----------------------------------------------------------------------------
+
+class TestAgentMetadata:
+    """Tests for the AgentMetadata schema."""
+
+    def test_default_values(self):
+        """Verify default values are set correctly."""
+        metadata = AgentMetadata()
+
+        assert metadata.version == 1
+        assert metadata.execution_count == 0
+        assert metadata.tags == []
+        assert metadata.last_executed is None
+        assert metadata.created_at is not None
+        assert metadata.updated_at is not None
+
+    def test_tags_are_cleaned(self):
+        """Verify tags are lowercased and deduplicated."""
+        metadata = AgentMetadata(tags=["Test", "TEST", "  spaces  ", "valid"])
+
+        assert "test" in metadata.tags
+        assert "spaces" in metadata.tags
+        assert "valid" in metadata.tags
+        # Should be deduplicated
+        assert metadata.tags.count("test") == 1

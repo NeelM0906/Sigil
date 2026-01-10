@@ -37,9 +37,21 @@ from .mcp_integration import (
     MCPConnectionError,
     MCPTimeoutError,
 )
+from .tools import (
+    BUILDER_TOOLS,
+    execute_created_agent,
+    execute_created_agent_async,
+)
+
+# CLI entry point (lazy import to avoid circular dependencies)
+def run_cli():
+    """Run the interactive CLI."""
+    from .cli import main
+    main()
 
 __all__ = [
     "create_builder",
+    "run_cli",
     "__version__",
     # Tool registry exports
     "MCP_SERVERS",
@@ -62,4 +74,8 @@ __all__ = [
     "MCPCredentialError",
     "MCPConnectionError",
     "MCPTimeoutError",
+    # Builder tools exports
+    "BUILDER_TOOLS",
+    "execute_created_agent",
+    "execute_created_agent_async",
 ]

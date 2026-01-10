@@ -226,6 +226,7 @@ def populated_agents_dir(temp_agents_dir: Path, valid_agent_config: AgentConfig)
             "system_prompt": "You are a research agent specializing in fact verification "
                              "and comprehensive data gathering for decision support.",
             "tools": ["websearch", "crm"],
+            "model": "anthropic:claude-opus-4-5-20251101",
             "stratum": "RTI",
             "_metadata": {"created_at": "2025-01-09T10:00:00Z", "version": "1.0.0"},
         },
@@ -235,6 +236,7 @@ def populated_agents_dir(temp_agents_dir: Path, valid_agent_config: AgentConfig)
             "system_prompt": "You are a lead qualification specialist who builds rapport "
                              "and assesses budget, authority, need, and timeline.",
             "tools": ["communication", "crm"],
+            "model": "anthropic:claude-opus-4-5-20251101",
             "stratum": "RAI",
             "_metadata": {"created_at": "2025-01-09T11:00:00Z", "version": "1.0.0"},
         },
@@ -244,6 +246,7 @@ def populated_agents_dir(temp_agents_dir: Path, valid_agent_config: AgentConfig)
             "system_prompt": "You are an appointment scheduler who manages calendar "
                              "availability and coordinates meeting times efficiently.",
             "tools": ["calendar", "communication"],
+            "model": "anthropic:claude-opus-4-5-20251101",
             "stratum": "ZACS",
             "_metadata": {"created_at": "2025-01-09T12:00:00Z", "version": "1.0.0"},
         },

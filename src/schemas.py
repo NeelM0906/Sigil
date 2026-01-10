@@ -7,12 +7,58 @@ and ACTi methodology classifications.
 from __future__ import annotations
 
 import re
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
 from .prompts import DEFAULT_MODEL
+
+
+class AgentMetadata(BaseModel):
+    """Metadata for tracking agent lifecycle and usage.
+
+    This metadata is automatically managed by the persistence layer
+    and provides tracking for creation, updates, execution, and versioning.
+    """
+    created_at: str = Field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat(),
+        description="ISO timestamp when the agent was created",
+    )
+    updated_at: str = Field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat(),
+        description="ISO timestamp of the last update",
+    )
+    last_executed: Optional[str] = Field(
+        default=None,
+        description="ISO timestamp of the last execution",
+    )
+    version: int = Field(
+        default=1,
+        ge=1,
+        description="Version number, incremented on each update",
+    )
+    execution_count: int = Field(
+        default=0,
+        ge=0,
+        description="Total number of times this agent has been executed",
+    )
+    tags: list[str] = Field(
+        default_factory=list,
+        description="Tags for categorization and filtering",
+    )
+
+    @field_validator("tags")
+    @classmethod
+    def validate_tags(cls, v: list[str]) -> list[str]:
+        """Validate tags are non-empty strings."""
+        validated = []
+        for tag in v:
+            tag = tag.strip().lower()
+            if tag and len(tag) <= 50:
+                validated.append(tag)
+        return list(set(validated))  # Remove duplicates
 
 
 class Stratum(str, Enum):
@@ -81,6 +127,10 @@ class AgentConfig(BaseModel):
     stratum: Optional[Stratum] = Field(
         default=None,
         description="ACTi stratum classification for the agent's primary function",
+    )
+    metadata: Optional[AgentMetadata] = Field(
+        default=None,
+        description="Agent lifecycle metadata (auto-populated on creation/update)",
     )
 
     @field_validator("name")
@@ -234,6 +284,7 @@ class ToolListResponse(BaseModel):
 __all__ = [
     "Stratum",
     "MCP_TOOL_CATEGORIES",
+    "AgentMetadata",
     "AgentConfig",
     "CreateAgentRequest",
     "RunAgentRequest",

@@ -16,6 +16,7 @@ Tools Provided:
     list_available_tools: Returns available MCP tool categories with guidance
     get_agent_config: Retrieves a saved agent configuration by name
     list_created_agents: Lists all previously created agent configurations
+    execute_created_agent: Executes a task with a created agent using real MCP tools
 """
 
 from __future__ import annotations
@@ -23,18 +24,20 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import aiofiles
 import portalocker
 from langchain_core.tools import tool
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from pydantic import ValidationError
 
 from .prompts import DEFAULT_MODEL
-from .schemas import AgentConfig, MCP_TOOL_CATEGORIES, Stratum
+from .schemas import AgentConfig, AgentMetadata, MCP_TOOL_CATEGORIES, Stratum
 
 # Configure module logger
 logger = logging.getLogger(__name__)
@@ -97,22 +100,123 @@ def _generate_filename(agent_name: str, include_timestamp: bool = False) -> str:
     return f"{agent_name}.json"
 
 
-def _serialize_config_with_metadata(config: AgentConfig) -> dict:
+def _serialize_config_with_metadata(config: AgentConfig, existing_metadata: Optional[AgentMetadata] = None) -> dict:
     """Serialize an AgentConfig with additional metadata.
 
     Args:
         config: The AgentConfig to serialize.
+        existing_metadata: Optional existing metadata to preserve (for updates).
 
     Returns:
         Dictionary with config data and metadata fields.
     """
-    data = config.model_dump(mode="json")
+    now = datetime.now(timezone.utc).isoformat()
+
+    # Create or update metadata
+    if existing_metadata:
+        # Update existing metadata
+        metadata = AgentMetadata(
+            created_at=existing_metadata.created_at,
+            updated_at=now,
+            last_executed=existing_metadata.last_executed,
+            version=existing_metadata.version + 1,
+            execution_count=existing_metadata.execution_count,
+            tags=existing_metadata.tags,
+        )
+    elif config.metadata:
+        # Use config's metadata but update timestamps
+        metadata = AgentMetadata(
+            created_at=config.metadata.created_at,
+            updated_at=now,
+            last_executed=config.metadata.last_executed,
+            version=config.metadata.version,
+            execution_count=config.metadata.execution_count,
+            tags=config.metadata.tags,
+        )
+    else:
+        # Create new metadata
+        metadata = AgentMetadata(
+            created_at=now,
+            updated_at=now,
+        )
+
+    # Serialize config and include metadata
+    data = config.model_dump(mode="json", exclude={"metadata"})
+    data["metadata"] = metadata.model_dump(mode="json")
+
+    # Also keep legacy _metadata for backward compatibility
     data["_metadata"] = {
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": metadata.created_at,
         "version": "1.0.0",
         "builder": "acti-agent-builder",
     }
     return data
+
+
+def _load_agent_metadata(config_data: dict) -> Optional[AgentMetadata]:
+    """Load metadata from a config dict, supporting both old and new formats.
+
+    Args:
+        config_data: The loaded config dictionary.
+
+    Returns:
+        AgentMetadata if available, None otherwise.
+    """
+    # Try new format first
+    if "metadata" in config_data and config_data["metadata"]:
+        try:
+            return AgentMetadata(**config_data["metadata"])
+        except (ValidationError, TypeError):
+            pass
+
+    # Fall back to legacy _metadata format
+    if "_metadata" in config_data:
+        legacy = config_data["_metadata"]
+        return AgentMetadata(
+            created_at=legacy.get("created_at", datetime.now(timezone.utc).isoformat()),
+            updated_at=legacy.get("created_at", datetime.now(timezone.utc).isoformat()),
+            version=1,
+            execution_count=0,
+            tags=[],
+        )
+
+    return None
+
+
+def _update_execution_metadata(config_path: Path) -> None:
+    """Update execution metadata after running an agent.
+
+    Args:
+        config_path: Path to the agent config file.
+    """
+    try:
+        content = _read_config_safely(config_path)
+        config_data = json.loads(content)
+
+        now = datetime.now(timezone.utc).isoformat()
+
+        # Update metadata
+        if "metadata" in config_data and config_data["metadata"]:
+            config_data["metadata"]["last_executed"] = now
+            config_data["metadata"]["execution_count"] = config_data["metadata"].get("execution_count", 0) + 1
+            config_data["metadata"]["updated_at"] = now
+        else:
+            # Create metadata if missing
+            config_data["metadata"] = {
+                "created_at": config_data.get("_metadata", {}).get("created_at", now),
+                "updated_at": now,
+                "last_executed": now,
+                "version": 1,
+                "execution_count": 1,
+                "tags": [],
+            }
+
+        # Write back
+        content = json.dumps(config_data, indent=2, ensure_ascii=False)
+        _write_config_safely(config_path, content)
+
+    except (json.JSONDecodeError, OSError, portalocker.LockException) as e:
+        logger.warning(f"Failed to update execution metadata for {config_path}: {e}")
 
 
 # -----------------------------------------------------------------------------
@@ -788,12 +892,790 @@ def list_created_agents() -> str:
     return "\n".join(lines)
 
 
+# -----------------------------------------------------------------------------
+# Agent Execution Tool (Phase 2.5)
+# -----------------------------------------------------------------------------
+
+
+def _extract_tool_calls_from_messages(messages: list[Any]) -> list[dict[str, Any]]:
+    """Extract tool call information from agent response messages.
+
+    Args:
+        messages: List of LangChain message objects from agent response.
+
+    Returns:
+        List of dictionaries containing tool call details.
+    """
+    tool_calls = []
+    for msg in messages:
+        # Check for tool calls in AI messages
+        if hasattr(msg, 'tool_calls') and msg.tool_calls:
+            for tc in msg.tool_calls:
+                tool_calls.append({
+                    "tool_name": tc.get("name", "unknown"),
+                    "arguments": tc.get("args", {}),
+                    "id": tc.get("id", ""),
+                })
+        # Check for tool results in ToolMessages
+        if isinstance(msg, ToolMessage):
+            # Find the matching tool call and add result
+            for tc in tool_calls:
+                if hasattr(msg, 'tool_call_id') and tc.get("id") == msg.tool_call_id:
+                    tc["result"] = msg.content[:500] if len(msg.content) > 500 else msg.content
+                    break
+    return tool_calls
+
+
+async def _execute_agent_async(
+    agent_config: AgentConfig,
+    task: str,
+    timeout: float,
+) -> dict[str, Any]:
+    """Execute an agent with a task asynchronously.
+
+    Args:
+        agent_config: The agent configuration to instantiate.
+        task: The task/message to send to the agent.
+        timeout: Maximum execution time in seconds.
+
+    Returns:
+        Dictionary with execution results including response, tools used, and timing.
+    """
+    from .mcp_integration import (
+        create_agent_with_tools,
+        MCPIntegrationError,
+    )
+
+    start_time = time.time()
+    result: dict[str, Any] = {
+        "success": False,
+        "agent_name": agent_config.name,
+        "task": task,
+        "response": "",
+        "tools_used": [],
+        "execution_time_seconds": 0.0,
+        "errors": [],
+        "warnings": [],
+    }
+
+    try:
+        # Create the agent with MCP tools (skip unavailable tools gracefully)
+        agent = await asyncio.wait_for(
+            create_agent_with_tools(agent_config, skip_unavailable=True, timeout=timeout / 2),
+            timeout=timeout / 2,
+        )
+
+        # Invoke the agent with the task
+        response = await asyncio.wait_for(
+            agent.ainvoke({
+                "messages": [HumanMessage(content=task)]
+            }),
+            timeout=timeout / 2,
+        )
+
+        # Extract the final response message
+        messages = response.get("messages", [])
+        if messages:
+            final_message = messages[-1]
+            if hasattr(final_message, 'content'):
+                result["response"] = final_message.content
+            else:
+                result["response"] = str(final_message)
+
+            # Extract tool calls from the conversation
+            result["tools_used"] = _extract_tool_calls_from_messages(messages)
+
+        result["success"] = True
+
+    except asyncio.TimeoutError:
+        result["errors"].append(f"Execution timed out after {timeout} seconds")
+    except MCPIntegrationError as e:
+        result["errors"].append(f"MCP integration error: {str(e)}")
+    except Exception as e:
+        logger.error(f"Agent execution failed: {e}", exc_info=True)
+        result["errors"].append(f"Execution error: {str(e)}")
+
+    result["execution_time_seconds"] = round(time.time() - start_time, 2)
+    return result
+
+
+@tool
+def execute_created_agent(agent_name: str, task: str, timeout: int = 60) -> str:
+    """Execute a task with a created agent using real MCP tools.
+
+    Use this tool to TEST agents immediately after creating them. This allows
+    you to verify that an agent works correctly by giving it a real task to
+    execute with its configured MCP tools.
+
+    The agent will be instantiated with all available MCP tools from its
+    configuration and then invoked with the provided task message.
+
+    IMPORTANT: This executes the agent with REAL tool integrations. Any actions
+    the agent takes (sending messages, making calls, scheduling events) will
+    have real-world effects.
+
+    Args:
+        agent_name: Name of the agent to execute (must exist in outputs/agents/).
+            Use list_created_agents() to see available agents.
+            Example: "lead_qualifier", "appointment_scheduler"
+
+        task: The task or message to send to the agent.
+            This should be a realistic prompt that exercises the agent's capabilities.
+            Example: "Qualify this lead: John Smith, CEO of Acme Corp, interested in
+            our enterprise plan, budget around $50k"
+
+        timeout: Maximum time in seconds for execution (default 60).
+            Increase for complex tasks or slow tool integrations.
+            Range: 10-300 seconds recommended.
+
+    Returns:
+        A structured result containing:
+        - Agent's response to the task
+        - List of tools used during execution (with arguments and results)
+        - Execution time in seconds
+        - Any errors or warnings encountered
+
+        If the agent is not found or execution fails, returns an error message
+        with guidance on how to resolve the issue.
+
+    Example:
+        >>> # First create an agent
+        >>> create_agent_config(
+        ...     name="web_researcher",
+        ...     description="Researches topics using web search",
+        ...     system_prompt="You are a research assistant...",
+        ...     tools=["websearch"],
+        ...     stratum="RTI"
+        ... )
+        "SUCCESS: Agent configuration created..."
+
+        >>> # Then test it immediately
+        >>> execute_created_agent(
+        ...     agent_name="web_researcher",
+        ...     task="Find the current CEO of Microsoft and their background"
+        ... )
+        "Execution Results: web_researcher
+        ========================================
+
+        Task: Find the current CEO of Microsoft and their background
+
+        Status: SUCCESS
+
+        Response:
+        Based on my research, the current CEO of Microsoft is Satya Nadella...
+
+        Tools Used:
+          1. tavily_search
+             Arguments: {\"query\": \"Microsoft CEO current\"}
+             Result: Found information about Satya Nadella...
+
+        Execution Time: 3.45 seconds"
+
+    Notes:
+        - Agents with missing MCP credentials will execute with available tools only
+        - Warnings about unavailable tools will be included in the output
+        - For long-running tasks, increase the timeout parameter
+        - Use this to validate agent behavior before deploying to production
+    """
+    # Validate path to prevent directory traversal attacks
+    config_path = (OUTPUT_DIR / f"{agent_name}.json").resolve()
+    if not str(config_path).startswith(str(OUTPUT_DIR.resolve())):
+        return "ERROR: Invalid agent name - path traversal detected"
+
+    # Check if agent exists
+    if not config_path.exists():
+        # List available agents to help the user
+        try:
+            _ensure_output_dir()
+            available = sorted(OUTPUT_DIR.glob("*.json"))
+            if available:
+                agent_names = [p.stem for p in available]
+                return (
+                    f"ERROR: Agent '{agent_name}' not found.\n\n"
+                    f"Available agents ({len(agent_names)}):\n"
+                    + "\n".join(f"  - {n}" for n in agent_names)
+                    + "\n\nUse one of the names above, or create a new agent with create_agent_config()."
+                )
+        except OSError:
+            pass
+        return (
+            f"ERROR: Agent '{agent_name}' not found.\n\n"
+            f"No agents have been created yet. Use create_agent_config() to create one first."
+        )
+
+    # Load the agent configuration
+    try:
+        content = _read_config_safely(config_path)
+        config_data = json.loads(content)
+
+        # Remove metadata before parsing as AgentConfig
+        config_data.pop("_metadata", None)
+
+        agent_config = AgentConfig(**config_data)
+
+    except json.JSONDecodeError as e:
+        logger.warning(f"Corrupted JSON in agent config {config_path}: {e}")
+        return f"ERROR: Failed to parse agent config file (corrupted JSON): {e}"
+
+    except ValidationError as e:
+        error_details = _format_validation_error(e)
+        return (
+            f"ERROR: Agent configuration validation failed.\n\n"
+            f"Validation errors:\n{error_details}\n\n"
+            f"The saved agent config may be corrupted or incompatible."
+        )
+
+    except (OSError, portalocker.LockException) as e:
+        logger.error(f"Failed to read agent config file {config_path}: {e}")
+        return f"ERROR: Failed to read agent config file: {e}"
+
+    # Validate timeout
+    if timeout < 5:
+        return "ERROR: Timeout must be at least 5 seconds."
+    if timeout > 600:
+        return "ERROR: Timeout cannot exceed 600 seconds (10 minutes)."
+
+    # Execute the agent
+    logger.info(f"Executing agent '{agent_name}' with task: {task[:100]}...")
+
+    try:
+        result = asyncio.run(_execute_agent_async(agent_config, task, float(timeout)))
+    except RuntimeError as e:
+        # Handle case where event loop is already running
+        if "cannot be called from a running event loop" in str(e):
+            import nest_asyncio
+            nest_asyncio.apply()
+            result = asyncio.run(_execute_agent_async(agent_config, task, float(timeout)))
+        else:
+            raise
+
+    # Update execution metadata on success
+    if result["success"]:
+        _update_execution_metadata(config_path)
+
+    # Format the output
+    lines = [
+        f"Execution Results: {agent_name}",
+        "=" * 50,
+        "",
+        f"Task: {task}",
+        "",
+        f"Status: {'SUCCESS' if result['success'] else 'FAILED'}",
+        "",
+    ]
+
+    # Add response
+    if result["response"]:
+        lines.append("Response:")
+        # Indent the response for readability
+        response_lines = result["response"].split("\n")
+        for line in response_lines:
+            lines.append(f"  {line}")
+        lines.append("")
+
+    # Add tools used
+    if result["tools_used"]:
+        lines.append("Tools Used:")
+        for i, tool_info in enumerate(result["tools_used"], 1):
+            lines.append(f"  {i}. {tool_info.get('tool_name', 'unknown')}")
+            if tool_info.get("arguments"):
+                args_str = json.dumps(tool_info["arguments"], indent=4)
+                # Indent each line of the JSON
+                for arg_line in args_str.split("\n"):
+                    lines.append(f"       {arg_line}")
+            if tool_info.get("result"):
+                lines.append(f"     Result: {tool_info['result'][:200]}...")
+        lines.append("")
+    else:
+        lines.append("Tools Used: None")
+        lines.append("")
+
+    # Add timing
+    lines.append(f"Execution Time: {result['execution_time_seconds']} seconds")
+    lines.append("")
+
+    # Add errors if any
+    if result["errors"]:
+        lines.append("Errors:")
+        for error in result["errors"]:
+            lines.append(f"  - {error}")
+        lines.append("")
+
+    # Add warnings if any
+    if result["warnings"]:
+        lines.append("Warnings:")
+        for warning in result["warnings"]:
+            lines.append(f"  - {warning}")
+        lines.append("")
+
+    # Add next steps
+    if result["success"]:
+        lines.extend([
+            "=" * 50,
+            "The agent executed successfully. You can:",
+            f"  - Run another task: execute_created_agent('{agent_name}', '<new task>')",
+            f"  - Review config: get_agent_config('{agent_name}')",
+            "  - Create a new agent: create_agent_config(...)",
+        ])
+    else:
+        lines.extend([
+            "=" * 50,
+            "Troubleshooting:",
+            f"  - Review agent config: get_agent_config('{agent_name}')",
+            "  - Check MCP tool credentials in .env file",
+            "  - Try increasing the timeout for slow operations",
+            "  - Simplify the task to isolate the issue",
+        ])
+
+    return "\n".join(lines)
+
+
+# -----------------------------------------------------------------------------
+# Agent CRUD Tools (Phase 2.5.4)
+# -----------------------------------------------------------------------------
+
+
+@tool
+def update_agent_config(
+    agent_name: str,
+    description: Optional[str] = None,
+    system_prompt: Optional[str] = None,
+    tools: Optional[list[str]] = None,
+    stratum: Optional[str] = None,
+    tags: Optional[list[str]] = None,
+) -> str:
+    """Update an existing agent's configuration.
+
+    Use this tool to modify an agent that has already been created. Only the
+    fields you provide will be updated; other fields remain unchanged. The
+    version number is automatically incremented on each update.
+
+    Args:
+        agent_name: Name of the agent to update (must exist in outputs/agents/).
+            Use list_created_agents() to see available agents.
+            Example: "lead_qualifier", "appointment_scheduler"
+
+        description: New description for the agent (10-500 characters).
+            If not provided, the existing description is preserved.
+
+        system_prompt: New system prompt for the agent (minimum 50 characters).
+            If not provided, the existing system prompt is preserved.
+
+        tools: New list of MCP tool category names.
+            Valid options: "voice", "websearch", "calendar", "communication", "crm"
+            If not provided, the existing tools are preserved.
+
+        stratum: New ACTi stratum classification.
+            Valid values: "RTI", "RAI", "ZACS", "EEI", "IGE"
+            If not provided, the existing stratum is preserved.
+
+        tags: New list of tags for categorization.
+            Tags are automatically lowercased and deduplicated.
+            If not provided, existing tags are preserved.
+
+    Returns:
+        On success: Confirmation message with updated fields and new version.
+        On failure: Error message describing what went wrong.
+
+    Example:
+        >>> update_agent_config(
+        ...     agent_name="lead_qualifier",
+        ...     description="Updated: Qualifies leads with enhanced BANT criteria",
+        ...     tags=["sales", "qualification"]
+        ... )
+        "SUCCESS: Agent 'lead_qualifier' updated (v1 -> v2)
+        ..."
+    """
+    # Validate path to prevent directory traversal attacks
+    config_path = (OUTPUT_DIR / f"{agent_name}.json").resolve()
+    if not str(config_path).startswith(str(OUTPUT_DIR.resolve())):
+        return "ERROR: Invalid agent name - path traversal detected"
+
+    if not config_path.exists():
+        # List available agents to help the user
+        try:
+            _ensure_output_dir()
+            available = sorted(OUTPUT_DIR.glob("*.json"))
+            if available:
+                agent_names = [p.stem for p in available]
+                return (
+                    f"ERROR: Agent '{agent_name}' not found.\n\n"
+                    f"Available agents ({len(agent_names)}):\n"
+                    + "\n".join(f"  - {n}" for n in agent_names)
+                    + "\n\nUse one of the names above, or create a new agent with create_agent_config()."
+                )
+        except OSError:
+            pass
+        return (
+            f"ERROR: Agent '{agent_name}' not found.\n\n"
+            f"No agents have been created yet. Use create_agent_config() to create one."
+        )
+
+    # Load existing configuration
+    try:
+        content = _read_config_safely(config_path)
+        config_data = json.loads(content)
+    except json.JSONDecodeError as e:
+        return f"ERROR: Failed to parse agent config file (corrupted JSON): {e}"
+    except (OSError, portalocker.LockException) as e:
+        return f"ERROR: Failed to read agent config file: {e}"
+
+    # Load existing metadata
+    existing_metadata = _load_agent_metadata(config_data)
+    old_version = existing_metadata.version if existing_metadata else 1
+
+    # Track what fields are being updated
+    updates = []
+
+    # Update description if provided
+    if description is not None:
+        if len(description) < 10 or len(description) > 500:
+            return "ERROR: description must be 10-500 characters"
+        config_data["description"] = description
+        updates.append("description")
+
+    # Update system_prompt if provided
+    if system_prompt is not None:
+        if len(system_prompt) < 50:
+            return "ERROR: system_prompt must be at least 50 characters"
+        config_data["system_prompt"] = system_prompt
+        updates.append("system_prompt")
+
+    # Update tools if provided
+    if tools is not None:
+        invalid_tools = [t for t in tools if t not in MCP_TOOL_CATEGORIES]
+        if invalid_tools:
+            valid_tools = ", ".join(MCP_TOOL_CATEGORIES.keys())
+            return (
+                f"ERROR: Invalid tool(s): {invalid_tools}.\n"
+                f"Valid options: {valid_tools}"
+            )
+        config_data["tools"] = tools
+        updates.append("tools")
+
+    # Update stratum if provided
+    if stratum is not None:
+        try:
+            stratum_enum = Stratum(stratum.upper())
+            config_data["stratum"] = stratum_enum.value
+            updates.append("stratum")
+        except ValueError:
+            valid_strata = ", ".join(s.value for s in Stratum)
+            return (
+                f"ERROR: Invalid stratum '{stratum}'.\n"
+                f"Valid options: {valid_strata}"
+            )
+
+    # Update tags if provided
+    if tags is not None:
+        # Validate and clean tags
+        clean_tags = []
+        for tag in tags:
+            tag = tag.strip().lower()
+            if tag and len(tag) <= 50:
+                clean_tags.append(tag)
+        clean_tags = list(set(clean_tags))  # Remove duplicates
+
+        # Update in metadata
+        if "metadata" not in config_data or config_data["metadata"] is None:
+            config_data["metadata"] = {}
+        config_data["metadata"]["tags"] = clean_tags
+        updates.append("tags")
+
+    if not updates:
+        return (
+            f"No changes specified for agent '{agent_name}'.\n\n"
+            f"Provide at least one of: description, system_prompt, tools, stratum, tags"
+        )
+
+    # Update metadata version and timestamp
+    now = datetime.now(timezone.utc).isoformat()
+    if "metadata" not in config_data or config_data["metadata"] is None:
+        config_data["metadata"] = {
+            "created_at": config_data.get("_metadata", {}).get("created_at", now),
+            "updated_at": now,
+            "last_executed": None,
+            "version": old_version + 1,
+            "execution_count": 0,
+            "tags": [],
+        }
+    else:
+        config_data["metadata"]["updated_at"] = now
+        config_data["metadata"]["version"] = old_version + 1
+
+    # Write back
+    try:
+        content = json.dumps(config_data, indent=2, ensure_ascii=False)
+        _write_config_safely(config_path, content)
+        logger.info(f"Updated agent configuration: {agent_name} (v{old_version} -> v{old_version + 1})")
+    except (OSError, portalocker.LockException) as e:
+        return f"ERROR: Failed to save updated configuration: {e}"
+
+    new_version = old_version + 1
+    updates_str = ", ".join(updates)
+
+    return (
+        f"SUCCESS: Agent '{agent_name}' updated (v{old_version} -> v{new_version})\n\n"
+        f"Updated fields: {updates_str}\n\n"
+        f"Use get_agent_config('{agent_name}') to review the full configuration."
+    )
+
+
+@tool
+def delete_agent_config(agent_name: str, confirm: bool = False) -> str:
+    """Delete an agent configuration permanently.
+
+    Use this tool to remove an agent that is no longer needed. This action
+    is IRREVERSIBLE - the agent configuration will be permanently deleted.
+
+    IMPORTANT: You must set confirm=True to actually delete the agent.
+    This is a safety measure to prevent accidental deletions.
+
+    Args:
+        agent_name: Name of the agent to delete (must exist in outputs/agents/).
+            Use list_created_agents() to see available agents.
+
+        confirm: Safety confirmation flag. Must be True to proceed with deletion.
+            Example: delete_agent_config("old_agent", confirm=True)
+
+    Returns:
+        On success (confirm=True): Confirmation that agent was deleted.
+        On confirm=False: Warning message asking for confirmation.
+        On failure: Error message describing what went wrong.
+
+    Example:
+        >>> delete_agent_config("test_agent")
+        "WARNING: This will permanently delete agent 'test_agent'.
+        To confirm, call: delete_agent_config('test_agent', confirm=True)"
+
+        >>> delete_agent_config("test_agent", confirm=True)
+        "SUCCESS: Agent 'test_agent' has been permanently deleted."
+    """
+    # Validate path to prevent directory traversal attacks
+    config_path = (OUTPUT_DIR / f"{agent_name}.json").resolve()
+    if not str(config_path).startswith(str(OUTPUT_DIR.resolve())):
+        return "ERROR: Invalid agent name - path traversal detected"
+
+    if not config_path.exists():
+        # List available agents to help the user
+        try:
+            _ensure_output_dir()
+            available = sorted(OUTPUT_DIR.glob("*.json"))
+            if available:
+                agent_names = [p.stem for p in available]
+                return (
+                    f"ERROR: Agent '{agent_name}' not found.\n\n"
+                    f"Available agents ({len(agent_names)}):\n"
+                    + "\n".join(f"  - {n}" for n in agent_names)
+                )
+        except OSError:
+            pass
+        return f"ERROR: Agent '{agent_name}' not found."
+
+    # Require confirmation
+    if not confirm:
+        # Load metadata to show what's being deleted
+        try:
+            content = _read_config_safely(config_path)
+            config_data = json.loads(content)
+            description = config_data.get("description", "No description")
+            metadata = _load_agent_metadata(config_data)
+            exec_count = metadata.execution_count if metadata else 0
+            version = metadata.version if metadata else 1
+
+            return (
+                f"WARNING: This will permanently delete agent '{agent_name}'.\n\n"
+                f"Agent details:\n"
+                f"  Description: {description[:100]}...\n"
+                f"  Version: {version}\n"
+                f"  Execution count: {exec_count}\n\n"
+                f"To confirm deletion, call:\n"
+                f"  delete_agent_config('{agent_name}', confirm=True)"
+            )
+        except (json.JSONDecodeError, OSError):
+            return (
+                f"WARNING: This will permanently delete agent '{agent_name}'.\n\n"
+                f"To confirm deletion, call:\n"
+                f"  delete_agent_config('{agent_name}', confirm=True)"
+            )
+
+    # Perform deletion
+    try:
+        config_path.unlink()
+        logger.info(f"Deleted agent configuration: {agent_name}")
+        return (
+            f"SUCCESS: Agent '{agent_name}' has been permanently deleted.\n\n"
+            f"Use list_created_agents() to see remaining agents."
+        )
+    except OSError as e:
+        logger.error(f"Failed to delete agent config {config_path}: {e}")
+        return f"ERROR: Failed to delete agent: {e}"
+
+
+@tool
+def clone_agent_config(source_name: str, new_name: str) -> str:
+    """Create a copy of an existing agent with a new name.
+
+    Use this tool to create a new agent based on an existing one. This is useful
+    for:
+    - Creating variations of a successful agent
+    - Testing modifications without affecting the original
+    - Creating specialized versions for different use cases
+
+    The cloned agent will have:
+    - All configuration from the source agent
+    - A new name (as specified)
+    - Fresh metadata (version=1, execution_count=0, new timestamps)
+
+    Args:
+        source_name: Name of the agent to clone (must exist).
+            Use list_created_agents() to see available agents.
+
+        new_name: Name for the new cloned agent.
+            Must be snake_case (lowercase, numbers, underscores, starts with letter).
+            Must not already exist.
+
+    Returns:
+        On success: Confirmation message with the new agent's file path.
+        On failure: Error message describing what went wrong.
+
+    Example:
+        >>> clone_agent_config("lead_qualifier", "lead_qualifier_v2")
+        "SUCCESS: Cloned 'lead_qualifier' to 'lead_qualifier_v2'
+
+        The new agent has:
+          - Fresh metadata (version 1, execution count 0)
+          - Same configuration as the original
+
+        Saved to: /path/to/outputs/agents/lead_qualifier_v2.json
+
+        Use update_agent_config('lead_qualifier_v2', ...) to customize."
+    """
+    import re
+
+    # Validate source path
+    source_path = (OUTPUT_DIR / f"{source_name}.json").resolve()
+    if not str(source_path).startswith(str(OUTPUT_DIR.resolve())):
+        return "ERROR: Invalid source agent name - path traversal detected"
+
+    # Validate new name format
+    if not re.match(r"^[a-z][a-z0-9_]*$", new_name):
+        return (
+            f"ERROR: Invalid name '{new_name}'.\n\n"
+            f"Name must be snake_case: lowercase letters, numbers, "
+            f"and underscores only, starting with a letter.\n"
+            f"Examples: 'lead_qualifier_v2', 'new_appointment_scheduler'"
+        )
+
+    if len(new_name) > 64:
+        return "ERROR: Name must be 64 characters or less."
+
+    # Validate new path
+    new_path = (OUTPUT_DIR / f"{new_name}.json").resolve()
+    if not str(new_path).startswith(str(OUTPUT_DIR.resolve())):
+        return "ERROR: Invalid new agent name - path traversal detected"
+
+    # Check source exists
+    if not source_path.exists():
+        try:
+            _ensure_output_dir()
+            available = sorted(OUTPUT_DIR.glob("*.json"))
+            if available:
+                agent_names = [p.stem for p in available]
+                return (
+                    f"ERROR: Source agent '{source_name}' not found.\n\n"
+                    f"Available agents ({len(agent_names)}):\n"
+                    + "\n".join(f"  - {n}" for n in agent_names)
+                )
+        except OSError:
+            pass
+        return f"ERROR: Source agent '{source_name}' not found."
+
+    # Check new name doesn't exist
+    if new_path.exists():
+        return (
+            f"ERROR: Agent '{new_name}' already exists.\n\n"
+            f"Choose a different name or delete the existing agent first:\n"
+            f"  delete_agent_config('{new_name}', confirm=True)"
+        )
+
+    # Load source configuration
+    try:
+        content = _read_config_safely(source_path)
+        config_data = json.loads(content)
+    except json.JSONDecodeError as e:
+        return f"ERROR: Failed to parse source agent config (corrupted JSON): {e}"
+    except (OSError, portalocker.LockException) as e:
+        return f"ERROR: Failed to read source agent config: {e}"
+
+    # Update for new agent
+    config_data["name"] = new_name
+
+    # Create fresh metadata
+    now = datetime.now(timezone.utc).isoformat()
+    config_data["metadata"] = {
+        "created_at": now,
+        "updated_at": now,
+        "last_executed": None,
+        "version": 1,
+        "execution_count": 0,
+        "tags": config_data.get("metadata", {}).get("tags", []) if isinstance(config_data.get("metadata"), dict) else [],
+    }
+
+    # Update legacy _metadata
+    config_data["_metadata"] = {
+        "created_at": now,
+        "version": "1.0.0",
+        "builder": "acti-agent-builder",
+    }
+
+    # Save new agent
+    try:
+        _ensure_output_dir()
+        content = json.dumps(config_data, indent=2, ensure_ascii=False)
+        _write_config_safely(new_path, content)
+        logger.info(f"Cloned agent '{source_name}' to '{new_name}'")
+    except (OSError, portalocker.LockException) as e:
+        return f"ERROR: Failed to save cloned agent: {e}"
+
+    return (
+        f"SUCCESS: Cloned '{source_name}' to '{new_name}'\n\n"
+        f"The new agent has:\n"
+        f"  - Fresh metadata (version 1, execution count 0)\n"
+        f"  - Same configuration as the original\n\n"
+        f"Saved to: {new_path.absolute()}\n\n"
+        f"Use update_agent_config('{new_name}', ...) to customize."
+    )
+
+
+async def execute_created_agent_async(agent_name: str, task: str, timeout: int = 60) -> str:
+    """Async variant of execute_created_agent for FastAPI integration.
+
+    Args:
+        agent_name: Name of the agent to execute.
+        task: The task/message to send to the agent.
+        timeout: Maximum execution time in seconds.
+
+    Returns:
+        Structured result string with execution details.
+    """
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(
+        _executor,
+        lambda: execute_created_agent.func(agent_name, task, timeout)
+    )
+
+
 # Export all tools for easy importing
 BUILDER_TOOLS = [
     create_agent_config,
     list_available_tools,
     get_agent_config,
     list_created_agents,
+    execute_created_agent,
+    update_agent_config,
+    delete_agent_config,
+    clone_agent_config,
 ]
 
 # Async variants for FastAPI integration
@@ -801,6 +1683,7 @@ ASYNC_TOOLS = {
     "get_agent_config": get_agent_config_async,
     "create_agent_config": create_agent_config_async,
     "list_created_agents": list_created_agents_async,
+    "execute_created_agent": execute_created_agent_async,
 }
 
 __all__ = [
@@ -810,7 +1693,12 @@ __all__ = [
     "list_available_tools",
     "get_agent_config",
     "list_created_agents",
+    "execute_created_agent",
+    "update_agent_config",
+    "delete_agent_config",
+    "clone_agent_config",
     "get_agent_config_async",
     "create_agent_config_async",
     "list_created_agents_async",
+    "execute_created_agent_async",
 ]
