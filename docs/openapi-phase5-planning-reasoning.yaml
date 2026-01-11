@@ -1,0 +1,1562 @@
+openapi: 3.1.0
+info:
+  title: Sigil v2 Phase 5 - Planning & Reasoning API
+  description: |
+    Comprehensive API contract for Sigil v2's Planning & Reasoning System.
+
+    This specification defines the interfaces for:
+    - **Planner**: Goal decomposition into executable DAG-structured plans
+    - **PlanExecutor**: Plan execution with dependency management, parallelism, and checkpointing
+    - **ReasoningManager**: Complexity-adaptive strategy selection and execution
+    - **Reasoning Strategies**: Direct, CoT, ToT, ReAct, and MCTS implementations
+    - **Planning Tools**: LangChain-compatible tools for agent plan interaction
+
+    ## Integration Points
+
+    - **Phase 3 (Routing)**: Receives complexity scores and triggers planning/reasoning
+    - **Phase 4 (Memory)**: Retrieves context for planning, stores execution results
+    - **Phase 6 (Contracts)**: Validates step outputs against contract specifications
+
+    ## Authentication
+
+    Internal Python SDK - no HTTP authentication required.
+    Bearer token authentication when exposed via FastAPI (Phase 3 interfaces).
+
+  version: 1.0.0
+  contact:
+    name: Sigil Architecture Team
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development server
+  - url: https://api.sigil.internal/v1
+    description: Internal production server
+
+tags:
+  - name: Planner
+    description: Goal decomposition and plan generation
+  - name: PlanExecutor
+    description: Plan execution and lifecycle management
+  - name: ReasoningManager
+    description: Strategy orchestration and execution
+  - name: Strategies
+    description: Individual reasoning strategy implementations
+  - name: Planning Tools
+    description: LangChain-compatible planning tools for agents
+  - name: Events
+    description: Event contracts for audit trail
+
+paths:
+  /plans:
+    post:
+      operationId: createPlan
+      tags: [Planner]
+      summary: Create an execution plan for a goal
+      description: |
+        Decomposes a high-level goal into an executable DAG-structured plan.
+
+        **Algorithm:**
+        1. Retrieve relevant memory context (if memory_manager available)
+        2. LLM generates step decomposition with dependencies
+        3. Validate DAG structure (no cycles)
+        4. Estimate token costs per step
+        5. Return immutable Plan object
+
+        **Events Emitted:**
+        - `PlanCreatedEvent(plan_id, goal, step_count, complexity)`
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlanRequest'
+            examples:
+              lead_qualification:
+                summary: Lead qualification plan
+                value:
+                  goal: "Qualify lead John from Acme Corp for our SaaS"
+                  context:
+                    lead_name: "John"
+                    company: "Acme Corp"
+                    budget: "known"
+                    authority: "unknown"
+                  tools: ["crm_lookup", "websearch", "send_email"]
+                  max_steps: 8
+              simple_research:
+                summary: Simple research plan
+                value:
+                  goal: "Research competitors for enterprise CRM market"
+                  max_steps: 5
+      responses:
+        '201':
+          description: Plan created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+              examples:
+                qualification_plan:
+                  $ref: '#/components/examples/QualificationPlan'
+        '400':
+          description: Invalid goal or parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                invalid_goal:
+                  summary: Goal too vague
+                  value:
+                    type: "https://sigil.io/errors/invalid-goal"
+                    title: "Invalid Goal Error"
+                    status: 400
+                    detail: "Goal is too vague. Provide a more specific objective."
+                    instance: "/plans"
+                    code: "P02"
+                    recovery_suggestions:
+                      - "Include specific outcome you want to achieve"
+                      - "Add context about the target (lead name, company, etc.)"
+        '422':
+          description: Dependency cycle detected in generated plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '503':
+          description: Plan generation service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /plans/{plan_id}:
+    get:
+      operationId: getPlan
+      tags: [Planner]
+      summary: Retrieve a plan by ID
+      parameters:
+        - name: plan_id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^plan_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+          example: "plan_550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Plan retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+        '404':
+          description: Plan not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /plans/{plan_id}/validate:
+    post:
+      operationId: validatePlan
+      tags: [Planner]
+      summary: Validate plan structure and dependencies
+      description: |
+        Validates:
+        - DAG is acyclic (no circular dependencies)
+        - All dependencies reference valid step_ids
+        - Step types are valid
+        - Estimated tokens within budget
+      parameters:
+        - name: plan_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+
+  /plans/{plan_id}/optimize:
+    post:
+      operationId: optimizePlan
+      tags: [Planner]
+      summary: Optimize plan structure
+      description: |
+        Optimizations applied:
+        - Merge sequential reasoning steps when possible
+        - Identify additional parallelization opportunities
+        - Remove redundant steps
+        - Re-estimate token costs
+      parameters:
+        - name: plan_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                optimization_goals:
+                  type: array
+                  items:
+                    type: string
+                    enum: [minimize_tokens, maximize_parallelism, minimize_steps]
+                  default: [minimize_tokens, maximize_parallelism]
+      responses:
+        '200':
+          description: Optimized plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+
+  /plans/{plan_id}/execute:
+    post:
+      operationId: executePlan
+      tags: [PlanExecutor]
+      summary: Execute a plan to completion
+      description: |
+        Executes the plan with:
+        - Topological sorting for correct execution order
+        - Bounded parallelism (max 3 concurrent steps by default)
+        - Retry logic with exponential backoff (max 3 retries per step)
+        - Checkpointing after each step for resumption
+
+        **Events Emitted:**
+        - `PlanExecutionStartedEvent(plan_id)`
+        - `PlanStepStartedEvent(plan_id, step_id)` per step
+        - `PlanStepCompletedEvent(plan_id, step_id, result)` per step
+        - `PlanStepFailedEvent(plan_id, step_id, error, retry_count)` on failure
+        - `PlanCompletedEvent(plan_id, total_tokens)`
+
+      parameters:
+        - name: plan_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecutePlanRequest'
+      responses:
+        '200':
+          description: Plan execution completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionResult'
+        '202':
+          description: Plan execution started (async mode)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  execution_id:
+                    type: string
+                  status_url:
+                    type: string
+                    format: uri
+        '404':
+          description: Plan not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '409':
+          description: Plan already executing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /plans/{plan_id}/pause:
+    post:
+      operationId: pausePlan
+      tags: [PlanExecutor]
+      summary: Pause execution after current step
+      description: |
+        Creates a checkpoint and stops execution.
+
+        **Events Emitted:**
+        - `PlanPausedEvent(plan_id, last_completed_step)`
+      parameters:
+        - name: plan_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Plan paused successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  paused:
+                    type: boolean
+                  checkpoint_id:
+                    type: string
+                  last_completed_step:
+                    type: string
+        '404':
+          description: Plan not found or not running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /plans/{plan_id}/resume:
+    post:
+      operationId: resumePlan
+      tags: [PlanExecutor]
+      summary: Resume execution from last checkpoint
+      description: |
+        Loads checkpoint and continues execution from last completed step.
+
+        **Events Emitted:**
+        - `PlanResumedEvent(plan_id, resuming_from)`
+      parameters:
+        - name: plan_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                session_id:
+                  type: string
+                  description: Session ID for tracking
+      responses:
+        '200':
+          description: Plan resumed and completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionResult'
+        '404':
+          description: Plan or checkpoint not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /plans/{plan_id}/abort:
+    post:
+      operationId: abortPlan
+      tags: [PlanExecutor]
+      summary: Cancel all remaining steps
+      description: |
+        Cancels execution and marks remaining steps as skipped.
+
+        **Events Emitted:**
+        - `PlanAbortedEvent(plan_id)`
+      parameters:
+        - name: plan_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Plan aborted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  aborted:
+                    type: boolean
+                  steps_completed:
+                    type: integer
+                  steps_cancelled:
+                    type: integer
+
+  /plans/{plan_id}/status:
+    get:
+      operationId: getPlanStatus
+      tags: [PlanExecutor]
+      summary: Get execution status of a plan
+      parameters:
+        - name: plan_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Plan status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanStatus'
+
+  /reasoning/execute:
+    post:
+      operationId: executeReasoning
+      tags: [ReasoningManager]
+      summary: Execute reasoning on a task
+      description: |
+        Selects appropriate reasoning strategy based on complexity and executes.
+
+        **Strategy Selection Logic:**
+        - complexity 0.0 - 0.3 -> DirectStrategy
+        - complexity 0.3 - 0.5 -> CoTStrategy
+        - complexity 0.5 - 0.7 -> ToTStrategy
+        - complexity 0.7 - 0.9 -> ReActStrategy
+        - complexity 0.9 - 1.0 -> MCTSStrategy
+
+        **Fallback Behavior:**
+        If selected strategy fails, tries next lower complexity strategy.
+        Ultimate fallback is always DirectStrategy.
+
+        **Events Emitted:**
+        - `ReasoningTaskStartedEvent(task, complexity)`
+        - `StrategySelectedEvent(strategy_name, complexity)`
+        - `ReasoningCompletedEvent(strategy_name, confidence, tokens)`
+        - `StrategyFallbackEvent(original_strategy, fallback_to)` on fallback
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecuteReasoningRequest'
+            examples:
+              pricing_recommendation:
+                summary: Pricing recommendation task
+                value:
+                  task: "What pricing plan should we recommend for a 50-person company with budget constraints?"
+                  context:
+                    facts:
+                      - "Enterprise plan is $500/month"
+                      - "Professional plan is $200/month"
+                      - "Basic plan is $50/month"
+                  complexity: 0.4
+              complex_analysis:
+                summary: Complex multi-factor analysis
+                value:
+                  task: "Analyze competitive landscape and recommend market entry strategy"
+                  strategy_override: "tot"
+      responses:
+        '200':
+          description: Reasoning completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StrategyResult'
+              examples:
+                cot_result:
+                  $ref: '#/components/examples/CoTResult'
+        '400':
+          description: Invalid task or parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '500':
+          description: All strategies failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                all_failed:
+                  value:
+                    type: "https://sigil.io/errors/all-strategies-failed"
+                    title: "All Strategies Failed"
+                    status: 500
+                    detail: "All reasoning strategies failed: [mcts, react, tot, cot, direct]"
+                    code: "R02"
+                    strategies_tried: ["mcts", "react", "tot", "cot", "direct"]
+
+  /reasoning/select-strategy:
+    post:
+      operationId: selectStrategy
+      tags: [ReasoningManager]
+      summary: Select strategy based on complexity
+      description: |
+        Returns the strategy name that would be selected for a given complexity.
+        Does not execute - useful for planning and debugging.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [complexity]
+              properties:
+                complexity:
+                  type: number
+                  minimum: 0.0
+                  maximum: 1.0
+                  description: Task complexity score
+                task_type:
+                  type: string
+                  description: Optional task type for learned optimization
+      responses:
+        '200':
+          description: Strategy selection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  strategy_name:
+                    type: string
+                    enum: [direct, cot, tot, react, mcts]
+                  complexity_range:
+                    type: object
+                    properties:
+                      min:
+                        type: number
+                      max:
+                        type: number
+                  expected_tokens:
+                    type: object
+                    properties:
+                      min:
+                        type: integer
+                      max:
+                        type: integer
+                  expected_latency_ms:
+                    type: object
+                    properties:
+                      min:
+                        type: integer
+                      max:
+                        type: integer
+
+  /reasoning/assess-complexity:
+    post:
+      operationId: assessComplexity
+      tags: [ReasoningManager]
+      summary: Assess complexity of a reasoning task
+      description: |
+        Performs detailed complexity assessment for strategy selection.
+        More granular than Router's ComplexityAssessor.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [task]
+              properties:
+                task:
+                  type: string
+                  description: Task to assess
+                context:
+                  $ref: '#/components/schemas/ReasoningContext'
+      responses:
+        '200':
+          description: Complexity assessment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplexityAssessment'
+
+  /reasoning/metrics:
+    get:
+      operationId: getReasoningMetrics
+      tags: [ReasoningManager]
+      summary: Get reasoning strategy metrics
+      responses:
+        '200':
+          description: Strategy metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StrategyMetrics'
+
+    delete:
+      operationId: clearReasoningMetrics
+      tags: [ReasoningManager]
+      summary: Clear collected metrics
+      responses:
+        '204':
+          description: Metrics cleared
+
+  /strategies/{strategy_name}/execute:
+    post:
+      operationId: executeStrategy
+      tags: [Strategies]
+      summary: Execute a specific reasoning strategy
+      description: |
+        Directly execute a named strategy without auto-selection.
+
+        **Available Strategies:**
+        - `direct`: Single LLM call (0.0-0.3 complexity)
+        - `cot`: Chain-of-Thought step-by-step (0.3-0.5 complexity)
+        - `tot`: Tree-of-Thoughts multi-path (0.5-0.7 complexity)
+        - `react`: ReAct thought-action-observation loop (0.7-0.9 complexity)
+        - `mcts`: Monte Carlo Tree Search (0.9-1.0 complexity)
+
+      parameters:
+        - name: strategy_name
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [direct, cot, tot, react, mcts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [task]
+              properties:
+                task:
+                  type: string
+                  description: Task to reason about
+                context:
+                  $ref: '#/components/schemas/ReasoningContext'
+                token_budget:
+                  $ref: '#/components/schemas/TokenBudget'
+      responses:
+        '200':
+          description: Strategy execution result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StrategyResult'
+
+  /tools/create_plan:
+    post:
+      operationId: toolCreatePlan
+      tags: [Planning Tools]
+      summary: LangChain tool - Create an executable plan
+      description: |
+        Tool description for LLM:
+        "Create an executable plan to accomplish a goal"
+
+        Returns plan_id and summary for agent use.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [goal]
+              properties:
+                goal:
+                  type: string
+                  description: What to accomplish
+                context:
+                  type: string
+                  description: Relevant background info
+      responses:
+        '200':
+          description: Plan created
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "plan_abc123: 4 steps (search competitors, analyze features, compare pricing, create report)"
+
+  /tools/get_plan_status:
+    post:
+      operationId: toolGetPlanStatus
+      tags: [Planning Tools]
+      summary: LangChain tool - Check plan execution status
+      description: |
+        Tool description for LLM:
+        "Check execution status of a plan"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [plan_id]
+              properties:
+                plan_id:
+                  type: string
+      responses:
+        '200':
+          description: Plan status
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "plan_abc123: in_progress (3/5 steps complete). Next: Analyze competitor features"
+
+  /tools/execute_plan_step:
+    post:
+      operationId: toolExecutePlanStep
+      tags: [Planning Tools]
+      summary: LangChain tool - Execute a specific plan step
+      description: |
+        Tool description for LLM:
+        "Execute a specific step in a plan"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [plan_id, step_id]
+              properties:
+                plan_id:
+                  type: string
+                step_id:
+                  type: string
+      responses:
+        '200':
+          description: Step result
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Step step_2 completed successfully. Output: Found 5 key competitors in the enterprise CRM space."
+
+  /tools/pause_plan:
+    post:
+      operationId: toolPausePlan
+      tags: [Planning Tools]
+      summary: LangChain tool - Pause a running plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [plan_id]
+              properties:
+                plan_id:
+                  type: string
+      responses:
+        '200':
+          description: Confirmation
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "plan_abc123 paused after step_3. Can resume with resume_plan."
+
+  /tools/resume_plan:
+    post:
+      operationId: toolResumePlan
+      tags: [Planning Tools]
+      summary: LangChain tool - Resume a paused plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [plan_id]
+              properties:
+                plan_id:
+                  type: string
+      responses:
+        '200':
+          description: Execution result
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "plan_abc123 resumed and completed. All 5 steps succeeded. Final output: Competitive analysis report generated."
+
+components:
+  schemas:
+    # ==================== Request Schemas ====================
+
+    CreatePlanRequest:
+      type: object
+      required: [goal]
+      properties:
+        goal:
+          type: string
+          minLength: 10
+          maxLength: 500
+          description: User's desired outcome (required, 10-500 chars)
+          example: "Qualify lead John from Acme Corp for our SaaS"
+        context:
+          type: object
+          additionalProperties: true
+          description: Optional context from memory, previous runs, etc.
+          example:
+            lead_name: "John"
+            company: "Acme Corp"
+            budget: "known"
+        tools:
+          type: array
+          items:
+            type: string
+          description: Available tools agent can use (optional)
+          example: ["crm_lookup", "websearch", "send_email"]
+        max_steps:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 10
+          description: Maximum steps in plan (default 10, range 1-50)
+
+    ExecutePlanRequest:
+      type: object
+      properties:
+        session_id:
+          type: string
+          description: Session ID for tracking
+        token_budget:
+          $ref: '#/components/schemas/TokenBudget'
+        context:
+          $ref: '#/components/schemas/ExecutionContext'
+        async_mode:
+          type: boolean
+          default: false
+          description: Return immediately with execution_id for polling
+
+    ExecuteReasoningRequest:
+      type: object
+      required: [task]
+      properties:
+        task:
+          type: string
+          description: Task to reason about (required)
+          example: "What pricing plan should we recommend for a 50-person company?"
+        context:
+          $ref: '#/components/schemas/ReasoningContext'
+        complexity:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+          description: Override automatic complexity (0.0-1.0, optional)
+        strategy_override:
+          type: string
+          enum: [direct, cot, tot, react, mcts]
+          description: Force specific strategy (optional, overrides auto-selection)
+        session_id:
+          type: string
+          description: Session ID for tracking
+
+    # ==================== Core Data Schemas ====================
+
+    Plan:
+      type: object
+      required: [plan_id, goal, steps, created_at, complexity, estimated_tokens, metadata]
+      properties:
+        plan_id:
+          type: string
+          pattern: '^plan_[0-9a-f-]+$'
+          description: Unique identifier (UUID format)
+          example: "plan_550e8400-e29b-41d4-a716-446655440000"
+        goal:
+          type: string
+          description: Original goal that generated this plan
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanStep'
+          description: Ordered list of plan steps
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp (ISO 8601)
+        complexity:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+          description: Overall plan complexity (0.0-1.0)
+        estimated_tokens:
+          type: integer
+          minimum: 0
+          description: Estimated total token cost
+        metadata:
+          $ref: '#/components/schemas/PlanMetadata'
+
+    PlanStep:
+      type: object
+      required: [step_id, description, status]
+      properties:
+        step_id:
+          type: string
+          pattern: '^step_[0-9]+$'
+          description: Unique identifier (deterministic from step index)
+          example: "step_1"
+        description:
+          type: string
+          description: What this step does
+          example: "Retrieve existing CRM data for lead"
+        status:
+          type: string
+          enum: [pending, running, completed, failed, skipped]
+          default: pending
+          description: Current step status
+        dependencies:
+          type: array
+          items:
+            type: string
+          default: []
+          description: Step IDs that must complete first
+          example: ["step_1", "step_2"]
+        tools:
+          type: array
+          items:
+            type: string
+          default: []
+          description: Tools this step may use
+        step_type:
+          type: string
+          enum: [tool_call, reasoning, parallel_group, conditional]
+          description: Type of step execution
+        tool_name:
+          type: string
+          description: Tool to call (if step_type=tool_call)
+        tool_args:
+          type: object
+          additionalProperties: true
+          description: Arguments for tool (if step_type=tool_call)
+        reasoning_task:
+          type: string
+          description: Task description (if step_type=reasoning)
+        strategy_hint:
+          type: string
+          enum: [direct, cot, tot, react, mcts]
+          description: Suggested reasoning strategy
+        result:
+          type: object
+          additionalProperties: true
+          description: Output from step (after completion)
+        error:
+          type: string
+          description: Error message (if failed)
+        tokens_used:
+          type: integer
+          default: 0
+          description: Tokens consumed (cumulative)
+        created_at:
+          type: string
+          format: date-time
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+
+    PlanMetadata:
+      type: object
+      properties:
+        complexity:
+          type: number
+          description: 0.0 - 1.0
+        estimated_total_tokens:
+          type: integer
+        estimated_duration_seconds:
+          type: number
+        parallel_groups:
+          type: integer
+          description: Number of parallelizable groups
+        tool_calls:
+          type: integer
+          description: Number of tool call steps
+        reasoning_steps:
+          type: integer
+          description: Number of reasoning steps
+
+    PlanStatus:
+      type: object
+      properties:
+        plan_id:
+          type: string
+        overall_status:
+          type: string
+          enum: [pending, running, paused, completed, failed, aborted]
+        current_step_id:
+          type: string
+        steps_completed:
+          type: integer
+        steps_remaining:
+          type: integer
+        execution_time_seconds:
+          type: number
+        next_step_description:
+          type: string
+
+    ExecutionResult:
+      type: object
+      required: [plan_id, status, steps_completed, steps_failed, results, total_tokens, execution_time_seconds, errors]
+      properties:
+        plan_id:
+          type: string
+        status:
+          type: string
+          enum: [completed, failed, partial]
+        steps_completed:
+          type: integer
+        steps_failed:
+          type: integer
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StepResult'
+        total_tokens:
+          type: integer
+        execution_time_seconds:
+          type: number
+        errors:
+          type: array
+          items:
+            type: string
+        final_output:
+          type: string
+          description: Aggregated final output from plan execution
+
+    StepResult:
+      type: object
+      required: [step_id, status]
+      properties:
+        step_id:
+          type: string
+        status:
+          type: string
+          enum: [completed, failed, skipped]
+        output:
+          description: Step output (type varies by step)
+        error:
+          type: string
+        tokens_used:
+          type: integer
+        execution_time_seconds:
+          type: number
+
+    ValidationResult:
+      type: object
+      properties:
+        is_valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+              message:
+                type: string
+              step_id:
+                type: string
+        warnings:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+              message:
+                type: string
+
+    # ==================== Reasoning Schemas ====================
+
+    StrategyResult:
+      type: object
+      required: [answer, confidence, reasoning_trace, tokens_used, execution_time_seconds, model]
+      properties:
+        answer:
+          type: string
+          description: Final answer/response
+          example: "Based on the company size and budget constraints, I recommend the Professional plan at $200/month."
+        confidence:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+          description: How sure we are (0.0-1.0)
+          example: 0.85
+        reasoning_trace:
+          type: array
+          items:
+            type: string
+          description: Steps taken (for debugging)
+          example:
+            - "Step 1: Analyze company size (50 people)"
+            - "Step 2: Consider budget constraints mentioned"
+            - "Step 3: Compare plan features to needs"
+            - "Step 4: Recommend Professional plan"
+        tokens_used:
+          type: integer
+          description: Total tokens consumed
+          example: 450
+        execution_time_seconds:
+          type: number
+          description: Execution duration
+          example: 3.2
+        model:
+          type: string
+          description: Which model was used
+          example: "anthropic:claude-sonnet-4-20250514"
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Strategy-specific details
+          example:
+            strategy_name: "cot"
+            fallback_used: false
+            paths_explored: 1
+
+    ReasoningContext:
+      type: object
+      properties:
+        facts:
+          type: array
+          items:
+            type: string
+          description: Known facts for grounding
+        fact_sources:
+          type: array
+          items:
+            type: string
+          description: Source IDs for facts (traceability)
+        history:
+          type: array
+          items:
+            type: string
+          description: Conversation/reasoning history
+        tools:
+          type: array
+          items:
+            type: string
+          description: Available tools for ReAct strategy
+        constraints:
+          type: object
+          additionalProperties: true
+          description: Any execution constraints
+
+    ComplexityAssessment:
+      type: object
+      properties:
+        score:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+          description: Overall complexity (0.0-1.0)
+        factors:
+          type: object
+          additionalProperties:
+            type: number
+          description: Individual factor scores
+          example:
+            length: 0.3
+            tool_requirements: 0.5
+            reasoning_depth: 0.4
+            ambiguity: 0.6
+        suggested_strategy:
+          type: string
+          enum: [direct, cot, tot, react, mcts]
+        confidence:
+          type: number
+          description: Confidence in assessment
+
+    StrategyMetrics:
+      type: object
+      properties:
+        by_strategy:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              call_count:
+                type: integer
+              success_count:
+                type: integer
+              failure_count:
+                type: integer
+              fallback_count:
+                type: integer
+              avg_tokens:
+                type: number
+              avg_latency_seconds:
+                type: number
+              confidence_accuracy:
+                type: number
+                description: How accurate confidence predictions are
+        overall:
+          type: object
+          properties:
+            total_calls:
+              type: integer
+            total_fallbacks:
+              type: integer
+            fallback_rate:
+              type: number
+
+    # ==================== Token Budget Schemas ====================
+
+    TokenBudget:
+      type: object
+      properties:
+        max_input_tokens:
+          type: integer
+          default: 4000
+        max_output_tokens:
+          type: integer
+          default: 2000
+        max_total_tokens:
+          type: integer
+          default: 10000
+
+    ExecutionContext:
+      type: object
+      properties:
+        dependency_results:
+          type: object
+          additionalProperties: true
+          description: Results from completed dependency steps
+        memory_context:
+          type: string
+          description: Formatted memory context
+        tools_available:
+          type: array
+          items:
+            type: string
+
+    # ==================== Error Schemas ====================
+
+    ProblemDetail:
+      type: object
+      description: RFC 9457 Problem Details format
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          format: uri
+          description: Error type URI
+          example: "https://sigil.io/errors/invalid-goal"
+        title:
+          type: string
+          description: Short human-readable summary
+          example: "Invalid Goal Error"
+        status:
+          type: integer
+          description: HTTP status code
+          example: 400
+        detail:
+          type: string
+          description: Human-readable explanation
+        instance:
+          type: string
+          format: uri
+          description: URI of the specific occurrence
+        code:
+          type: string
+          description: Internal error code
+          example: "P02"
+        recovery_suggestions:
+          type: array
+          items:
+            type: string
+          description: Suggested recovery actions
+
+    # ==================== Event Schemas ====================
+
+    PlanCreatedEvent:
+      type: object
+      properties:
+        event_id:
+          type: string
+        event_type:
+          type: string
+          const: "plan.created"
+        timestamp:
+          type: string
+          format: date-time
+        session_id:
+          type: string
+        correlation_id:
+          type: string
+        payload:
+          type: object
+          properties:
+            plan_id:
+              type: string
+            goal:
+              type: string
+            step_count:
+              type: integer
+            complexity:
+              type: number
+
+    PlanExecutionStartedEvent:
+      type: object
+      properties:
+        event_type:
+          type: string
+          const: "plan.execution_started"
+        payload:
+          type: object
+          properties:
+            plan_id:
+              type: string
+            token_budget:
+              type: integer
+
+    PlanStepStartedEvent:
+      type: object
+      properties:
+        event_type:
+          type: string
+          const: "plan.step_started"
+        payload:
+          type: object
+          properties:
+            plan_id:
+              type: string
+            step_id:
+              type: string
+            step_type:
+              type: string
+            description:
+              type: string
+
+    PlanStepCompletedEvent:
+      type: object
+      properties:
+        event_type:
+          type: string
+          const: "plan.step_completed"
+        payload:
+          type: object
+          properties:
+            plan_id:
+              type: string
+            step_id:
+              type: string
+            success:
+              type: boolean
+            output_preview:
+              type: string
+              description: First 200 chars
+            tokens_used:
+              type: integer
+            duration_ms:
+              type: number
+
+    PlanStepFailedEvent:
+      type: object
+      properties:
+        event_type:
+          type: string
+          const: "plan.step_failed"
+        payload:
+          type: object
+          properties:
+            plan_id:
+              type: string
+            step_id:
+              type: string
+            error_type:
+              type: string
+            error_message:
+              type: string
+            retry_count:
+              type: integer
+            will_retry:
+              type: boolean
+
+    PlanCompletedEvent:
+      type: object
+      properties:
+        event_type:
+          type: string
+          const: "plan.completed"
+        payload:
+          type: object
+          properties:
+            plan_id:
+              type: string
+            success:
+              type: boolean
+            total_tokens:
+              type: integer
+            total_duration_ms:
+              type: number
+            steps_completed:
+              type: integer
+            steps_failed:
+              type: integer
+
+    ReasoningTaskStartedEvent:
+      type: object
+      properties:
+        event_type:
+          type: string
+          const: "reasoning.task_started"
+        payload:
+          type: object
+          properties:
+            task_hash:
+              type: string
+              description: SHA256 hash for privacy
+            complexity:
+              type: number
+            context_facts_count:
+              type: integer
+
+    StrategySelectedEvent:
+      type: object
+      properties:
+        event_type:
+          type: string
+          const: "reasoning.strategy_selected"
+        payload:
+          type: object
+          properties:
+            strategy_name:
+              type: string
+            complexity:
+              type: number
+            was_override:
+              type: boolean
+            reason:
+              type: string
+
+    ReasoningCompletedEvent:
+      type: object
+      properties:
+        event_type:
+          type: string
+          const: "reasoning.completed"
+        payload:
+          type: object
+          properties:
+            strategy_name:
+              type: string
+            confidence:
+              type: number
+            tokens_used:
+              type: integer
+            duration_ms:
+              type: number
+            trace_length:
+              type: integer
+
+    StrategyFallbackEvent:
+      type: object
+      properties:
+        event_type:
+          type: string
+          const: "reasoning.fallback"
+        payload:
+          type: object
+          properties:
+            original_strategy:
+              type: string
+            fallback_strategy:
+              type: string
+            reason:
+              type: string
+
+  examples:
+    QualificationPlan:
+      summary: Lead qualification plan example
+      value:
+        plan_id: "plan_550e8400-e29b-41d4-a716-446655440000"
+        goal: "Qualify lead John from Acme Corp for our SaaS"
+        steps:
+          - step_id: "step_1"
+            description: "Retrieve existing CRM data for lead"
+            status: "pending"
+            dependencies: []
+            tools: ["crm_lookup"]
+            step_type: "tool_call"
+            tool_name: "crm_lookup"
+            tool_args:
+              lead_name: "John"
+              company: "Acme Corp"
+            tokens_used: 0
+          - step_id: "step_2"
+            description: "Web search for company information"
+            status: "pending"
+            dependencies: []
+            tools: ["websearch"]
+            step_type: "tool_call"
+            tool_name: "websearch"
+            tool_args:
+              query: "Acme Corp company size revenue industry"
+            tokens_used: 0
+          - step_id: "step_3"
+            description: "Identify BANT gaps from gathered information"
+            status: "pending"
+            dependencies: ["step_1", "step_2"]
+            tools: []
+            step_type: "reasoning"
+            reasoning_task: "Analyze CRM and web data to identify gaps in Budget, Authority, Need, Timeline"
+            strategy_hint: "cot"
+            tokens_used: 0
+          - step_id: "step_4"
+            description: "Generate discovery questions for gaps"
+            status: "pending"
+            dependencies: ["step_3"]
+            tools: []
+            step_type: "reasoning"
+            reasoning_task: "Create targeted questions to fill identified BANT gaps"
+            strategy_hint: "cot"
+            tokens_used: 0
+          - step_id: "step_5"
+            description: "Calculate qualification score"
+            status: "pending"
+            dependencies: ["step_3"]
+            tools: []
+            step_type: "reasoning"
+            reasoning_task: "Score lead on 0-100 scale based on available BANT data"
+            strategy_hint: "direct"
+            tokens_used: 0
+        created_at: "2026-01-11T10:30:00Z"
+        complexity: 0.72
+        estimated_tokens: 1500
+        metadata:
+          complexity: 0.72
+          estimated_total_tokens: 1500
+          estimated_duration_seconds: 15
+          parallel_groups: 2
+          tool_calls: 2
+          reasoning_steps: 3
+
+    CoTResult:
+      summary: Chain-of-Thought reasoning result
+      value:
+        answer: "Based on the company size of 50 employees and budget constraints, I recommend the Professional plan at $200/month. This provides the essential features for mid-size teams while staying within typical budget ranges."
+        confidence: 0.85
+        reasoning_trace:
+          - "Step 1: Analyze company size - 50 employees indicates mid-size company"
+          - "Step 2: Consider budget constraints - mentioned but specific amount unknown"
+          - "Step 3: Compare plans - Basic ($50) too limited, Enterprise ($500) likely over budget"
+          - "Step 4: Evaluate Professional plan features vs. needs"
+          - "Step 5: Recommend Professional plan as optimal balance"
+        tokens_used: 450
+        execution_time_seconds: 3.2
+        model: "anthropic:claude-sonnet-4-20250514"
+        metadata:
+          strategy_name: "cot"
+          fallback_used: false
+          paths_explored: 1
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT Bearer token from Phase 3 authentication
+
+security:
+  - BearerAuth: []

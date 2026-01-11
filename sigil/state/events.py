@@ -48,6 +48,7 @@ class EventType(Enum):
     - Tool events: Tool invocations
     - Plan events: Planning operations
     - Memory events: Memory extraction
+    - Reasoning events: Strategy selection and execution
     - Contract events: Verification outcomes
     - Error events: System errors
     """
@@ -64,10 +65,18 @@ class EventType(Enum):
 
     # Plan events
     PLAN_CREATED = "plan.created"
+    PLAN_COMPLETED = "plan.completed"
     PLAN_STEP_COMPLETED = "plan.step_completed"
+    STEP_STARTED = "step.started"
+    STEP_COMPLETED = "step.completed"
 
     # Memory events
     MEMORY_EXTRACTED = "memory.extracted"
+
+    # Reasoning events (Phase 5)
+    STRATEGY_SELECTED = "reasoning.strategy_selected"
+    REASONING_COMPLETED = "reasoning.completed"
+    STRATEGY_FALLBACK = "reasoning.fallback"
 
     # Contract events
     CONTRACT_VALIDATED = "contract.validated"

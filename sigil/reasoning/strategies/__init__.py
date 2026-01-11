@@ -3,31 +3,68 @@
 This module contains concrete reasoning strategy implementations:
 
 Strategies:
-    - ReActStrategy: Reasoning and Acting interleaved
-        - Think-Act-Observe loop
-        - Suitable for tool-heavy tasks
+    - DirectStrategy: Single LLM call for simple tasks (0.0-0.3)
+    - ChainOfThoughtStrategy: Step-by-step reasoning (0.3-0.5)
+    - TreeOfThoughtsStrategy: Multi-path exploration (0.5-0.7)
+    - ReActStrategy: Thought-Action-Observation loop (0.7-0.9)
+    - MCTSStrategy: Monte Carlo Tree Search (0.9-1.0)
 
-    - ChainOfThoughtStrategy: Step-by-step reasoning
-        - Explicit reasoning chain
-        - Good for complex analysis
+Each strategy is optimized for a specific complexity range and provides:
+- Execution method with task and context
+- Confidence estimation
+- Token tracking
+- Reasoning trace generation
 
-    - TreeOfThoughtsStrategy: Branching exploration
-        - Multiple reasoning paths
-        - Best-first search selection
-
-    - MCTSStrategy: Monte Carlo Tree Search
-        - Simulation-based planning
-        - Suitable for multi-step planning
-
-    - ReflexionStrategy: Self-reflection and correction
-        - Iterative refinement
-        - Learns from mistakes
-
-TODO: Implement ReActStrategy with tool integration
-TODO: Implement ChainOfThoughtStrategy
-TODO: Implement TreeOfThoughtsStrategy with pruning
-TODO: Implement MCTSStrategy with rollouts
-TODO: Implement ReflexionStrategy with memory integration
+Example:
+    >>> from sigil.reasoning.strategies import DirectStrategy, ChainOfThoughtStrategy
+    >>>
+    >>> strategy = ChainOfThoughtStrategy()
+    >>> result = await strategy.execute(
+    ...     task="What is 15% of 80?",
+    ...     context={},
+    ... )
+    >>> print(result.answer)
 """
 
-__all__ = []  # Will export: ReActStrategy, ChainOfThoughtStrategy, etc.
+from sigil.reasoning.strategies.base import (
+    # Data classes
+    StrategyResult,
+    StrategyConfig,
+    # Base class
+    BaseReasoningStrategy,
+    # Constants
+    COMPLEXITY_RANGES,
+    TOKEN_BUDGETS,
+    # Utilities
+    utc_now,
+)
+
+from sigil.reasoning.strategies.direct import DirectStrategy
+from sigil.reasoning.strategies.chain_of_thought import ChainOfThoughtStrategy
+from sigil.reasoning.strategies.tree_of_thoughts import TreeOfThoughtsStrategy, ThoughtNode
+from sigil.reasoning.strategies.react import ReActStrategy, ReActStep, StepType
+from sigil.reasoning.strategies.mcts import MCTSStrategy, MCTSNode
+
+
+__all__ = [
+    # Base classes
+    "BaseReasoningStrategy",
+    "StrategyResult",
+    "StrategyConfig",
+    # Constants
+    "COMPLEXITY_RANGES",
+    "TOKEN_BUDGETS",
+    # Utilities
+    "utc_now",
+    # Strategy implementations
+    "DirectStrategy",
+    "ChainOfThoughtStrategy",
+    "TreeOfThoughtsStrategy",
+    "ReActStrategy",
+    "MCTSStrategy",
+    # Supporting types
+    "ThoughtNode",
+    "ReActStep",
+    "StepType",
+    "MCTSNode",
+]
