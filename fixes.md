@@ -118,6 +118,100 @@ def _write_config_safely(path: Path, content: str) -> None:
 
 ---
 
+### 14. Anthropic Content Blocks Not Normalized in `execute_created_agent`
+**File:** `src/tools.py` (lines ~981, 1171)
+**Status:** [x] Fixed
+**Identified:** Phase 2.5 CLI Testing (2026-01-10)
+
+**Problem:**
+When executing a created agent that uses MCP tools (e.g., websearch), the response crashes with:
+```
+AttributeError: 'list' object has no attribute 'split'
+```
+
+**Root Cause:**
+Anthropic's Messages API returns `content` as a **list of content blocks**, not a string:
+```json
+{
+  "content": [
+    {"type": "tool_use", "id": "...", "name": "tavily-search", "input": {...}},
+    {"type": "text", "text": "# Report content here..."}
+  ]
+}
+```
+
+The code at line ~981 assigns this directly:
+```python
+if hasattr(final_message, 'content'):
+    result["response"] = final_message.content  # Can be str OR list!
+```
+
+Then at line 1171, it assumes string:
+```python
+response_lines = result["response"].split("\n")  # CRASH if list!
+```
+
+**Why This Happens:**
+| Provider | Content Format |
+|----------|----------------|
+| Anthropic | Always returns list of content blocks |
+| OpenAI | Returns simple string |
+| LangChain ChatAnthropic | Preserves Anthropic's list format |
+
+This is by design - Anthropic uses content blocks to support `tool_use`, extended thinking, citations, etc.
+
+**Fix (Recommended - Utility Function + Normalize at Assignment):**
+
+1. Create utility function in `src/tools.py`:
+```python
+def extract_text_from_content(content: str | list | Any) -> str:
+    """Extract text from LangChain message content.
+
+    Handles both string content and Anthropic-style content blocks.
+
+    Args:
+        content: Message content - can be string or list of content blocks
+
+    Returns:
+        Extracted text as a single string
+    """
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        text_parts = []
+        for block in content:
+            if isinstance(block, dict):
+                if block.get("type") == "text":
+                    text_parts.append(block.get("text", ""))
+            elif isinstance(block, str):
+                text_parts.append(block)
+        return "\n".join(text_parts)
+    return str(content)
+```
+
+2. Use at assignment (line ~981):
+```python
+if hasattr(final_message, 'content'):
+    result["response"] = extract_text_from_content(final_message.content)
+else:
+    result["response"] = str(final_message)
+```
+
+**Alternative Approaches:**
+- **Approach 2:** Use LangChain's `.content_blocks` property (newer API)
+- **Approach 3:** Defensive check at line 1171 (not recommended - doesn't fix root cause)
+
+**Also Apply To:**
+- `src/cli.py` line ~2410 in `_stream_agent_response()` (partially fixed for streaming, needs review)
+- Any other location extracting `.content` from LangChain messages
+
+**References:**
+- [Anthropic Messages API - Content Blocks](https://docs.anthropic.com/en/api/messages)
+- [LangChain ChatAnthropic Integration](https://python.langchain.com/docs/integrations/chat/anthropic)
+- [GitHub Issue #6238 - Content format inconsistency](https://github.com/langchain-ai/langchainjs/issues/6238)
+
+---
+
 ## Medium
 
 ### 5. Return Type `object` Instead of Proper Type
@@ -386,10 +480,16 @@ dependencies = [
 | 11 | Low | Test skip decorator | [x] Fixed |
 | 12 | Low | CLI signal handlers | [x] Fixed |
 | 13 | Low | Missing logging | [x] Fixed |
+| 14 | High | Anthropic content blocks not normalized | [x] Fixed |
+| 15 | Critical | GraphRecursionError - recursion_limit not propagating | [ ] Open |
+| 16 | Critical | Agent non-termination / infinite tool loop | [ ] Open |
 
-**Total: 13 issues (1 critical, 3 high, 5 medium, 4 low) - ALL FIXED**
+**Total: 16 issues (3 critical, 4 high, 5 medium, 4 low) - 14 Fixed, 2 Open**
+
+**Note:** Issues 15-16 are documented in detail in `breaks.md`
 
 ---
 
-*Last updated: 2026-01-09*
-*Identified during: Phase 1 Senior Code Review*
+*Last updated: 2026-01-10*
+*Phase 1: Senior Code Review*
+*Phase 2.5: CLI Testing*
