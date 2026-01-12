@@ -258,6 +258,57 @@ class EvolutionSettings(BaseModel):
     )
 
 
+class ContractSettings(BaseModel):
+    """Settings for contract-based verification (Phase 6).
+
+    Controls contract execution behavior including default strategies,
+    retry limits, and validation settings.
+
+    Attributes:
+        enabled: Whether contract verification is enabled.
+        default_failure_strategy: Default failure strategy ('retry', 'fallback', 'fail').
+        default_max_retries: Default maximum retry attempts.
+        strict_validation: If True, treat warnings as errors.
+        min_tokens_for_retry: Minimum tokens required for retry attempts.
+        min_partial_coverage: Minimum field coverage for partial results.
+        emit_events: Whether to emit events during execution.
+    """
+
+    enabled: bool = Field(
+        default=True,
+        description="Whether contract verification is enabled"
+    )
+    default_failure_strategy: str = Field(
+        default="retry",
+        description="Default failure strategy ('retry', 'fallback', 'fail')"
+    )
+    default_max_retries: int = Field(
+        default=2,
+        ge=0,
+        le=10,
+        description="Default maximum retry attempts"
+    )
+    strict_validation: bool = Field(
+        default=False,
+        description="If True, treat warnings as errors"
+    )
+    min_tokens_for_retry: int = Field(
+        default=500,
+        ge=100,
+        description="Minimum tokens required for retry attempts"
+    )
+    min_partial_coverage: float = Field(
+        default=0.5,
+        ge=0.0,
+        le=1.0,
+        description="Minimum field coverage for partial results"
+    )
+    emit_events: bool = Field(
+        default=True,
+        description="Whether to emit events during execution"
+    )
+
+
 class APIKeySettings(BaseSettings):
     """Settings for external API keys.
 
@@ -483,6 +534,10 @@ class SigilSettings(BaseSettings):
         default_factory=EvolutionSettings,
         description="Evolution configuration"
     )
+    contracts: ContractSettings = Field(
+        default_factory=ContractSettings,
+        description="Contract verification configuration"
+    )
 
     # API keys (loaded separately without prefix)
     api_keys: APIKeySettings = Field(
@@ -671,6 +726,7 @@ __all__ = [
     "PathSettings",
     "TelemetrySettings",
     "EvolutionSettings",
+    "ContractSettings",
     "APIKeySettings",
     # Singleton functions
     "get_settings",

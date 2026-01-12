@@ -78,8 +78,13 @@ class EventType(Enum):
     REASONING_COMPLETED = "reasoning.completed"
     STRATEGY_FALLBACK = "reasoning.fallback"
 
-    # Contract events
+    # Contract events (Phase 6)
+    CONTRACT_VALIDATION_STARTED = "contract.validation_started"
     CONTRACT_VALIDATED = "contract.validated"
+    CONTRACT_VALIDATION_FAILED = "contract.validation_failed"
+    CONTRACT_RETRY = "contract.retry"
+    CONTRACT_FALLBACK = "contract.fallback"
+    CONTRACT_COMPLETED = "contract.completed"
 
     # Error events
     ERROR_OCCURRED = "error.occurred"
@@ -706,3 +711,214 @@ def filter_events_in_range(
         List of events within the specified time range.
     """
     return [event for event in events if start <= event.timestamp <= end]
+
+
+# =============================================================================
+# Phase 6 Contract Event Factory Functions
+# =============================================================================
+
+
+def create_contract_validation_started_event(
+    session_id: str,
+    contract_id: str,
+    contract_name: str,
+    deliverables: list[str],
+    correlation_id: Optional[str] = None,
+) -> Event:
+    """Create an event when contract validation begins.
+
+    Args:
+        session_id: Unique identifier for the session.
+        contract_id: Unique identifier for the contract execution.
+        contract_name: Name of the contract being validated.
+        deliverables: List of deliverable names to be validated.
+        correlation_id: Optional ID for linking related events.
+
+    Returns:
+        Event with CONTRACT_VALIDATION_STARTED type.
+    """
+    payload: dict[str, Any] = {
+        "contract_id": contract_id,
+        "contract_name": contract_name,
+        "deliverables": deliverables,
+    }
+
+    return Event(
+        event_id=_generate_event_id(),
+        event_type=EventType.CONTRACT_VALIDATION_STARTED,
+        timestamp=_get_utc_now(),
+        session_id=session_id,
+        correlation_id=correlation_id,
+        payload=payload,
+    )
+
+
+def create_contract_validation_failed_event(
+    session_id: str,
+    contract_id: str,
+    contract_name: str,
+    errors: list[dict[str, Any]],
+    attempt: int,
+    correlation_id: Optional[str] = None,
+) -> Event:
+    """Create an event when contract validation fails.
+
+    Args:
+        session_id: Unique identifier for the session.
+        contract_id: Unique identifier for the contract execution.
+        contract_name: Name of the contract that failed.
+        errors: List of validation error dictionaries.
+        attempt: Attempt number when failure occurred.
+        correlation_id: Optional ID for linking related events.
+
+    Returns:
+        Event with CONTRACT_VALIDATION_FAILED type.
+    """
+    payload: dict[str, Any] = {
+        "contract_id": contract_id,
+        "contract_name": contract_name,
+        "errors": errors,
+        "error_count": len(errors),
+        "attempt": attempt,
+    }
+
+    return Event(
+        event_id=_generate_event_id(),
+        event_type=EventType.CONTRACT_VALIDATION_FAILED,
+        timestamp=_get_utc_now(),
+        session_id=session_id,
+        correlation_id=correlation_id,
+        payload=payload,
+    )
+
+
+def create_contract_retry_event(
+    session_id: str,
+    contract_id: str,
+    contract_name: str,
+    attempt: int,
+    max_retries: int,
+    reason: str,
+    correlation_id: Optional[str] = None,
+) -> Event:
+    """Create an event when contract execution retries.
+
+    Args:
+        session_id: Unique identifier for the session.
+        contract_id: Unique identifier for the contract execution.
+        contract_name: Name of the contract being retried.
+        attempt: Current attempt number.
+        max_retries: Maximum retries allowed.
+        reason: Reason for retry (summary of errors).
+        correlation_id: Optional ID for linking related events.
+
+    Returns:
+        Event with CONTRACT_RETRY type.
+    """
+    payload: dict[str, Any] = {
+        "contract_id": contract_id,
+        "contract_name": contract_name,
+        "attempt": attempt,
+        "max_retries": max_retries,
+        "reason": reason,
+    }
+
+    return Event(
+        event_id=_generate_event_id(),
+        event_type=EventType.CONTRACT_RETRY,
+        timestamp=_get_utc_now(),
+        session_id=session_id,
+        correlation_id=correlation_id,
+        payload=payload,
+    )
+
+
+def create_contract_fallback_event(
+    session_id: str,
+    contract_id: str,
+    contract_name: str,
+    fallback_strategy: str,
+    partial_fields: list[str],
+    template_fields: list[str],
+    warnings: list[str],
+    correlation_id: Optional[str] = None,
+) -> Event:
+    """Create an event when fallback strategy is applied.
+
+    Args:
+        session_id: Unique identifier for the session.
+        contract_id: Unique identifier for the contract execution.
+        contract_name: Name of the contract.
+        fallback_strategy: Strategy used ('partial', 'template', 'escalate').
+        partial_fields: Fields from partial output.
+        template_fields: Fields generated from template.
+        warnings: List of warnings about the fallback.
+        correlation_id: Optional ID for linking related events.
+
+    Returns:
+        Event with CONTRACT_FALLBACK type.
+    """
+    payload: dict[str, Any] = {
+        "contract_id": contract_id,
+        "contract_name": contract_name,
+        "fallback_strategy": fallback_strategy,
+        "partial_fields": partial_fields,
+        "template_fields": template_fields,
+        "warnings": warnings,
+    }
+
+    return Event(
+        event_id=_generate_event_id(),
+        event_type=EventType.CONTRACT_FALLBACK,
+        timestamp=_get_utc_now(),
+        session_id=session_id,
+        correlation_id=correlation_id,
+        payload=payload,
+    )
+
+
+def create_contract_completed_event(
+    session_id: str,
+    contract_id: str,
+    contract_name: str,
+    applied_strategy: str,
+    is_valid: bool,
+    attempts: int,
+    tokens_used: int,
+    execution_time_ms: float,
+    correlation_id: Optional[str] = None,
+) -> Event:
+    """Create an event when contract execution completes.
+
+    Args:
+        session_id: Unique identifier for the session.
+        contract_id: Unique identifier for the contract execution.
+        contract_name: Name of the contract.
+        applied_strategy: Strategy used ('success', 'retry', 'fallback', 'fail').
+        is_valid: Whether the final output is valid.
+        attempts: Total number of attempts made.
+        tokens_used: Total tokens consumed.
+        execution_time_ms: Total execution time in milliseconds.
+        correlation_id: Optional ID for linking related events.
+
+    Returns:
+        Event with CONTRACT_COMPLETED type.
+    """
+    payload: dict[str, Any] = {
+        "contract_id": contract_id,
+        "contract_name": contract_name,
+        "applied_strategy": applied_strategy,
+        "is_valid": is_valid,
+        "attempts": attempts,
+        "tokens_used": tokens_used,
+        "execution_time_ms": execution_time_ms,
+    }
+
+    return Event(
+        event_id=_generate_event_id(),
+        event_type=EventType.CONTRACT_COMPLETED,
+        timestamp=_get_utc_now(),
+        session_id=session_id,
+        correlation_id=correlation_id,
+        payload=payload,
+    )
