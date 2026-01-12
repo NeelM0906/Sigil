@@ -640,7 +640,7 @@ class SigilOrchestrator:
                 "goal": ctx.plan.goal,
                 "step_count": len(ctx.plan.steps),
                 "steps": [
-                    {"description": s.description, "complexity": s.complexity}
+                    {"description": s.description, "status": s.status.value}
                     for s in ctx.plan.steps[:5]  # Limit for context size
                 ],
             }
@@ -691,7 +691,7 @@ class SigilOrchestrator:
                         "plan_id": ctx.plan_id,
                         "step_results": [
                             {"step_id": sr.step_id, "status": sr.status.value}
-                            for sr in result.step_results.values()
+                            for sr in result.step_results
                         ],
                     }
                 else:
