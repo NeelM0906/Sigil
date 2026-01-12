@@ -350,7 +350,7 @@ Instructions:
 4. Select the most relevant items
 
 Respond with a JSON array of item indices (0-based) in order of relevance, plus a relevance score (0.0-1.0).
-Example: [{"index": 2, "score": 0.95}, {"index": 0, "score": 0.8}]
+Example: [{{"index": 2, "score": 0.95}}, {{"index": 0, "score": 0.8}}]
 
 Respond ONLY with the JSON array."""
 

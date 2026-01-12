@@ -250,10 +250,10 @@ class EmbeddingService:
             return [self._fallback_embedding(t) for t in texts]
 
     def _fallback_embedding(self, text: str) -> list[float]:
-        """Generate a simple hash-based embedding for testing.
+        """Generate a simple word-based embedding for testing.
 
         This is NOT suitable for production use. It provides a deterministic
-        but semantically meaningless embedding.
+        embedding based on word tokens that captures basic semantic similarity.
 
         Args:
             text: Text to embed.
@@ -262,17 +262,39 @@ class EmbeddingService:
             Pseudo-embedding vector.
         """
         import hashlib
+        import re
 
-        # Create a deterministic pseudo-embedding based on text hash
-        hash_bytes = hashlib.sha256(text.encode()).digest()
-        # Extend hash to fill dimensions
-        full_hash = hash_bytes * (self._dimensions // 32 + 1)
-        # Convert to floats in [-1, 1] range
-        embedding = []
-        for i in range(self._dimensions):
-            byte_val = full_hash[i]
-            # Map 0-255 to -1 to 1
-            embedding.append((byte_val / 127.5) - 1.0)
+        # Tokenize and normalize text
+        words = set(re.findall(r'\b[a-zA-Z]+\b', text.lower()))
+
+        # Create a deterministic embedding based on word hashes
+        # Each word contributes to the embedding in a consistent way
+        embedding = [0.0] * self._dimensions
+
+        for word in words:
+            # Hash the word to get a seed
+            word_hash = hashlib.md5(word.encode()).digest()
+            # Use the hash to determine which dimensions this word affects
+            for i in range(min(len(word_hash), 16)):
+                # Each byte of the hash affects a different set of dimensions
+                byte_val = word_hash[i]
+                # Spread the word's influence across multiple dimensions
+                for j in range(self._dimensions // 16):
+                    dim_idx = (i * (self._dimensions // 16) + j) % self._dimensions
+                    # Add contribution based on hash byte
+                    contribution = ((byte_val >> (j % 8)) & 1) * 2 - 1  # -1 or 1
+                    embedding[dim_idx] += contribution * 0.1
+
+        # Normalize the embedding
+        norm = sum(x * x for x in embedding) ** 0.5
+        if norm > 0:
+            embedding = [x / norm for x in embedding]
+        else:
+            # If empty text, use a hash-based fallback
+            hash_bytes = hashlib.sha256(text.encode()).digest()
+            full_hash = hash_bytes * (self._dimensions // 32 + 1)
+            embedding = [(full_hash[i] / 127.5) - 1.0 for i in range(self._dimensions)]
+
         return embedding
 
     def clear_cache(self) -> None:
