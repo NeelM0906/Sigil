@@ -716,9 +716,9 @@ class SigilOrchestrator:
 
             if result.success:
                 ctx.output = {
-                    "result": result.output,
+                    "result": result.answer,
                     "reasoning_trace": result.reasoning_trace[:5],  # Limit trace
-                    "strategy_used": result.strategy_name,
+                    "model": result.model,
                     "confidence": result.confidence,
                 }
             else:
