@@ -11,9 +11,11 @@ dependencies = [
     "langchain-mcp-adapters>=0.2.0",
     "elevenlabs-mcp>=0.9.0",
     "pydantic>=2.0",
+    "pydantic-settings>=2.0.0",
     "python-dotenv>=1.0.0",
     "aiofiles>=23.0.0",
     "portalocker>=2.0.0",
+    "click>=8.0.0",
 ]
 
 [project.optional-dependencies]

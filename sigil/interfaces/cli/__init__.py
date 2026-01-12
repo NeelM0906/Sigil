@@ -1,33 +1,77 @@
 """CLI for Sigil v2 framework.
 
-This module implements the command-line interface:
-- Agent execution commands
-- Configuration management
-- Development utilities
-- Interactive REPL
+This module implements the command-line interface for Sigil v2:
+- Orchestrated pipeline execution (Route -> Plan -> Reason -> Validate)
+- Real-time execution log monitoring
+- Token usage tracking and reporting
+- System status and health checks
 
 CLI Commands:
-    - sigil run <agent> <task>: Execute agent on task
-    - sigil agents list: List available agents
-    - sigil agents create: Create new agent
-    - sigil config show: Show configuration
-    - sigil config set <key> <value>: Set config value
-    - sigil memory search <query>: Search memory
-    - sigil memory export: Export memory
-    - sigil evolve <agent>: Run evolution
-    - sigil repl: Interactive REPL
+    - sigil orchestrate --task "..." --session-id "...": Run through pipeline
+    - sigil log-stream: Tail execution logs in real-time
+    - sigil status: Show orchestrator status and metrics
 
 Key Components:
-    - CLI: Main CLI application (click/typer)
-    - Commands: Command implementations
-    - REPL: Interactive shell
+    - cli: Main CLI application (click-based)
+    - orchestrate: Execute complete orchestration pipeline
+    - log_stream: Real-time log viewer
+    - status: System status display
+    - TokenDisplay: Format token usage information
+    - PipelineTokenTracker: Track tokens per pipeline step
+    - SigilLogFormatter: Custom log formatter with token counts
 
-TODO: Implement CLI with click or typer
-TODO: Implement agent commands
-TODO: Implement config commands
-TODO: Implement memory commands
-TODO: Implement evolution commands
-TODO: Implement interactive REPL
+Usage:
+    # Run orchestration
+    python -m sigil.interfaces.cli.app orchestrate --task "Qualify lead" --session test-1
+
+    # Watch logs in real-time
+    python -m sigil.interfaces.cli.app log-stream
+
+    # Check status
+    python -m sigil.interfaces.cli.app status
+
+    # Run standalone monitor (separate terminal)
+    python scripts/monitor.py
 """
 
-__all__ = []  # Will export: CLI, command groups
+from sigil.interfaces.cli.monitoring import (
+    TokenDisplay,
+    PipelineTokenTracker,
+    SigilLogFormatter,
+    SigilLogAdapter,
+    RealTimeTokenCounter,
+    setup_execution_logging,
+    get_execution_logger,
+    get_log_file_path,
+    log_pipeline_step,
+    log_token_summary,
+    LOG_FILE_PATH,
+    TOTAL_TOKEN_BUDGET,
+)
+
+from sigil.interfaces.cli.app import (
+    cli,
+    main,
+)
+
+
+__all__ = [
+    # CLI commands
+    "cli",
+    "main",
+    # Monitoring
+    "TokenDisplay",
+    "PipelineTokenTracker",
+    "SigilLogFormatter",
+    "SigilLogAdapter",
+    "RealTimeTokenCounter",
+    # Logging utilities
+    "setup_execution_logging",
+    "get_execution_logger",
+    "get_log_file_path",
+    "log_pipeline_step",
+    "log_token_summary",
+    # Constants
+    "LOG_FILE_PATH",
+    "TOTAL_TOKEN_BUDGET",
+]
