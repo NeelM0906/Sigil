@@ -2203,6 +2203,112 @@ The existing implementation provides a solid foundation. The integration layer d
 
 ---
 
-*Document Version: 1.0.0*
+## Phase 7 Integration: Orchestrator
+
+Phase 6 contracts are integrated into the unified `SigilOrchestrator` introduced in Phase 7.
+The orchestrator coordinates contract validation as part of the request processing pipeline.
+
+### Orchestrator Contract Integration
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     SigilOrchestrator                           │
+│                                                                 │
+│  Request Processing Pipeline:                                   │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │                                                         │   │
+│  │  1. Request Validation                                  │   │
+│  │  2. Context Assembly (ContextManager)                   │   │
+│  │  3. Routing Decision (Router)                           │   │
+│  │  4. Execution (Reasoning/Planning)                      │   │
+│  │  5. CONTRACT VALIDATION (Phase 6)  <── Integration      │   │
+│  │     - ContractExecutor.execute()                        │   │
+│  │     - ValidationResult checked                          │   │
+│  │     - Retry if contract violated                        │   │
+│  │     - Fallback if retries exhausted                     │   │
+│  │  6. Response Assembly                                   │   │
+│  │                                                         │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Contract Validation Flow
+
+```
+Orchestrator.handle()
+    │
+    ├── Execute task/reasoning
+    │   └── Raw output generated
+    │
+    ├── Check if contract specified
+    │   └── if agent.contract_id is set
+    │
+    ├── ContractExecutor.execute()
+    │   ├── Validate output against contract
+    │   ├── If valid: return result
+    │   └── If invalid:
+    │       ├── Retry (up to max_retries)
+    │       └── Fallback (if retries exhausted)
+    │
+    └── Include validation_result in response
+```
+
+### Key Integration Points
+
+| Phase 6 Component | Orchestrator Usage | When Invoked |
+|-------------------|-------------------|--------------|
+| ContractExecutor | `_validate_output()` | After execution, if contract specified |
+| ValidationResult | Included in response | Always (if contract exists) |
+| RetryManager | Automatic retry | On validation failure |
+| FallbackManager | Graceful degradation | When retries exhausted |
+
+### Token Budget for Contracts
+
+The orchestrator reserves tokens for contract-related operations:
+
+- **Validation overhead**: 500-1000 tokens per validation
+- **Retry attempts**: Each retry uses additional reasoning tokens
+- **Fallback generation**: Up to 2000 tokens for fallback output
+
+Total contract budget: Up to 5% of session budget (12.8K tokens for 256K session)
+
+### Contract Events in Orchestrator Pipeline
+
+```
+OrchestratorRequestReceived
+    └── [Execution events...]
+    └── ContractValidationStarted
+        ├── ContractValidationSucceeded
+        │   └── OrchestratorResponseSent
+        └── ContractValidationFailed
+            └── ContractRetryAttempted (if retrying)
+                └── ContractValidationSucceeded (on retry success)
+            └── ContractFallbackTriggered (if retries exhausted)
+                └── OrchestratorResponseSent (with fallback)
+```
+
+### API Endpoints
+
+Contract management is exposed through the Phase 7 REST API:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/contracts` | POST | Create new contract |
+| `/api/v1/contracts/{id}` | GET | Get contract details |
+| `/api/v1/contracts/{id}` | PUT | Update contract |
+| `/api/v1/contracts/{id}` | DELETE | Delete contract |
+| `/api/v1/agents/{id}/contract` | PUT | Assign contract to agent |
+
+### Related Documentation
+
+- **Phase 7 Architecture**: `/docs/phase7-integration-architecture.md`
+- **Phase 7 API Contract**: `/docs/api-contract-phase7-integration.md`
+- **Phase 7 OpenAPI Spec**: `/docs/openapi-phase7-integration.yaml`
+- **Phase 7 API Guidelines**: `/docs/api-guidelines-phase7.md`
+
+---
+
+*Document Version: 1.1.0*
 *Last Updated: 2026-01-11*
 *Author: Systems Architecture Team*

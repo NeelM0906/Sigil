@@ -426,5 +426,76 @@ Week 3-4:
 
 ---
 
-*Document Version: 1.0.0*
+## Phase 7 Integration: Orchestrator
+
+Phase 5 components (Planner, PlanExecutor, ReasoningManager) are integrated into the unified
+`SigilOrchestrator` introduced in Phase 7. The orchestrator serves as the central entry point
+for all request processing and coordinates Phase 5 components as follows:
+
+### Orchestrator Integration Points
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     SigilOrchestrator                           │
+│                                                                 │
+│  Request → ContextManager → Router → [Phase 5 Components]       │
+│                                                                 │
+│  Phase 5 Integration:                                           │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │                                                         │   │
+│  │  1. Router provides complexity score to orchestrator    │   │
+│  │  2. Orchestrator invokes ReasoningManager.reason()      │   │
+│  │  3. For complex tasks (complexity > 0.5):               │   │
+│  │     - Orchestrator invokes Planner.generate()           │   │
+│  │     - PlanExecutor.execute() runs plan steps            │   │
+│  │  4. Results flow back through orchestrator              │   │
+│  │                                                         │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Key Integration Methods
+
+| Phase 5 Component | Orchestrator Method | Trigger |
+|-------------------|---------------------|---------|
+| ReasoningManager | `_execute_reasoning()` | All requests |
+| Planner | `_generate_plan()` | complexity > 0.5 |
+| PlanExecutor | `_execute_plan()` | Plan exists |
+
+### Token Budget Coordination
+
+The orchestrator allocates tokens to Phase 5 components from the total 256K budget:
+
+- **Reasoning**: Up to 50% (128K tokens) depending on strategy
+- **Planning**: Up to 15% (38.4K tokens) for plan generation
+- **Per-step execution**: Tracked and enforced by orchestrator
+
+### Event Flow
+
+Phase 5 events are now emitted through the orchestrator's event pipeline:
+
+```
+OrchestratorRequestReceived
+    └── ReasoningTaskStartedEvent
+        └── StrategySelectedEvent
+        └── [Strategy-specific events]
+        └── ReasoningCompletedEvent
+    └── PlanCreatedEvent (if planning)
+        └── PlanStepStartedEvent (per step)
+        └── PlanStepCompletedEvent (per step)
+        └── PlanCompletedEvent
+    └── OrchestratorResponseSent
+```
+
+### Related Documentation
+
+- **Phase 7 Architecture**: `/docs/phase7-integration-architecture.md`
+- **Phase 7 API Contract**: `/docs/api-contract-phase7-integration.md`
+- **Phase 7 OpenAPI Spec**: `/docs/openapi-phase7-integration.yaml`
+- **Phase 7 API Guidelines**: `/docs/api-guidelines-phase7.md`
+
+---
+
+*Document Version: 1.1.0*
 *Last Updated: 2026-01-11*

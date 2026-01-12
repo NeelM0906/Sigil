@@ -86,6 +86,11 @@ class EventType(Enum):
     CONTRACT_FALLBACK = "contract.fallback"
     CONTRACT_COMPLETED = "contract.completed"
 
+    # Evolution events (Phase 7)
+    EVOLUTION_STARTED = "evolution.started"
+    EVOLUTION_COMPLETED = "evolution.completed"
+    EVOLUTION_GENERATION = "evolution.generation"
+
     # Error events
     ERROR_OCCURRED = "error.occurred"
 

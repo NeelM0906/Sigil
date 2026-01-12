@@ -1,19 +1,64 @@
-"""Context module for Sigil v2 framework.
+"""Context management for Sigil v2 framework.
 
-This module implements context management for agent execution:
-- Context window optimization
-- Dynamic context assembly
-- Context compression and summarization
-- Multi-source context fusion
+This module provides context window management and compression
+for agent invocations.
 
 Key Components:
-    - ContextManager: Manages execution context
-    - ContextBuilder: Assembles context from sources
-    - ContextCompressor: Reduces context size
-    - ContextWindow: Token-aware context windowing
+    - ContextManager: Assembles optimized context windows
+    - ContextCompressor: Compresses context when over budget
+    - ContextSource: Enumeration of context sources
+    - ContextItem: Individual context items
 
-TODO: Export ContextManager once implemented
-TODO: Export context utilities once implemented
+Example:
+    >>> from sigil.context import ContextManager, ContextCompressor
+    >>>
+    >>> manager = ContextManager(max_tokens=128000)
+    >>> result = await manager.assemble(
+    ...     task="Qualify lead",
+    ...     session_id="sess-123",
+    ... )
 """
 
-__all__ = []  # Will export: ContextManager, ContextBuilder, ContextCompressor
+from sigil.context.manager import (
+    ContextManager,
+    ContextSource,
+    ContextItem,
+    ContextAssemblyResult,
+    ContextBudget,
+    ContextProvider,
+    MemoryContextProvider,
+    ConversationContextProvider,
+    DEFAULT_MAX_CONTEXT_TOKENS,
+    DEFAULT_RESERVED_FOR_RESPONSE,
+)
+
+from sigil.context.compression import (
+    ContextCompressor,
+    CompressionStrategy,
+    CompressionResult,
+    TruncateStrategy,
+    SummarizeStrategy,
+    PrioritizeStrategy,
+)
+
+__all__ = [
+    # Manager
+    "ContextManager",
+    "ContextSource",
+    "ContextItem",
+    "ContextAssemblyResult",
+    "ContextBudget",
+    "ContextProvider",
+    "MemoryContextProvider",
+    "ConversationContextProvider",
+    # Compression
+    "ContextCompressor",
+    "CompressionStrategy",
+    "CompressionResult",
+    "TruncateStrategy",
+    "SummarizeStrategy",
+    "PrioritizeStrategy",
+    # Constants
+    "DEFAULT_MAX_CONTEXT_TOKENS",
+    "DEFAULT_RESERVED_FOR_RESPONSE",
+]

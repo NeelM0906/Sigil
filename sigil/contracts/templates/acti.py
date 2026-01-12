@@ -516,6 +516,50 @@ def list_templates() -> list[str]:
     return list(CONTRACT_TEMPLATES.keys())
 
 
+def get_contract(name: str, **kwargs) -> Optional[Contract]:
+    """Get a contract by name (alias for get_template).
+
+    Args:
+        name: Contract name (e.g., 'lead_qualification').
+        **kwargs: Override arguments for the contract function.
+
+    Returns:
+        Contract instance if exists, None otherwise.
+    """
+    return get_template(name, **kwargs)
+
+
+def get_contract_for_intent(intent) -> Optional[str]:
+    """Get the recommended contract name for a routing intent.
+
+    Maps routing intents to appropriate contract templates.
+
+    Args:
+        intent: The Intent enum value from routing.
+
+    Returns:
+        Contract name string if a mapping exists, None otherwise.
+
+    Example:
+        >>> from sigil.routing.router import Intent
+        >>> get_contract_for_intent(Intent.CREATE_AGENT)
+        None  # Agent creation doesn't have a default contract
+    """
+    # Import here to avoid circular imports
+    from sigil.routing.router import Intent
+
+    intent_to_contract = {
+        Intent.CREATE_AGENT: None,  # No default contract for agent creation
+        Intent.RUN_AGENT: None,  # Contract depends on agent type
+        Intent.QUERY_MEMORY: None,  # Memory queries don't need contracts
+        Intent.MODIFY_AGENT: None,  # Agent modification doesn't need contracts
+        Intent.SYSTEM_COMMAND: None,  # System commands don't need contracts
+        Intent.GENERAL_CHAT: None,  # General chat doesn't need contracts
+    }
+
+    return intent_to_contract.get(intent)
+
+
 __all__ = [
     # Template functions
     "lead_qualification_contract",
@@ -526,5 +570,7 @@ __all__ = [
     # Registry utilities
     "CONTRACT_TEMPLATES",
     "get_template",
+    "get_contract",
+    "get_contract_for_intent",
     "list_templates",
 ]

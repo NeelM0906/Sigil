@@ -1,31 +1,72 @@
-"""REST API for Sigil v2 framework.
+"""FastAPI interface for Sigil v2 framework.
 
-This module implements the REST API for programmatic access:
-- Agent execution endpoints
-- Memory management endpoints
-- Configuration endpoints
-- Telemetry endpoints
-
-API Endpoints:
-    - POST /agents/{agent_id}/execute: Execute task
-    - GET /agents: List available agents
-    - POST /memory/write: Write to memory
-    - GET /memory/search: Search memory
-    - GET /config: Get configuration
-    - PUT /config: Update configuration
-    - GET /metrics: Get telemetry metrics
+This module provides the REST API and WebSocket interfaces.
 
 Key Components:
-    - APIServer: FastAPI server implementation
-    - APIRoutes: Route definitions
-    - APIMiddleware: Authentication and logging
-    - APISchemas: Request/response schemas
+    - app: FastAPI application instance
+    - create_app: Factory function for app creation
+    - run_server: CLI entry point for server
 
-TODO: Implement APIServer with FastAPI
-TODO: Implement agent execution endpoints
-TODO: Implement memory endpoints
-TODO: Implement configuration endpoints
-TODO: Implement authentication middleware
+Endpoints:
+    - POST /agents - Create agent
+    - GET /agents - List agents
+    - GET /agents/{name} - Get agent
+    - POST /agents/{name}/run - Run agent
+    - DELETE /agents/{name} - Delete agent
+    - POST /memory/search - Search memory
+    - POST /memory/store - Store memory
+    - GET /tools - List tools
+    - GET /health - Health check
+    - /ws/agents/{name}/run - WebSocket streaming
+
+Example:
+    >>> from sigil.interfaces.api import app, run_server
+    >>>
+    >>> # Run with uvicorn directly
+    >>> # uvicorn sigil.interfaces.api:app --reload
+    >>>
+    >>> # Or use the run_server function
+    >>> run_server(host="0.0.0.0", port=8000)
 """
 
-__all__ = []  # Will export: APIServer, APIRoutes
+from sigil.interfaces.api.server import (
+    app,
+    create_app,
+    run_server,
+    AppState,
+    get_state,
+    # Request models
+    AgentCreateRequest,
+    AgentRunRequest,
+    MemorySearchRequest,
+    MemoryStoreRequest,
+    # Response models
+    AgentResponse,
+    AgentRunResponse,
+    MemoryItem,
+    ToolInfo,
+    HealthResponse,
+    ErrorResponse,
+)
+
+__all__ = [
+    # Application
+    "app",
+    "create_app",
+    "run_server",
+    # State
+    "AppState",
+    "get_state",
+    # Request models
+    "AgentCreateRequest",
+    "AgentRunRequest",
+    "MemorySearchRequest",
+    "MemoryStoreRequest",
+    # Response models
+    "AgentResponse",
+    "AgentRunResponse",
+    "MemoryItem",
+    "ToolInfo",
+    "HealthResponse",
+    "ErrorResponse",
+]

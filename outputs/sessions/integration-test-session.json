@@ -1,0 +1,115 @@
+{
+  "session_id": "integration-test-session",
+  "created_at": "2026-01-12T03:00:38.553502+00:00",
+  "updated_at": "2026-01-12T03:01:05.607439+00:00",
+  "events": [
+    {
+      "event_id": "392f938b-ab05-4f17-9563-34b7449f5050",
+      "event_type": "message.added",
+      "timestamp": "2026-01-12T03:00:38.553376+00:00",
+      "session_id": "integration-test-session",
+      "correlation_id": "dd7fe63a-6c8b-42e4-a6b1-f559b5f8ebf9",
+      "payload": {
+        "request_id": "01de7926-7ebf-4d1c-93b2-61f8beb922c6",
+        "message_preview": "Create an agent that searches the web",
+        "started_at": "2026-01-12T03:00:38.553372+00:00"
+      }
+    },
+    {
+      "event_id": "a64ca00c-670f-42cd-ac68-6cc0c6e14b1d",
+      "event_type": "reasoning.strategy_selected",
+      "timestamp": "2026-01-12T03:00:38.553627+00:00",
+      "session_id": "integration-test-session",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "complexity": 0.5,
+        "reason": "auto_selected_for_complexity_0.50"
+      }
+    },
+    {
+      "event_id": "a6e7a602-1a64-4a05-bed4-33166549d891",
+      "event_type": "reasoning.completed",
+      "timestamp": "2026-01-12T03:00:38.553866+00:00",
+      "session_id": "integration-test-session",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "success": true,
+        "confidence": 0.7,
+        "tokens_used": 112,
+        "execution_time_seconds": 2.384185791015625e-05,
+        "error": null
+      }
+    },
+    {
+      "event_id": "854ce81d-e844-43ba-91dc-6de706cc41f1",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-12T03:00:38.554294+00:00",
+      "session_id": "integration-test-session",
+      "correlation_id": "dd7fe63a-6c8b-42e4-a6b1-f559b5f8ebf9",
+      "payload": {
+        "request_id": "01de7926-7ebf-4d1c-93b2-61f8beb922c6",
+        "status": "failed",
+        "tokens_used": 112,
+        "execution_time_ms": 0.9165420196950436,
+        "error_count": 1,
+        "completed_at": "2026-01-12T03:00:38.554289+00:00"
+      }
+    },
+    {
+      "event_id": "de965cb7-1936-46aa-812d-f7415fee879d",
+      "event_type": "message.added",
+      "timestamp": "2026-01-12T03:01:05.606275+00:00",
+      "session_id": "integration-test-session",
+      "correlation_id": "d5ec9f1a-9c0a-499b-887e-9e93f12a5e77",
+      "payload": {
+        "request_id": "f3cb2e67-c407-415a-bb12-c88dc9dc7f64",
+        "message_preview": "Create an agent that searches the web",
+        "started_at": "2026-01-12T03:01:05.606271+00:00"
+      }
+    },
+    {
+      "event_id": "0985bdca-7160-4ae0-a079-60923940dac7",
+      "event_type": "reasoning.strategy_selected",
+      "timestamp": "2026-01-12T03:01:05.606661+00:00",
+      "session_id": "integration-test-session",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "complexity": 0.5,
+        "reason": "auto_selected_for_complexity_0.50"
+      }
+    },
+    {
+      "event_id": "db72e553-ec49-495e-b1d1-2be303e74e0e",
+      "event_type": "reasoning.completed",
+      "timestamp": "2026-01-12T03:01:05.606908+00:00",
+      "session_id": "integration-test-session",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "success": true,
+        "confidence": 0.7,
+        "tokens_used": 112,
+        "execution_time_seconds": 2.193450927734375e-05,
+        "error": null
+      }
+    },
+    {
+      "event_id": "ac5844a1-bc1a-4e81-8ddd-bc7ce0adb9cb",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-12T03:01:05.607348+00:00",
+      "session_id": "integration-test-session",
+      "correlation_id": "d5ec9f1a-9c0a-499b-887e-9e93f12a5e77",
+      "payload": {
+        "request_id": "f3cb2e67-c407-415a-bb12-c88dc9dc7f64",
+        "status": "failed",
+        "tokens_used": 112,
+        "execution_time_ms": 1.0698329424485564,
+        "error_count": 1,
+        "completed_at": "2026-01-12T03:01:05.607341+00:00"
+      }
+    }
+  ]
+}

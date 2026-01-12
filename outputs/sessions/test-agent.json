@@ -1,0 +1,343 @@
+{
+  "session_id": "test-agent",
+  "created_at": "2026-01-12T03:00:57.396373+00:00",
+  "updated_at": "2026-01-12T03:01:05.649159+00:00",
+  "events": [
+    {
+      "event_id": "18e91250-53da-4aa0-a391-100e0b28899c",
+      "event_type": "evolution.completed",
+      "timestamp": "2026-01-12T03:00:57.396252+00:00",
+      "session_id": "test-agent",
+      "correlation_id": null,
+      "payload": {
+        "evolution_id": "b5340618-4982-46c0-a5fa-3e90394bde47",
+        "agent_name": "test-agent",
+        "status": "no_improvement",
+        "generations_run": 1,
+        "initial_score": 1.0,
+        "final_score": 1.0,
+        "improvement": 0.0,
+        "improvement_percentage": 0.0,
+        "best_version": null,
+        "safety_checks": {},
+        "total_time_ms": 0.17216696869581938,
+        "errors": []
+      }
+    },
+    {
+      "event_id": "13d4a899-ad5c-4ba7-ab0c-3e7972539992",
+      "event_type": "evolution.completed",
+      "timestamp": "2026-01-12T03:00:57.397550+00:00",
+      "session_id": "test-agent",
+      "correlation_id": null,
+      "payload": {
+        "evolution_id": "3fd1776a-56d3-4423-b641-51d8f9420833",
+        "agent_name": "test-agent",
+        "status": "no_improvement",
+        "generations_run": 2,
+        "initial_score": 1.0,
+        "final_score": 1.0,
+        "improvement": 0.0,
+        "improvement_percentage": 0.0,
+        "best_version": null,
+        "safety_checks": {},
+        "total_time_ms": 0.15066703781485558,
+        "errors": []
+      }
+    },
+    {
+      "event_id": "1b2d32b3-0bfa-4f50-9e4d-1507d856de35",
+      "event_type": "evolution.completed",
+      "timestamp": "2026-01-12T03:00:57.398510+00:00",
+      "session_id": "test-agent",
+      "correlation_id": null,
+      "payload": {
+        "evolution_id": "4455e1bf-d313-4d61-a89c-f526ce454f3c",
+        "agent_name": "test-agent",
+        "status": "no_improvement",
+        "generations_run": 2,
+        "initial_score": 1.0,
+        "final_score": 1.0,
+        "improvement": 0.0,
+        "improvement_percentage": 0.0,
+        "best_version": null,
+        "safety_checks": {},
+        "total_time_ms": 0.12433307711035013,
+        "errors": []
+      }
+    },
+    {
+      "event_id": "904c8eb0-945a-4593-9701-fe8dcd18757c",
+      "event_type": "evolution.completed",
+      "timestamp": "2026-01-12T03:00:57.399296+00:00",
+      "session_id": "test-agent",
+      "correlation_id": null,
+      "payload": {
+        "evolution_id": "78253e64-d900-442b-b172-fccb6e89425d",
+        "agent_name": "test-agent",
+        "status": "no_improvement",
+        "generations_run": 1,
+        "initial_score": 0.1619047619047619,
+        "final_score": 0.1619047619047619,
+        "improvement": 0.0,
+        "improvement_percentage": 0.0,
+        "best_version": null,
+        "safety_checks": {},
+        "total_time_ms": 0.08691695984452963,
+        "errors": []
+      }
+    },
+    {
+      "event_id": "945d59a1-1478-4c81-a01f-9a40149c689a",
+      "event_type": "evolution.completed",
+      "timestamp": "2026-01-12T03:00:57.401630+00:00",
+      "session_id": "test-agent",
+      "correlation_id": null,
+      "payload": {
+        "evolution_id": "8ee910cd-4d32-4dc5-9e33-2c7024ae19bd",
+        "agent_name": "test-agent",
+        "status": "no_improvement",
+        "generations_run": 1,
+        "initial_score": 1.0,
+        "final_score": 1.0,
+        "improvement": 0.0,
+        "improvement_percentage": 0.0,
+        "best_version": null,
+        "safety_checks": {},
+        "total_time_ms": 0.07595797069370747,
+        "errors": []
+      }
+    },
+    {
+      "event_id": "38a424e2-c3fe-4fd6-87f5-d1af331f6a72",
+      "event_type": "evolution.completed",
+      "timestamp": "2026-01-12T03:00:57.402758+00:00",
+      "session_id": "test-agent",
+      "correlation_id": null,
+      "payload": {
+        "evolution_id": "289c580d-dd67-4534-8e4b-56bd942dd6bb",
+        "agent_name": "test-agent",
+        "status": "no_improvement",
+        "generations_run": 1,
+        "initial_score": 1.0,
+        "final_score": 1.0,
+        "improvement": 0.0,
+        "improvement_percentage": 0.0,
+        "best_version": null,
+        "safety_checks": {},
+        "total_time_ms": 0.11445896234363317,
+        "errors": []
+      }
+    },
+    {
+      "event_id": "3885bd7e-3898-4e6c-b684-b87ee4175b17",
+      "event_type": "evolution.completed",
+      "timestamp": "2026-01-12T03:00:57.403879+00:00",
+      "session_id": "test-agent",
+      "correlation_id": null,
+      "payload": {
+        "evolution_id": "da2f285c-61d6-4aaf-a516-dbe7cdf7338c",
+        "agent_name": "test-agent",
+        "status": "no_improvement",
+        "generations_run": 1,
+        "initial_score": 1.0,
+        "final_score": 1.0,
+        "improvement": 0.0,
+        "improvement_percentage": 0.0,
+        "best_version": null,
+        "safety_checks": {},
+        "total_time_ms": 0.08775002788752317,
+        "errors": []
+      }
+    },
+    {
+      "event_id": "f806c35b-325a-4a47-a468-7707c3933fa8",
+      "event_type": "evolution.completed",
+      "timestamp": "2026-01-12T03:00:57.404908+00:00",
+      "session_id": "test-agent",
+      "correlation_id": null,
+      "payload": {
+        "evolution_id": "93b6a7e3-f8ee-4505-af5e-4190f036a05d",
+        "agent_name": "test-agent",
+        "status": "no_improvement",
+        "generations_run": 1,
+        "initial_score": 1.0,
+        "final_score": 1.0,
+        "improvement": 0.0,
+        "improvement_percentage": 0.0,
+        "best_version": null,
+        "safety_checks": {},
+        "total_time_ms": 0.08387491106987,
+        "errors": []
+      }
+    },
+    {
+      "event_id": "062d2a26-1fb1-4b56-98c3-3520713f1184",
+      "event_type": "evolution.completed",
+      "timestamp": "2026-01-12T03:01:05.640026+00:00",
+      "session_id": "test-agent",
+      "correlation_id": null,
+      "payload": {
+        "evolution_id": "ecdbb719-71a2-4a8e-9de2-30f2425db7be",
+        "agent_name": "test-agent",
+        "status": "no_improvement",
+        "generations_run": 1,
+        "initial_score": 1.0,
+        "final_score": 1.0,
+        "improvement": 0.0,
+        "improvement_percentage": 0.0,
+        "best_version": null,
+        "safety_checks": {},
+        "total_time_ms": 0.11212495155632496,
+        "errors": []
+      }
+    },
+    {
+      "event_id": "4b460d3b-f59f-4756-9f06-7d4b2af8d2c8",
+      "event_type": "evolution.completed",
+      "timestamp": "2026-01-12T03:01:05.641115+00:00",
+      "session_id": "test-agent",
+      "correlation_id": null,
+      "payload": {
+        "evolution_id": "acd6d405-e078-4caf-bcd9-7c5dca920708",
+        "agent_name": "test-agent",
+        "status": "no_improvement",
+        "generations_run": 2,
+        "initial_score": 1.0,
+        "final_score": 1.0,
+        "improvement": 0.0,
+        "improvement_percentage": 0.0,
+        "best_version": null,
+        "safety_checks": {},
+        "total_time_ms": 0.14529097825288773,
+        "errors": []
+      }
+    },
+    {
+      "event_id": "cd8869f5-a3bb-41d1-a957-6ee59f398e5d",
+      "event_type": "evolution.completed",
+      "timestamp": "2026-01-12T03:01:05.642194+00:00",
+      "session_id": "test-agent",
+      "correlation_id": null,
+      "payload": {
+        "evolution_id": "153f87e0-6d6d-467e-81bc-f16e53fc278c",
+        "agent_name": "test-agent",
+        "status": "no_improvement",
+        "generations_run": 2,
+        "initial_score": 1.0,
+        "final_score": 1.0,
+        "improvement": 0.0,
+        "improvement_percentage": 0.0,
+        "best_version": null,
+        "safety_checks": {},
+        "total_time_ms": 0.1591250766068697,
+        "errors": []
+      }
+    },
+    {
+      "event_id": "e6e991f4-2cc2-4e70-b6dc-07f179c2f761",
+      "event_type": "evolution.completed",
+      "timestamp": "2026-01-12T03:01:05.643160+00:00",
+      "session_id": "test-agent",
+      "correlation_id": null,
+      "payload": {
+        "evolution_id": "e508bf31-af69-480f-8434-3c338b06be17",
+        "agent_name": "test-agent",
+        "status": "no_improvement",
+        "generations_run": 1,
+        "initial_score": 0.1619047619047619,
+        "final_score": 0.1619047619047619,
+        "improvement": 0.0,
+        "improvement_percentage": 0.0,
+        "best_version": null,
+        "safety_checks": {},
+        "total_time_ms": 0.09616708848625422,
+        "errors": []
+      }
+    },
+    {
+      "event_id": "f1a564bc-91d7-41f9-a3af-7a005dbc5a95",
+      "event_type": "evolution.completed",
+      "timestamp": "2026-01-12T03:01:05.645695+00:00",
+      "session_id": "test-agent",
+      "correlation_id": null,
+      "payload": {
+        "evolution_id": "d107128d-40be-4f7d-a48d-ff1b329c9d4e",
+        "agent_name": "test-agent",
+        "status": "no_improvement",
+        "generations_run": 1,
+        "initial_score": 1.0,
+        "final_score": 1.0,
+        "improvement": 0.0,
+        "improvement_percentage": 0.0,
+        "best_version": null,
+        "safety_checks": {},
+        "total_time_ms": 0.09070790838450193,
+        "errors": []
+      }
+    },
+    {
+      "event_id": "e1b533c1-e18a-48ee-a14b-9163e753f2a2",
+      "event_type": "evolution.completed",
+      "timestamp": "2026-01-12T03:01:05.646724+00:00",
+      "session_id": "test-agent",
+      "correlation_id": null,
+      "payload": {
+        "evolution_id": "fe1b1204-77b5-4cbd-8843-1105b292d137",
+        "agent_name": "test-agent",
+        "status": "no_improvement",
+        "generations_run": 1,
+        "initial_score": 1.0,
+        "final_score": 1.0,
+        "improvement": 0.0,
+        "improvement_percentage": 0.0,
+        "best_version": null,
+        "safety_checks": {},
+        "total_time_ms": 0.0968750100582838,
+        "errors": []
+      }
+    },
+    {
+      "event_id": "d8c7735d-4112-458e-8824-4b11a705d7f1",
+      "event_type": "evolution.completed",
+      "timestamp": "2026-01-12T03:01:05.647916+00:00",
+      "session_id": "test-agent",
+      "correlation_id": null,
+      "payload": {
+        "evolution_id": "19d04eb0-4cba-4d89-8211-79853711b7d8",
+        "agent_name": "test-agent",
+        "status": "no_improvement",
+        "generations_run": 1,
+        "initial_score": 1.0,
+        "final_score": 1.0,
+        "improvement": 0.0,
+        "improvement_percentage": 0.0,
+        "best_version": null,
+        "safety_checks": {},
+        "total_time_ms": 0.07850001566112041,
+        "errors": []
+      }
+    },
+    {
+      "event_id": "c4e1523d-c715-4b4c-9fa3-a96f417faa29",
+      "event_type": "evolution.completed",
+      "timestamp": "2026-01-12T03:01:05.649078+00:00",
+      "session_id": "test-agent",
+      "correlation_id": null,
+      "payload": {
+        "evolution_id": "06035450-9d18-4f29-bc9b-108560f51213",
+        "agent_name": "test-agent",
+        "status": "no_improvement",
+        "generations_run": 1,
+        "initial_score": 1.0,
+        "final_score": 1.0,
+        "improvement": 0.0,
+        "improvement_percentage": 0.0,
+        "best_version": null,
+        "safety_checks": {},
+        "total_time_ms": 0.07487495895475149,
+        "errors": []
+      }
+    }
+  ]
+}
