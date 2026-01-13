@@ -6,7 +6,7 @@ Usage:
     python -m sigil.interfaces.cli status
 """
 
-from sigil.interfaces.cli.app import main
-
 if __name__ == "__main__":
+    # Import inside if __name__ to avoid RuntimeWarning about module already loaded
+    from sigil.interfaces.cli.app import main
     main()

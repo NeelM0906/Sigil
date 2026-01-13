@@ -26,6 +26,7 @@ import asyncio
 import hashlib
 import json
 import logging
+import re
 import time
 from datetime import datetime, timezone, timedelta
 from typing import Any, Optional
@@ -44,6 +45,7 @@ from sigil.planning.schemas import (
     StepType,
     generate_uuid,
 )
+from sigil.planning.executors.builtin_executor import BuiltinToolExecutor
 
 
 # =============================================================================
@@ -159,6 +161,245 @@ class CacheEntry:
     def touch(self) -> None:
         """Record a cache hit."""
         self.hits += 1
+
+
+# =============================================================================
+# Tool Description Registry
+# =============================================================================
+
+# Builtin tool descriptions with argument schemas
+BUILTIN_TOOL_DESCRIPTIONS: dict[str, dict[str, Any]] = {
+    "memory.recall": {
+        "description": "Retrieve relevant memories from the knowledge base using semantic search",
+        "arguments": {
+            "query": {"type": "string", "required": True, "description": "Memory search query"},
+            "k": {"type": "integer", "required": False, "default": 5, "description": "Number of memories to retrieve"},
+            "category": {"type": "string", "required": False, "description": "Filter by memory category"},
+            "mode": {"type": "string", "required": False, "default": "hybrid", "description": "Search mode: 'semantic', 'keyword', or 'hybrid'"},
+        },
+    },
+    "memory.retrieve": {
+        "description": "Alias for memory.recall - retrieve memories by query",
+        "arguments": {
+            "query": {"type": "string", "required": True, "description": "Memory search query"},
+            "k": {"type": "integer", "required": False, "default": 5, "description": "Number of memories to retrieve"},
+        },
+    },
+    "memory.store": {
+        "description": "Store a new fact or memory in the knowledge base",
+        "arguments": {
+            "content": {"type": "string", "required": True, "description": "Content to store"},
+            "category": {"type": "string", "required": False, "description": "Memory category"},
+            "confidence": {"type": "number", "required": False, "default": 1.0, "description": "Confidence score (0.0-1.0)"},
+        },
+    },
+    "memory.remember": {
+        "description": "Alias for memory.store - store new information",
+        "arguments": {
+            "content": {"type": "string", "required": True, "description": "Content to remember"},
+            "category": {"type": "string", "required": False, "description": "Memory category"},
+        },
+    },
+    "memory.list_categories": {
+        "description": "List all available memory categories",
+        "arguments": {},
+    },
+    "memory.get_category": {
+        "description": "Get all memories from a specific category",
+        "arguments": {
+            "name": {"type": "string", "required": True, "description": "Category name"},
+        },
+    },
+    "planning.create_plan": {
+        "description": "Create a new execution plan for a sub-goal",
+        "arguments": {
+            "goal": {"type": "string", "required": True, "description": "Goal to plan for"},
+            "context": {"type": "object", "required": False, "description": "Additional context"},
+            "tools": {"type": "array", "required": False, "description": "Available tools"},
+            "max_steps": {"type": "integer", "required": False, "default": 10, "description": "Maximum steps"},
+        },
+    },
+    "planning.get_status": {
+        "description": "Get the execution status of a plan",
+        "arguments": {
+            "plan_id": {"type": "string", "required": True, "description": "Plan identifier"},
+        },
+    },
+}
+
+# MCP tool descriptions (category-level with capabilities)
+MCP_TOOL_DESCRIPTIONS: dict[str, dict[str, Any]] = {
+    "websearch": {
+        "description": "Tavily web search and research capabilities",
+        "tools": {
+            "search": {
+                "description": "Search the web for information",
+                "arguments": {
+                    "query": {"type": "string", "required": True, "description": "Search query"},
+                    "max_results": {"type": "integer", "required": False, "default": 5, "description": "Maximum results to return"},
+                },
+            },
+            "extract": {
+                "description": "Extract content from a specific URL",
+                "arguments": {
+                    "url": {"type": "string", "required": True, "description": "URL to extract content from"},
+                },
+            },
+        },
+    },
+    "voice": {
+        "description": "ElevenLabs voice synthesis and text-to-speech",
+        "tools": {
+            "text_to_speech": {
+                "description": "Convert text to speech audio",
+                "arguments": {
+                    "text": {"type": "string", "required": True, "description": "Text to convert"},
+                    "voice_id": {"type": "string", "required": False, "description": "Voice identifier"},
+                },
+            },
+            "list_voices": {
+                "description": "List available voices",
+                "arguments": {},
+            },
+        },
+    },
+    "calendar": {
+        "description": "Google Calendar integration for scheduling",
+        "tools": {
+            "list_events": {
+                "description": "List calendar events",
+                "arguments": {
+                    "start_time": {"type": "string", "required": False, "description": "Start time (ISO format)"},
+                    "end_time": {"type": "string", "required": False, "description": "End time (ISO format)"},
+                    "max_results": {"type": "integer", "required": False, "default": 10, "description": "Maximum events"},
+                },
+            },
+            "create_event": {
+                "description": "Create a new calendar event",
+                "arguments": {
+                    "title": {"type": "string", "required": True, "description": "Event title"},
+                    "start_time": {"type": "string", "required": True, "description": "Start time (ISO format)"},
+                    "end_time": {"type": "string", "required": True, "description": "End time (ISO format)"},
+                    "description": {"type": "string", "required": False, "description": "Event description"},
+                    "attendees": {"type": "array", "required": False, "description": "List of attendee emails"},
+                },
+            },
+            "get_freebusy": {
+                "description": "Check availability for a time range",
+                "arguments": {
+                    "start_time": {"type": "string", "required": True, "description": "Start time"},
+                    "end_time": {"type": "string", "required": True, "description": "End time"},
+                },
+            },
+        },
+    },
+    "communication": {
+        "description": "Twilio SMS and voice communication",
+        "tools": {
+            "send_sms": {
+                "description": "Send an SMS message",
+                "arguments": {
+                    "to": {"type": "string", "required": True, "description": "Recipient phone number"},
+                    "body": {"type": "string", "required": True, "description": "Message content"},
+                    "from": {"type": "string", "required": False, "description": "Sender phone number"},
+                },
+            },
+            "make_call": {
+                "description": "Initiate a phone call",
+                "arguments": {
+                    "to": {"type": "string", "required": True, "description": "Recipient phone number"},
+                    "from": {"type": "string", "required": True, "description": "Caller phone number"},
+                    "message": {"type": "string", "required": False, "description": "Message to speak"},
+                },
+            },
+        },
+    },
+    "crm": {
+        "description": "HubSpot CRM for contact and deal management",
+        "tools": {
+            "get_contact": {
+                "description": "Get contact information",
+                "arguments": {
+                    "email": {"type": "string", "required": False, "description": "Contact email"},
+                    "contact_id": {"type": "string", "required": False, "description": "Contact ID"},
+                },
+            },
+            "create_contact": {
+                "description": "Create a new contact",
+                "arguments": {
+                    "email": {"type": "string", "required": True, "description": "Contact email"},
+                    "first_name": {"type": "string", "required": False, "description": "First name"},
+                    "last_name": {"type": "string", "required": False, "description": "Last name"},
+                    "company": {"type": "string", "required": False, "description": "Company name"},
+                },
+            },
+            "get_deals": {
+                "description": "Get deals for a contact",
+                "arguments": {
+                    "contact_id": {"type": "string", "required": False, "description": "Contact ID"},
+                    "stage": {"type": "string", "required": False, "description": "Deal stage filter"},
+                },
+            },
+        },
+    },
+}
+
+
+def get_tool_description(tool_name: str) -> Optional[dict[str, Any]]:
+    """Get the description and arguments for a tool.
+
+    Args:
+        tool_name: Full tool name (e.g., "websearch.search", "memory.recall").
+
+    Returns:
+        Tool description dictionary with 'description' and 'arguments' keys,
+        or None if tool is not found.
+    """
+    # Check builtin tools first
+    if tool_name in BUILTIN_TOOL_DESCRIPTIONS:
+        return BUILTIN_TOOL_DESCRIPTIONS[tool_name]
+
+    # Parse tool name for MCP tools
+    parts = tool_name.split(".", 1)
+    if len(parts) != 2:
+        return None
+
+    category, operation = parts
+
+    # Check MCP tool categories
+    if category in MCP_TOOL_DESCRIPTIONS:
+        category_info = MCP_TOOL_DESCRIPTIONS[category]
+        tools = category_info.get("tools", {})
+        if operation in tools:
+            return tools[operation]
+
+    return None
+
+
+def format_tool_for_prompt(tool_name: str, tool_info: dict[str, Any]) -> str:
+    """Format a tool description for inclusion in planning prompt.
+
+    Args:
+        tool_name: Full tool name.
+        tool_info: Tool description dictionary.
+
+    Returns:
+        Formatted string for the planning prompt.
+    """
+    lines = [f"  Tool: {tool_name}"]
+    lines.append(f"    Description: {tool_info.get('description', 'No description')}")
+
+    arguments = tool_info.get("arguments", {})
+    if arguments:
+        lines.append("    Arguments:")
+        for arg_name, arg_info in arguments.items():
+            arg_type = arg_info.get("type", "any")
+            required = "required" if arg_info.get("required", False) else "optional"
+            default = f", default={arg_info['default']}" if "default" in arg_info else ""
+            desc = arg_info.get("description", "")
+            lines.append(f"      - {arg_name} ({arg_type}, {required}{default}): {desc}")
+
+    return "\n".join(lines)
 
 
 # =============================================================================
@@ -306,12 +547,13 @@ class Planner:
         tools: list[str],
         max_steps: int,
         constraints: PlanConstraints,
+        use_tool_aware: bool = True,
     ) -> Plan:
         """Generate a plan using LLM decomposition.
 
         This method uses the LLM to decompose a goal into executable steps.
-        In production, this would call the actual LLM API. For now, we provide
-        a structured decomposition based on goal analysis.
+        When use_tool_aware=True, it generates plans with full tool metadata
+        including tool names, arguments, and executor types.
 
         Args:
             goal: The goal to plan for.
@@ -319,18 +561,40 @@ class Planner:
             tools: Available tools.
             max_steps: Maximum number of steps.
             constraints: Planning constraints.
+            use_tool_aware: Whether to use tool-aware planning (default True).
 
         Returns:
-            Generated Plan.
+            Generated Plan with tool metadata populated.
         """
-        # Build the planning prompt
-        prompt = self._build_planning_prompt(goal, context, tools, constraints)
+        # Expand tool categories to full tool names
+        expanded_tools = self._expand_tool_categories(tools) if tools else []
 
-        # In production, this would call the LLM
-        # For now, generate a structured plan based on goal analysis
-        steps = await self._structured_decomposition(
-            goal, context, tools, max_steps, constraints
-        )
+        if use_tool_aware and expanded_tools:
+            # Use tool-aware planning with detailed prompts
+            prompt = self._build_tool_aware_planning_prompt(
+                goal=goal,
+                context=context,
+                available_tools=expanded_tools,
+                constraints=constraints,
+            )
+
+            # In production, this would call the LLM API with the prompt
+            # For now, use structured decomposition with tool awareness
+            llm_response = await self._simulate_tool_aware_llm_response(
+                goal, context, expanded_tools, max_steps, constraints
+            )
+
+            # Parse the LLM response to extract tool metadata
+            steps = self._parse_tool_aware_plan(llm_response, expanded_tools)
+
+            # Validate and enrich with executor type information
+            steps = self._validate_and_enrich_tools(steps, expanded_tools)
+        else:
+            # Fall back to legacy planning (no tool metadata)
+            prompt = self._build_planning_prompt(goal, context, tools, constraints)
+            steps = await self._structured_decomposition(
+                goal, context, tools, max_steps, constraints
+            )
 
         # Track tokens (simulated for now)
         tokens_used = len(prompt) // 4 + len(str(steps)) // 4
@@ -352,6 +616,150 @@ class Planner:
         )
 
         return plan
+
+    async def _simulate_tool_aware_llm_response(
+        self,
+        goal: str,
+        context: dict[str, Any],
+        available_tools: list[str],
+        max_steps: int,
+        constraints: PlanConstraints,
+    ) -> str:
+        """Simulate an LLM response for tool-aware planning.
+
+        This method generates a structured plan response in the expected format.
+        In production, this would be replaced by actual LLM API calls.
+
+        Args:
+            goal: The goal to plan for.
+            context: Context information.
+            available_tools: List of available tool names.
+            max_steps: Maximum number of steps.
+            constraints: Planning constraints.
+
+        Returns:
+            Simulated LLM response string in the expected plan format.
+        """
+        goal_lower = goal.lower()
+        response_parts = []
+        step_num = 1
+        dependencies = []
+
+        # Check for memory tools
+        has_memory = any("memory" in t for t in available_tools)
+        # Check for search tools
+        has_search = any("search" in t or "websearch" in t for t in available_tools)
+        # Check for calendar tools
+        has_calendar = any("calendar" in t for t in available_tools)
+        # Check for communication tools
+        has_comm = any("communication" in t or "sms" in t for t in available_tools)
+        # Check for CRM tools
+        has_crm = any("crm" in t for t in available_tools)
+
+        # Step 1: Memory recall if available and relevant
+        if has_memory:
+            response_parts.append(f"""Step {step_num}: Retrieve relevant context from memory
+  Tool: memory.recall
+  Args: {{"query": "{goal[:100]}", "k": 5}}
+  Depends: []""")
+            dependencies.append(step_num)
+            step_num += 1
+
+        # Step 2: Web search if relevant keywords and tool available
+        if has_search and any(kw in goal_lower for kw in ["research", "find", "search", "news", "latest", "investigate"]):
+            # Build search query from goal
+            search_query = goal.replace("Research ", "").replace("Find ", "").replace("Search for ", "")[:100]
+            response_parts.append(f"""Step {step_num}: Search for relevant information
+  Tool: websearch.search
+  Args: {{"query": "{search_query}", "max_results": 5}}
+  Depends: []""")
+            dependencies.append(step_num)
+            step_num += 1
+
+        # Step 3: CRM lookup if relevant
+        if has_crm and any(kw in goal_lower for kw in ["lead", "contact", "customer", "client", "deal"]):
+            # Extract potential contact info from context
+            email = context.get("email", context.get("contact_email", ""))
+            if email:
+                response_parts.append(f"""Step {step_num}: Look up contact information in CRM
+  Tool: crm.get_contact
+  Args: {{"email": "{email}"}}
+  Depends: []""")
+            else:
+                response_parts.append(f"""Step {step_num}: Search for contact in CRM
+  Tool: crm.get_contact
+  Args: {{}}
+  Depends: []""")
+            dependencies.append(step_num)
+            step_num += 1
+
+        # Step 4: Calendar check if scheduling related
+        if has_calendar and any(kw in goal_lower for kw in ["schedule", "meeting", "appointment", "calendar", "book"]):
+            response_parts.append(f"""Step {step_num}: Check calendar availability
+  Tool: calendar.list_events
+  Args: {{"max_results": 10}}
+  Depends: []""")
+            dependencies.append(step_num)
+            step_num += 1
+
+        # Step 5: Reasoning/Analysis step - depends on previous steps
+        if dependencies:
+            deps_str = ", ".join(str(d) for d in dependencies)
+            response_parts.append(f"""Step {step_num}: Analyze gathered information and determine next actions
+  Tool: reasoning
+  Args: {{"task": "Analyze the results from previous steps and synthesize findings for: {goal[:80]}"}}
+  Depends: [{deps_str}]""")
+            step_num += 1
+
+        # Step 6: Communication step if needed
+        if has_comm and any(kw in goal_lower for kw in ["contact", "reach", "notify", "send", "message"]):
+            response_parts.append(f"""Step {step_num}: Send communication
+  Tool: communication.send_sms
+  Args: {{"to": "{{{{context.phone}}}}", "body": "Following up on {goal[:50]}"}}
+  Depends: [{step_num - 1}]""")
+            step_num += 1
+
+        # Step 7: Calendar creation if scheduling
+        if has_calendar and any(kw in goal_lower for kw in ["schedule", "book", "create meeting"]):
+            response_parts.append(f"""Step {step_num}: Schedule meeting
+  Tool: calendar.create_event
+  Args: {{"title": "{goal[:50]}", "start_time": "{{{{computed.start_time}}}}", "end_time": "{{{{computed.end_time}}}}"}}
+  Depends: [{step_num - 1}]""")
+            step_num += 1
+
+        # Step 8: Memory store if we should remember results
+        if has_memory and len(response_parts) > 1:
+            response_parts.append(f"""Step {step_num}: Store results in memory for future reference
+  Tool: memory.store
+  Args: {{"content": "Completed task: {goal[:80]}", "category": "task_results"}}
+  Depends: [{step_num - 1}]""")
+            step_num += 1
+
+        # Final reasoning step for summary
+        if len(response_parts) > 0:
+            final_deps = list(range(1, step_num))
+            deps_str = ", ".join(str(d) for d in final_deps[-3:])  # Depend on last 3 steps
+            response_parts.append(f"""Step {step_num}: Generate final response and summary
+  Tool: reasoning
+  Args: {{"task": "Summarize the results of all previous steps and provide a comprehensive response to: {goal[:80]}"}}
+  Depends: [{deps_str}]""")
+
+        # If no steps were generated, create a basic reasoning plan
+        if not response_parts:
+            response_parts.append(f"""Step 1: Analyze the goal and formulate approach
+  Tool: reasoning
+  Args: {{"task": "Analyze and plan approach for: {goal}"}}
+  Depends: []""")
+            response_parts.append(f"""Step 2: Execute the plan
+  Tool: reasoning
+  Args: {{"task": "Execute the planned approach and generate response for: {goal}"}}
+  Depends: [1]""")
+
+        # Limit to max_steps
+        if len(response_parts) > max_steps:
+            response_parts = response_parts[:max_steps]
+
+        return "\n\n".join(response_parts)
 
     def _build_planning_prompt(
         self,
@@ -399,6 +807,339 @@ Step N: [Description]
   Depends: [step numbers] or None
 
 Generate the plan:"""
+
+    def _build_tool_aware_planning_prompt(
+        self,
+        goal: str,
+        context: dict[str, Any],
+        available_tools: list[str],
+        constraints: PlanConstraints,
+    ) -> str:
+        """Build a tool-aware planning prompt for LLM.
+
+        This method generates a comprehensive prompt that includes:
+        - The goal to achieve
+        - Available tools with their descriptions and argument schemas
+        - Example plan format with tool specifications
+        - Constraints for plan generation
+
+        Args:
+            goal: The goal to plan for.
+            context: Context information.
+            available_tools: List of available tool names.
+            constraints: Planning constraints.
+
+        Returns:
+            Formatted prompt string for tool-aware planning.
+        """
+        # Build context section
+        context_str = json.dumps(context, indent=2) if context else "No additional context"
+
+        # Build tool descriptions section
+        tool_sections = []
+        tool_index = 1
+
+        for tool_name in available_tools:
+            tool_info = get_tool_description(tool_name)
+            if tool_info:
+                formatted = format_tool_for_prompt(tool_name, tool_info)
+                tool_sections.append(f"Tool {tool_index}:\n{formatted}")
+                tool_index += 1
+            else:
+                # Unknown tool, add basic entry
+                tool_sections.append(f"Tool {tool_index}:\n  Tool: {tool_name}\n    Description: External tool (no schema available)")
+                tool_index += 1
+
+        # Add reasoning as a special "tool"
+        tool_sections.append(f"""Tool {tool_index}:
+  Tool: reasoning
+    Description: Use reasoning to analyze, synthesize, or generate responses without external tools
+    Arguments:
+      - task (string, required): Description of the reasoning task to perform""")
+
+        tools_str = "\n\n".join(tool_sections) if tool_sections else "No tools available"
+
+        # Build the complete prompt
+        return f"""You are a planning agent. Your task is to decompose the given goal into a sequence of executable steps.
+Each step should specify exactly which tool to use and with what arguments.
+
+GOAL: {goal}
+
+CONTEXT:
+{context_str}
+
+AVAILABLE TOOLS:
+{tools_str}
+
+CONSTRAINTS:
+- Maximum steps: {constraints.max_steps}
+- Maximum parallel executions: {constraints.max_parallel}
+- Maximum token budget: {constraints.max_tokens}
+- Steps should be atomic and focused on a single action
+
+PLAN FORMAT:
+For each step, provide the following on separate lines:
+Step N: [Brief description of what this step accomplishes]
+  Tool: [exact tool name, e.g., "websearch.search" or "reasoning"]
+  Args: {{"arg1": "value1", "arg2": "value2"}} (valid JSON object)
+  Depends: [list of step numbers this depends on, e.g., [1, 2] or []]
+
+EXAMPLE PLAN:
+Step 1: Search for recent news about the topic
+  Tool: websearch.search
+  Args: {{"query": "latest news 2026", "max_results": 5}}
+  Depends: []
+
+Step 2: Recall relevant information from memory
+  Tool: memory.recall
+  Args: {{"query": "related context", "k": 3}}
+  Depends: []
+
+Step 3: Analyze and synthesize the gathered information
+  Tool: reasoning
+  Args: {{"task": "Analyze the search results and memories to create a comprehensive summary"}}
+  Depends: [1, 2]
+
+IMPORTANT:
+- Use exact tool names from the AVAILABLE TOOLS section
+- Args must be valid JSON with proper quoting
+- For reasoning steps, use Tool: reasoning with Args containing a "task" key
+- Dependencies are step numbers (integers), not step IDs
+- Steps with no dependencies should have Depends: []
+
+Now generate a plan for the goal above:"""
+
+    def _parse_tool_aware_plan(
+        self,
+        llm_response: str,
+        available_tools: list[str],
+    ) -> list[PlanStep]:
+        """Parse an LLM-generated tool-aware plan into PlanStep objects.
+
+        This method extracts tool metadata from the structured LLM response,
+        including tool names, arguments, and dependencies.
+
+        Args:
+            llm_response: The LLM-generated plan text.
+            available_tools: List of available tool names for validation.
+
+        Returns:
+            List of PlanStep objects with populated tool metadata.
+        """
+        steps: list[PlanStep] = []
+        step_id_map: dict[int, str] = {}  # Map step numbers to step IDs
+
+        # Pattern to match step blocks
+        # Matches "Step N:" followed by description and subsequent lines
+        step_pattern = re.compile(
+            r"Step\s+(\d+):\s*(.+?)(?=(?:Step\s+\d+:|$))",
+            re.DOTALL | re.IGNORECASE
+        )
+
+        matches = step_pattern.findall(llm_response)
+
+        for step_num_str, step_content in matches:
+            step_num = int(step_num_str)
+            step_id = generate_uuid()
+            step_id_map[step_num] = step_id
+
+            # Parse the step content
+            lines = step_content.strip().split("\n")
+            description = lines[0].strip() if lines else f"Step {step_num}"
+
+            # Extract tool name
+            tool_name = None
+            tool_match = re.search(r"^\s*Tool:\s*(.+?)\s*$", step_content, re.MULTILINE | re.IGNORECASE)
+            if tool_match:
+                tool_name = tool_match.group(1).strip()
+                # Clean up quotes if present
+                tool_name = tool_name.strip('"\'')
+
+            # Extract arguments
+            tool_args = {}
+            args_match = re.search(r"^\s*Args:\s*(\{.+?\})\s*$", step_content, re.MULTILINE | re.IGNORECASE)
+            if args_match:
+                args_str = args_match.group(1).strip()
+                try:
+                    tool_args = json.loads(args_str)
+                except json.JSONDecodeError:
+                    # Try to fix common JSON issues
+                    try:
+                        # Replace single quotes with double quotes
+                        fixed_args = args_str.replace("'", '"')
+                        tool_args = json.loads(fixed_args)
+                    except json.JSONDecodeError:
+                        logger.warning(f"Failed to parse args for step {step_num}: {args_str}")
+                        tool_args = {}
+
+            # Extract dependencies
+            dependencies: list[int] = []
+            depends_match = re.search(r"^\s*Depends:\s*\[([^\]]*)\]", step_content, re.MULTILINE | re.IGNORECASE)
+            if depends_match:
+                depends_str = depends_match.group(1).strip()
+                if depends_str:
+                    # Parse comma-separated integers
+                    try:
+                        dependencies = [int(d.strip()) for d in depends_str.split(",") if d.strip()]
+                    except ValueError:
+                        logger.warning(f"Failed to parse dependencies for step {step_num}: {depends_str}")
+                        dependencies = []
+
+            # Create the step
+            step = PlanStep(
+                step_id=step_id,
+                description=description,
+                dependencies=[],  # Will be resolved after all steps are created
+                tool_calls=[tool_name] if tool_name and tool_name != "reasoning" else None,
+            )
+
+            # Store parsed metadata for later enrichment
+            step._parsed_tool_name = tool_name  # type: ignore
+            step._parsed_tool_args = tool_args  # type: ignore
+            step._parsed_dependencies = dependencies  # type: ignore
+
+            steps.append(step)
+
+        # Resolve dependencies using step_id_map
+        for step in steps:
+            parsed_deps = getattr(step, "_parsed_dependencies", [])
+            resolved_deps = []
+            for dep_num in parsed_deps:
+                if dep_num in step_id_map:
+                    resolved_deps.append(step_id_map[dep_num])
+                else:
+                    logger.warning(f"Step {step.step_id} references unknown dependency: Step {dep_num}")
+            step.dependencies = resolved_deps
+
+        return steps
+
+    def _validate_and_enrich_tools(
+        self,
+        steps: list[PlanStep],
+        available_tools: list[str],
+    ) -> list[PlanStep]:
+        """Validate and enrich plan steps with tool executor type information.
+
+        This method:
+        - Validates that tool names exist in available_tools
+        - Sets tool_executor_type based on tool category (builtin vs mcp)
+        - Logs warnings for invalid tools
+        - Falls back to reasoning for steps with invalid tools
+
+        Args:
+            steps: List of PlanStep objects to validate.
+            available_tools: List of available tool names.
+
+        Returns:
+            List of validated and enriched PlanStep objects.
+        """
+        enriched_steps = []
+
+        for step in steps:
+            # Get parsed metadata
+            tool_name = getattr(step, "_parsed_tool_name", None)
+            tool_args = getattr(step, "_parsed_tool_args", {})
+
+            # Clean up temporary attributes
+            if hasattr(step, "_parsed_tool_name"):
+                delattr(step, "_parsed_tool_name")
+            if hasattr(step, "_parsed_tool_args"):
+                delattr(step, "_parsed_tool_args")
+            if hasattr(step, "_parsed_dependencies"):
+                delattr(step, "_parsed_dependencies")
+
+            # Handle reasoning steps
+            if tool_name == "reasoning" or tool_name is None:
+                # This is a reasoning step, no tool execution needed
+                # Store reasoning task in result field temporarily
+                reasoning_task = tool_args.get("task", step.description) if tool_args else step.description
+                # We can use tool_calls field to indicate this is a reasoning step
+                step.tool_calls = None
+                step._reasoning_task = reasoning_task  # type: ignore
+                step._step_type = StepType.REASONING  # type: ignore
+                step._tool_executor_type = None  # type: ignore
+                enriched_steps.append(step)
+                continue
+
+            # Validate tool exists
+            tool_valid = False
+            tool_executor_type = None
+
+            # Check if it's a builtin tool
+            if BuiltinToolExecutor.is_builtin_tool(tool_name):
+                tool_valid = True
+                tool_executor_type = "builtin"
+            # Check if it's in available tools
+            elif tool_name in available_tools:
+                tool_valid = True
+                tool_executor_type = "mcp"
+            # Check if it's a category.operation format matching available tools
+            else:
+                parts = tool_name.split(".", 1)
+                if len(parts) == 2:
+                    category = parts[0]
+                    # Check if category is in available tools
+                    for avail_tool in available_tools:
+                        if avail_tool.startswith(category + ".") or avail_tool == category:
+                            tool_valid = True
+                            tool_executor_type = "mcp"
+                            break
+
+            if tool_valid:
+                # Set tool metadata on step
+                step.tool_calls = [tool_name]
+                step._tool_name = tool_name  # type: ignore
+                step._tool_args = tool_args  # type: ignore
+                step._step_type = StepType.TOOL_CALL  # type: ignore
+                step._tool_executor_type = tool_executor_type  # type: ignore
+                logger.debug(f"Step {step.step_id}: tool={tool_name}, executor={tool_executor_type}")
+            else:
+                # Invalid tool - log warning and mark as reasoning fallback
+                logger.warning(
+                    f"Step {step.step_id}: tool '{tool_name}' not found in available tools. "
+                    f"Falling back to reasoning."
+                )
+                step.tool_calls = None
+                step._reasoning_task = f"[Fallback] {step.description}"  # type: ignore
+                step._step_type = StepType.REASONING  # type: ignore
+                step._tool_executor_type = None  # type: ignore
+
+            enriched_steps.append(step)
+
+        return enriched_steps
+
+    def _expand_tool_categories(self, tools: list[str]) -> list[str]:
+        """Expand tool category names to include all available operations.
+
+        For example, "websearch" expands to ["websearch.search", "websearch.extract"].
+
+        Args:
+            tools: List of tool names (may include categories).
+
+        Returns:
+            Expanded list of tool names with full operations.
+        """
+        expanded = []
+
+        for tool in tools:
+            if "." in tool:
+                # Already a full tool name
+                expanded.append(tool)
+            elif tool in MCP_TOOL_DESCRIPTIONS:
+                # It's a category, expand to all operations
+                category_info = MCP_TOOL_DESCRIPTIONS[tool]
+                for operation in category_info.get("tools", {}).keys():
+                    expanded.append(f"{tool}.{operation}")
+            elif tool in ("memory", "planning"):
+                # Builtin category
+                for builtin_tool in BUILTIN_TOOL_DESCRIPTIONS:
+                    if builtin_tool.startswith(tool + "."):
+                        expanded.append(builtin_tool)
+            else:
+                # Unknown, keep as is
+                expanded.append(tool)
+
+        return expanded
 
     async def _structured_decomposition(
         self,
@@ -845,4 +1586,9 @@ __all__ = [
     "PlanningError",
     "DAGValidationError",
     "create_plan_created_event",
+    # Tool description utilities
+    "BUILTIN_TOOL_DESCRIPTIONS",
+    "MCP_TOOL_DESCRIPTIONS",
+    "get_tool_description",
+    "format_tool_for_prompt",
 ]

@@ -288,33 +288,105 @@ class BaseReasoningStrategy(ABC):
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
     ) -> tuple[str, int]:
-        """Call the LLM with a prompt.
-
-        This is a placeholder implementation. In production, this would
-        use the actual LLM API.
+        """Call the LLM with a prompt using the Anthropic API.
 
         Args:
-            prompt: The prompt to send.
-            system_prompt: Optional system prompt.
-            temperature: Optional temperature override.
-            max_tokens: Optional max tokens override.
+            prompt: The prompt to send to the LLM.
+            system_prompt: Optional system prompt to guide behavior.
+            temperature: Optional temperature for response randomness.
+            max_tokens: Optional max tokens in response.
 
         Returns:
             Tuple of (response_text, tokens_used).
-        """
-        # Placeholder implementation
-        # In production, this would call the actual LLM API
-        response = f"[LLM Response to: {prompt[:100]}...]"
-        tokens_used = len(prompt) // 4 + len(response) // 4
 
-        # Track tokens
-        if self._token_tracker:
-            self._token_tracker.record_usage(
-                input_tokens=len(prompt) // 4,
-                output_tokens=len(response) // 4,
+        Raises:
+            ValueError: If API key is not configured.
+            Exception: If the API call fails.
+        """
+        import logging
+
+        logger = logging.getLogger(__name__)
+
+        try:
+            import anthropic
+        except ImportError:
+            logger.error("Anthropic library not installed. Install with: pip install anthropic")
+            raise ValueError("Anthropic library not installed")
+
+        # Get API key from settings
+        api_key = self._settings.api_keys.anthropic_api_key
+        if not api_key:
+            logger.error("ANTHROPIC_API_KEY not configured")
+            raise ValueError(
+                "ANTHROPIC_API_KEY environment variable is required. "
+                "Please set it in your environment or .env file."
             )
 
-        return response, tokens_used
+        # Extract model name from settings (strip 'anthropic:' prefix if present)
+        model = self._settings.llm.model
+        if model.startswith("anthropic:"):
+            model = model[len("anthropic:"):]
+
+        # Use provided parameters or fall back to config defaults
+        actual_temperature = temperature if temperature is not None else self._config.temperature
+        actual_max_tokens = max_tokens if max_tokens is not None else self._config.max_tokens
+
+        # Build the messages list
+        messages = [{"role": "user", "content": prompt}]
+
+        try:
+            # Create client and make API call
+            client = anthropic.Anthropic(api_key=api_key)
+
+            # Build request parameters
+            request_params = {
+                "model": model,
+                "max_tokens": actual_max_tokens,
+                "temperature": actual_temperature,
+                "messages": messages,
+            }
+
+            # Add system prompt if provided
+            if system_prompt:
+                request_params["system"] = system_prompt
+
+            # Make the API call
+            message = client.messages.create(**request_params)
+
+            # Extract response text
+            response_text = message.content[0].text if message.content else ""
+
+            # Calculate total tokens used
+            input_tokens = message.usage.input_tokens
+            output_tokens = message.usage.output_tokens
+            tokens_used = input_tokens + output_tokens
+
+            # Track tokens if tracker is available
+            if self._token_tracker:
+                self._token_tracker.record_usage(
+                    input_tokens=input_tokens,
+                    output_tokens=output_tokens,
+                )
+
+            logger.debug(
+                f"LLM call completed: model={model}, "
+                f"input_tokens={input_tokens}, output_tokens={output_tokens}"
+            )
+
+            return response_text, tokens_used
+
+        except anthropic.APIConnectionError as e:
+            logger.error(f"Failed to connect to Anthropic API: {e}")
+            raise ValueError(f"Failed to connect to Anthropic API: {e}")
+        except anthropic.RateLimitError as e:
+            logger.error(f"Rate limit exceeded: {e}")
+            raise ValueError(f"Rate limit exceeded: {e}")
+        except anthropic.APIStatusError as e:
+            logger.error(f"Anthropic API error: {e.status_code} - {e.message}")
+            raise ValueError(f"Anthropic API error: {e.status_code} - {e.message}")
+        except Exception as e:
+            logger.error(f"Unexpected error calling LLM: {e}")
+            raise
 
     def _estimate_confidence(self, response: str, trace: list[str]) -> float:
         """Estimate confidence from response characteristics.

@@ -56,6 +56,7 @@ from sigil.routing.router import Router, RouteDecision, Intent
 from sigil.memory.manager import MemoryManager
 from sigil.planning.planner import Planner
 from sigil.planning.executor import PlanExecutor
+from sigil.planning.tool_executor import create_tool_step_executor
 from sigil.reasoning.manager import ReasoningManager
 from sigil.contracts.executor import ContractExecutor, ContractResult
 from sigil.contracts.schema import Contract
@@ -63,6 +64,14 @@ from sigil.contracts.templates.acti import get_contract_for_intent
 from sigil.state.events import Event, EventType, _generate_event_id, _get_utc_now
 from sigil.state.store import EventStore
 from sigil.telemetry.tokens import TokenTracker, TokenBudget
+
+# Tool registry for getting available tools
+try:
+    from src.tool_registry import get_configured_tools
+except ImportError:
+    # Fallback if tool_registry not available
+    def get_configured_tools() -> list[str]:
+        return []
 
 
 # =============================================================================
@@ -598,15 +607,21 @@ class SigilOrchestrator:
         if not ctx.route_decision.use_planning or not self._planner:
             return
 
-        # Only plan for complex tasks
-        if ctx.route_decision.complexity < 0.5:
-            logger.debug("Skipping planning for simple task")
+        # Note: Complexity threshold is now handled in router._should_use_planning()
+        # This check is kept as a safety guard
+        if ctx.route_decision.complexity < 0.1:
+            logger.debug("Skipping planning for very simple task")
             return
 
         try:
+            # Get available tools to make planner tool-aware
+            available_tools = get_configured_tools()
+            logger.debug(f"Planning with {len(available_tools)} available tools: {available_tools}")
+
             plan = await self._planner.create_plan(
                 goal=ctx.request.message,
                 context=ctx.request.context,
+                tools=available_tools,  # Pass available tools to planner
             )
             ctx.plan = plan
             ctx.plan_id = plan.plan_id
@@ -668,7 +683,14 @@ class SigilOrchestrator:
         ctx.assembled_context = assembled
 
     async def _step_execute(self, ctx: PipelineContext) -> None:
-        """Step 4: Execute through reasoning strategy.
+        """Step 4: Execute plan steps with tools or fall back to reasoning.
+
+        This method executes plans using the ToolStepExecutor which routes:
+        - TOOL_CALL steps to MCP or builtin tool executors
+        - REASONING steps to the reasoning manager for response generation
+
+        If no plan exists or tool execution fails, falls back to direct
+        reasoning using the reasoning manager.
 
         Args:
             ctx: Pipeline context
@@ -676,32 +698,99 @@ class SigilOrchestrator:
         complexity = ctx.route_decision.complexity if ctx.route_decision else 0.5
         strategy = ctx.request.force_strategy
 
-        # If we have a plan, execute it
+        # If we have a plan, execute it with tool-aware executor
         if ctx.plan and self._plan_executor:
             try:
-                result = await self._plan_executor.execute(
+                logger.info(
+                    f"Starting plan execution for plan {ctx.plan_id} "
+                    f"with {len(ctx.plan.steps)} steps"
+                )
+
+                # Create tool-aware step executor
+                # This routes TOOL_CALL steps to tool executors and
+                # REASONING steps to the reasoning manager
+                tool_step_executor = create_tool_step_executor(
+                    memory_manager=self._memory_manager,
+                    planner=self._planner,
+                    reasoning_manager=self._reasoning_manager,
+                    allow_reasoning_fallback=False,  # Pure Approach 1 - no fallback per step
+                    mcp_connection_timeout=5.0,  # Quick timeout: fail fast if server is down
+                    mcp_tool_execution_timeout=30.0,  # Allow 30s for tool execution (accounts for API latency)
+                )
+
+                # Create executor with custom step executor
+                executor = PlanExecutor(
+                    event_store=self._event_store,
+                    token_tracker=self._token_tracker,
+                    step_executor=tool_step_executor.execute_step,
+                )
+
+                # Execute plan with tool calls
+                result = await executor.execute(
                     plan=ctx.plan,
                     session_id=ctx.request.session_id,
                 )
+
                 ctx.tokens_used += result.total_tokens
 
                 if result.success:
+                    logger.info(
+                        f"Plan {ctx.plan_id} executed successfully "
+                        f"with {len(result.step_results)} steps, "
+                        f"tokens={result.total_tokens}"
+                    )
                     ctx.output = {
-                        "result": "Plan executed successfully",
+                        "result": result.final_output or "Plan executed successfully",
                         "plan_id": ctx.plan_id,
+                        "steps_executed": len(result.step_results),
                         "step_results": [
-                            {"step_id": sr.step_id, "status": sr.status.value}
+                            {
+                                "step_id": sr.step_id,
+                                "status": sr.status.value,
+                                "tokens_used": sr.tokens_used,
+                            }
                             for sr in result.step_results
                         ],
+                        "total_tokens": result.total_tokens,
+                        "total_duration_ms": result.total_duration_ms,
                     }
                 else:
+                    # Some steps failed but plan continued
+                    logger.warning(
+                        f"Plan {ctx.plan_id} execution had failures: {result.errors}"
+                    )
                     ctx.add_error(f"Plan execution failed: {result.errors}")
-                    ctx.output = {"error": "Plan execution failed"}
+                    ctx.output = {
+                        "result": "Plan execution failed",
+                        "plan_id": ctx.plan_id,
+                        "errors": result.errors,
+                        "partial_output": result.final_output,
+                        "steps_executed": len(result.step_results),
+                    }
                 return
-            except PlanExecutionError as e:
-                ctx.add_warning(f"Plan execution failed, falling back to reasoning: {e}")
 
-        # Otherwise, use reasoning manager directly
+            except PlanExecutionError as e:
+                logger.warning(
+                    f"Plan execution error for {ctx.plan_id}: {e}. "
+                    f"Falling back to reasoning."
+                )
+                ctx.add_warning(f"Plan execution failed, falling back to reasoning: {e}")
+                # Fall through to reasoning manager below
+
+            except Exception as e:
+                logger.warning(
+                    f"Unexpected error during plan execution for {ctx.plan_id}: {e}. "
+                    f"Falling back to reasoning."
+                )
+                ctx.add_warning(f"Tool execution failed, falling back to reasoning: {e}")
+                # Fall through to reasoning manager below
+
+        # Fall back to reasoning manager if no plan or tool execution failed
+        logger.debug(
+            f"Using reasoning manager directly "
+            f"(complexity={complexity:.2f}, strategy={strategy or 'auto'})"
+        )
+
         try:
             result = await self._reasoning_manager.execute(
                 task=ctx.request.message,

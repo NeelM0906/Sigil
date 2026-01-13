@@ -216,8 +216,20 @@ async def _run_orchestration(
     token_tracker: PipelineTokenTracker,
 ) -> dict[str, Any]:
     """Execute the orchestration pipeline with progress reporting."""
+    from dotenv import load_dotenv
+    from pathlib import Path
     from sigil.orchestrator import SigilOrchestrator, OrchestratorRequest
     from sigil.interfaces.cli.monitoring import log_pipeline_step
+
+    # Load environment variables from .env if present
+    env_file = Path(".env")
+    if env_file.exists():
+        load_dotenv(env_file, override=False)
+
+    # Enable features for interactive CLI
+    os.environ.setdefault("SIGIL_USE_PLANNING", "true")
+    os.environ.setdefault("SIGIL_USE_ROUTING", "true")
+    os.environ.setdefault("SIGIL_USE_MEMORY", "true")
 
     # Create orchestrator
     orchestrator = SigilOrchestrator()
@@ -615,6 +627,203 @@ def status(ctx: click.Context) -> None:
         click.echo(colorize(f"Could not initialize orchestrator: {e}", "yellow"))
 
     click.echo()
+
+
+# =============================================================================
+# Interactive REPL Command
+# =============================================================================
+
+
+@cli.command()
+@click.option("--session-id", "-s", default=None, help="Session identifier")
+@click.option("--user-id", "-u", default=None, help="User identifier")
+@click.option("--verbose", "-v", is_flag=True, help="Show detailed output")
+@click.option("--no-planning", is_flag=True, help="Disable planning subsystem")
+@click.option("--no-routing", is_flag=True, help="Disable routing subsystem")
+@click.option("--no-memory", is_flag=True, help="Disable memory subsystem")
+@click.pass_context
+def interactive(
+    ctx: click.Context,
+    session_id: Optional[str],
+    user_id: Optional[str],
+    verbose: bool,
+    no_planning: bool,
+    no_routing: bool,
+    no_memory: bool,
+) -> None:
+    """Start an interactive REPL session.
+
+    Type prompts and get responses with planning, routing, memory, and token tracking.
+    Type 'exit' or 'quit' to exit.
+
+    By default, all subsystems (planning, routing, memory) are ENABLED for interactive
+    sessions to allow testing the full pipeline. Use --no-planning, --no-routing, or
+    --no-memory flags to disable specific subsystems.
+    """
+    import uuid
+    from sigil.config.settings import clear_settings_cache
+
+    # Enable feature flags for interactive session by default
+    # These override .env settings to ensure full pipeline testing
+    # Users can disable with --no-* flags
+    if not no_planning:
+        os.environ["SIGIL_USE_PLANNING"] = "true"
+    if not no_routing:
+        os.environ["SIGIL_USE_ROUTING"] = "true"
+    if not no_memory:
+        os.environ["SIGIL_USE_MEMORY"] = "true"
+
+    # Clear cached settings so new env vars take effect
+    clear_settings_cache()
+
+    session_id = session_id or f"cli-{uuid.uuid4().hex[:8]}"
+
+    click.echo()
+    click.echo(colorize("=" * 80, "bold"))
+    click.echo(colorize("  SIGIL v2 INTERACTIVE CLI", "bold"))
+    click.echo(colorize("=" * 80, "bold"))
+    click.echo()
+    click.echo("Welcome! This is an interactive session with full pipeline support.")
+    click.echo(f"Session ID: {session_id}")
+    click.echo()
+
+    # Show enabled features
+    features_enabled = []
+    if not no_routing:
+        features_enabled.append("Routing")
+    if not no_planning:
+        features_enabled.append("Planning")
+    if not no_memory:
+        features_enabled.append("Memory")
+    click.echo(f"Enabled: {colorize(', '.join(features_enabled), 'green')}")
+    click.echo()
+
+    # Check MCP server availability
+    from sigil.interfaces.cli.health_check import display_mcp_status
+    try:
+        mcp_status = asyncio.run(display_mcp_status(echo_func=click.echo))
+    except Exception as e:
+        click.echo(colorize(f"Could not check MCP servers: {e}", "yellow"))
+        mcp_status = {}
+
+    click.echo()
+    click.echo("Type your queries below. Type 'exit' or 'quit' to exit.")
+    click.echo(colorize("-" * 80, "dim"))
+    click.echo()
+
+    token_tracker = PipelineTokenTracker()
+    request_count = 0
+
+    try:
+        while True:
+            try:
+                # Get user input
+                prompt = click.prompt(colorize(">>> ", "cyan"), type=str)
+
+                # Check for exit commands
+                if prompt.lower() in ("exit", "quit", "q"):
+                    click.echo()
+                    click.echo(colorize(f"Session ended. Total requests: {request_count}, Total tokens: {token_tracker.total:,}", "dim"))
+                    break
+
+                # Skip empty input
+                if not prompt.strip():
+                    continue
+
+                request_count += 1
+                click.echo()
+
+                # Run orchestration
+                try:
+                    result = asyncio.run(
+                        _run_orchestration(
+                            task=prompt,
+                            session_id=session_id,
+                            user_id=user_id,
+                            contract_name=None,
+                            force_strategy=None,
+                            verbose=verbose,
+                            token_tracker=token_tracker,
+                        )
+                    )
+
+                    # Display response
+                    click.echo()
+                    click.echo(colorize("RESPONSE:", "bold"))
+                    click.echo(colorize("-" * 80, "dim"))
+
+                    # Extract and show output - be more aggressive in finding the actual response
+                    output = result.get("output")
+                    response_text = None
+
+                    if output is None:
+                        response_text = "(No response)"
+                    elif isinstance(output, dict):
+                        # Try various fields where the response might be
+                        response_text = (
+                            output.get("result") or
+                            output.get("answer") or
+                            output.get("response") or
+                            output.get("text") or
+                            output.get("output") or
+                            None
+                        )
+                        # If still nothing, check if there's a string representation
+                        if not response_text and len(output) > 0:
+                            # Print the whole dict for debugging
+                            import json
+                            response_text = json.dumps(output, indent=2)
+                    elif isinstance(output, str):
+                        response_text = output
+                    else:
+                        response_text = str(output)
+
+                    if response_text:
+                        click.echo(response_text)
+                    else:
+                        click.echo("(Empty response)")
+                    click.echo()
+
+                    # Show metadata
+                    click.echo(colorize("METADATA:", "dim"))
+
+                    # Routing info
+                    if result.get("route_decision"):
+                        rd = result["route_decision"]
+                        click.echo(f"  Route: {rd['intent']} (confidence: {rd['confidence']:.0%}, complexity: {rd['complexity']:.2f})")
+                        click.echo(f"  Features: Planning={rd['use_planning']}, Memory={rd['use_memory']}, Contracts={rd['use_contracts']}")
+
+                    # Token info
+                    tokens = result.get("tokens", {})
+                    click.echo(f"  Tokens: {tokens.get('total', 0):,} / {tokens.get('budget', 256000):,} ({tokens.get('percentage', 0):.2f}%)")
+
+                    # Execution time
+                    click.echo(f"  Time: {result.get('execution_time_ms', 0):.1f}ms")
+
+                    # Errors/warnings
+                    if result.get("errors"):
+                        click.echo(colorize(f"  Errors: {', '.join(result['errors'])}", "red"))
+                    if result.get("warnings"):
+                        click.echo(colorize(f"  Warnings: {', '.join(result['warnings'])}", "yellow"))
+
+                    click.echo()
+                    click.echo(colorize("-" * 80, "dim"))
+                    click.echo()
+
+                except Exception as e:
+                    click.echo(colorize(f"ERROR: {str(e)}", "red"))
+                    if verbose:
+                        logger.exception("Orchestration failed")
+                    click.echo()
+
+            except KeyboardInterrupt:
+                click.echo()
+                click.echo(colorize("Interrupted.", "yellow"))
+                break
+
+    except EOFError:
+        click.echo()
+        click.echo(colorize("End of input.", "dim"))
 
 
 # =============================================================================

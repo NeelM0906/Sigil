@@ -66,6 +66,19 @@ from sigil.planning.executor import (
     create_plan_completed_event,
 )
 
+from sigil.planning.tool_executor import (
+    ToolStepExecutor,
+    create_tool_step_executor,
+    StepExecutionError,
+    NoToolSpecifiedError,
+    UnsupportedStepTypeError,
+)
+
+from sigil.planning.executors import (
+    MCPToolExecutor,
+    BuiltinToolExecutor,
+)
+
 
 __all__ = [
     # Main classes
@@ -101,4 +114,13 @@ __all__ = [
     "create_step_started_event",
     "create_step_completed_event",
     "create_plan_completed_event",
+    # Tool executors
+    "ToolStepExecutor",
+    "create_tool_step_executor",
+    "MCPToolExecutor",
+    "BuiltinToolExecutor",
+    # Tool executor exceptions
+    "StepExecutionError",
+    "NoToolSpecifiedError",
+    "UnsupportedStepTypeError",
 ]

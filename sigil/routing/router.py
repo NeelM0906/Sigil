@@ -292,6 +292,8 @@ class ComplexityAssessor:
         "database", "api", "file", "document", "spreadsheet", "pdf",
         "slack", "discord", "webhook", "http", "rest", "graphql",
         "scrape", "extract", "parse", "analyze", "generate", "transform",
+        # News/information retrieval
+        "find", "news", "latest", "current", "recent", "today", "look up",
     ]
 
     # Domain-specific vocabulary indicators
@@ -580,7 +582,7 @@ class Router:
         handler_name = self._HANDLER_MAP.get(intent, "chat")
 
         # Step 4: Determine subsystem flags
-        use_planning = self._should_use_planning(complexity)
+        use_planning = self._should_use_planning(complexity, message)
         use_memory = self._should_use_memory(intent, complexity)
         use_contracts = self._should_use_contracts(complexity)
 
@@ -614,20 +616,34 @@ class Router:
 
         return decision
 
-    def _should_use_planning(self, complexity: float) -> bool:
+    def _should_use_planning(self, complexity: float, message: str = "") -> bool:
         """Determine if planning subsystem should be engaged.
 
         Planning is enabled if:
         - The use_planning feature flag is True
-        - The complexity score is greater than 0.5
+        - AND either:
+          - The complexity score is greater than 0.2, OR
+          - The message contains tool-related keywords
 
         Args:
             complexity: The assessed complexity score.
+            message: The user message to check for tool keywords.
 
         Returns:
             True if planning should be used.
         """
-        return self.settings.use_planning and complexity > 0.5
+        if not self.settings.use_planning:
+            return False
+
+        # Check for tool keywords - if found, enable planning regardless of complexity
+        message_lower = message.lower()
+        assessor = self.assessor  # Access the shared assessor with tool keywords
+        for keyword in assessor._TOOL_KEYWORDS:
+            if keyword in message_lower:
+                return True
+
+        # Otherwise, use complexity threshold (lowered from 0.5 to 0.2)
+        return complexity > 0.2
 
     def _should_use_memory(self, intent: Intent, complexity: float) -> bool:
         """Determine if memory subsystem should be engaged.

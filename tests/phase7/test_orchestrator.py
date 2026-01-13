@@ -558,3 +558,452 @@ class TestOrchestratorIntegration:
 
             assert len(responses) == 5
             assert all(r.request_id is not None for r in responses)
+
+
+# =============================================================================
+# Tool Execution Integration Tests (Phase 3 - Approach 1)
+# =============================================================================
+
+
+class TestOrchestratorToolExecution:
+    """Integration tests for orchestrator tool execution flow.
+
+    These tests verify that the orchestrator correctly:
+    - Creates tool-aware step executors
+    - Routes TOOL_CALL steps to appropriate executors
+    - Routes REASONING steps to reasoning manager
+    - Handles fallback when tool execution fails
+    - Tracks tokens correctly
+    """
+
+    @pytest.fixture
+    def mock_settings_with_planning(self):
+        """Create mock settings with planning enabled."""
+        settings = MagicMock(spec=SigilSettings)
+        settings.use_memory = True
+        settings.use_planning = True
+        settings.use_contracts = False
+        settings.use_routing = False
+        settings.get_active_features.return_value = ["memory", "planning"]
+        settings.debug = True
+        return settings
+
+    @pytest.fixture
+    def mock_plan_with_tool_steps(self):
+        """Create a mock plan with tool steps."""
+        from sigil.config.schemas.plan import Plan, PlanStep, PlanStatus
+
+        step1 = PlanStep(
+            step_id="step-1",
+            description="Search for AI news",
+            status=PlanStatus.PENDING,
+            dependencies=[],
+            tool_calls=["websearch.search"],
+        )
+        step2 = PlanStep(
+            step_id="step-2",
+            description="Summarize the search results",
+            status=PlanStatus.PENDING,
+            dependencies=["step-1"],
+            tool_calls=None,  # This is a reasoning step
+        )
+
+        plan = Plan(
+            plan_id="test-plan-123",
+            goal="Find and summarize AI news",
+            steps=[step1, step2],
+            status=PlanStatus.PENDING,
+        )
+        return plan
+
+    @pytest.mark.asyncio
+    async def test_tool_executor_creation(self, mock_settings_with_planning):
+        """Test that tool step executor is created correctly."""
+        from sigil.planning.tool_executor import create_tool_step_executor
+
+        executor = create_tool_step_executor(
+            memory_manager=None,
+            planner=None,
+            reasoning_manager=None,
+            allow_reasoning_fallback=False,
+        )
+
+        assert executor is not None
+        assert hasattr(executor, "execute_step")
+
+    @pytest.mark.asyncio
+    async def test_step_execute_with_plan(
+        self,
+        mock_settings_with_planning,
+        mock_plan_with_tool_steps,
+    ):
+        """Test _step_execute with a plan containing tool steps."""
+        from sigil.planning.schemas import StepResult, StepStatus
+
+        # Create mock components
+        mock_memory = MagicMock()
+        mock_memory.is_healthy = True
+        mock_memory.retrieve = AsyncMock(return_value=[])
+
+        mock_planner = MagicMock()
+        mock_planner.create_plan = AsyncMock(return_value=mock_plan_with_tool_steps)
+
+        mock_reasoning = MagicMock()
+        mock_reasoning.execute = AsyncMock(return_value=MagicMock(
+            success=True,
+            answer="Test answer",
+            tokens_used=100,
+            reasoning_trace=[],
+            model="test-model",
+            confidence=0.9,
+        ))
+
+        # Create orchestrator
+        orchestrator = SigilOrchestrator(
+            settings=mock_settings_with_planning,
+            memory_manager=mock_memory,
+            planner=mock_planner,
+            reasoning_manager=mock_reasoning,
+        )
+
+        # Create context with plan
+        request = OrchestratorRequest(
+            message="Find AI news",
+            session_id="test-session",
+        )
+        ctx = PipelineContext(request)
+        ctx.route_decision = RouteDecision(
+            intent=Intent.GENERAL_CHAT,
+            confidence=0.9,
+            complexity=0.7,
+            handler_name="default",
+            use_planning=True,
+        )
+        ctx.plan = mock_plan_with_tool_steps
+        ctx.plan_id = mock_plan_with_tool_steps.plan_id
+
+        # Execute step
+        await orchestrator._step_execute(ctx)
+
+        # Should have output (either from plan execution or fallback)
+        assert ctx.output is not None
+        # Either plan executed or fell back to reasoning
+        assert "result" in ctx.output or "error" in ctx.output
+
+    @pytest.mark.asyncio
+    async def test_step_execute_fallback_to_reasoning(
+        self,
+        mock_settings_with_planning,
+    ):
+        """Test that step execution falls back to reasoning when tools fail."""
+        # Create mock reasoning manager that succeeds
+        mock_reasoning = MagicMock()
+        mock_reasoning.execute = AsyncMock(return_value=MagicMock(
+            success=True,
+            answer="Fallback answer",
+            tokens_used=150,
+            reasoning_trace=["step1", "step2"],
+            model="test-model",
+            confidence=0.85,
+        ))
+
+        # Create orchestrator without plan executor
+        mock_settings_with_planning.use_planning = False
+        orchestrator = SigilOrchestrator(
+            settings=mock_settings_with_planning,
+            reasoning_manager=mock_reasoning,
+        )
+
+        # Create context without plan
+        request = OrchestratorRequest(
+            message="Test message",
+            session_id="test-session",
+        )
+        ctx = PipelineContext(request)
+        ctx.route_decision = RouteDecision(
+            intent=Intent.GENERAL_CHAT,
+            confidence=0.9,
+            complexity=0.5,
+            handler_name="default",
+            use_planning=False,
+        )
+        ctx.assembled_context = {"message": "Test message"}
+
+        # Execute step
+        await orchestrator._step_execute(ctx)
+
+        # Should use reasoning manager
+        mock_reasoning.execute.assert_called_once()
+        assert ctx.output is not None
+        assert ctx.output.get("result") == "Fallback answer"
+        assert ctx.tokens_used == 150
+
+    @pytest.mark.asyncio
+    async def test_token_tracking_in_plan_execution(
+        self,
+        mock_settings_with_planning,
+        mock_plan_with_tool_steps,
+    ):
+        """Test that tokens are tracked correctly during plan execution."""
+        from sigil.planning.schemas import StepResult, StepStatus, PlanResult, ExecutionState
+
+        # Create mock plan executor that returns a result
+        mock_executor = MagicMock()
+        mock_result = PlanResult(
+            plan_id="test-plan",
+            success=True,
+            state=ExecutionState.COMPLETED,
+            step_results=[
+                StepResult(
+                    step_id="step-1",
+                    status=StepStatus.COMPLETED,
+                    output="Tool output",
+                    tokens_used=0,  # Tool calls use 0 tokens
+                ),
+                StepResult(
+                    step_id="step-2",
+                    status=StepStatus.COMPLETED,
+                    output="Reasoning output",
+                    tokens_used=200,  # Reasoning uses tokens
+                ),
+            ],
+            total_tokens=200,
+            total_duration_ms=1000.0,
+            final_output="Final output",
+        )
+        mock_executor.execute = AsyncMock(return_value=mock_result)
+
+        orchestrator = SigilOrchestrator(
+            settings=mock_settings_with_planning,
+            plan_executor=mock_executor,
+        )
+
+        # Create context with plan
+        request = OrchestratorRequest(
+            message="Test",
+            session_id="test-session",
+        )
+        ctx = PipelineContext(request)
+        ctx.route_decision = RouteDecision(
+            intent=Intent.GENERAL_CHAT,
+            confidence=0.9,
+            complexity=0.7,
+            handler_name="default",
+            use_planning=True,
+        )
+        ctx.plan = mock_plan_with_tool_steps
+        ctx.plan_id = mock_plan_with_tool_steps.plan_id
+
+        # Execute step
+        await orchestrator._step_execute(ctx)
+
+        # Verify token tracking
+        assert ctx.tokens_used == 200  # From plan execution
+        assert ctx.output.get("total_tokens") == 200
+
+    @pytest.mark.asyncio
+    async def test_plan_execution_error_handling(
+        self,
+        mock_settings_with_planning,
+        mock_plan_with_tool_steps,
+    ):
+        """Test error handling during plan execution."""
+        from sigil.core.exceptions import PlanExecutionError
+
+        # Create mock plan executor that raises an error
+        mock_executor = MagicMock()
+        mock_executor.execute = AsyncMock(
+            side_effect=PlanExecutionError("Tool execution failed", plan_id="test-plan")
+        )
+
+        # Create mock reasoning manager for fallback
+        mock_reasoning = MagicMock()
+        mock_reasoning.execute = AsyncMock(return_value=MagicMock(
+            success=True,
+            answer="Fallback answer after error",
+            tokens_used=100,
+            reasoning_trace=[],
+            model="test-model",
+            confidence=0.7,
+        ))
+
+        orchestrator = SigilOrchestrator(
+            settings=mock_settings_with_planning,
+            plan_executor=mock_executor,
+            reasoning_manager=mock_reasoning,
+        )
+
+        # Create context with plan
+        request = OrchestratorRequest(
+            message="Test",
+            session_id="test-session",
+        )
+        ctx = PipelineContext(request)
+        ctx.route_decision = RouteDecision(
+            intent=Intent.GENERAL_CHAT,
+            confidence=0.9,
+            complexity=0.7,
+            handler_name="default",
+            use_planning=True,
+        )
+        ctx.plan = mock_plan_with_tool_steps
+        ctx.plan_id = mock_plan_with_tool_steps.plan_id
+        ctx.assembled_context = {"message": "Test"}
+
+        # Execute step
+        await orchestrator._step_execute(ctx)
+
+        # Should have fallen back to reasoning
+        mock_reasoning.execute.assert_called_once()
+        assert len(ctx.warnings) > 0
+        assert ctx.output is not None
+        assert ctx.output.get("result") == "Fallback answer after error"
+
+    @pytest.mark.asyncio
+    async def test_full_pipeline_with_tool_execution(self):
+        """Test full orchestrator pipeline with tool execution."""
+        from sigil.planning.schemas import StepResult, StepStatus, PlanResult, ExecutionState
+        from sigil.config.schemas.plan import Plan, PlanStep, PlanStatus
+
+        # Create mock settings
+        mock_settings = MagicMock(spec=SigilSettings)
+        mock_settings.use_memory = False
+        mock_settings.use_planning = True
+        mock_settings.use_contracts = False
+        mock_settings.use_routing = False
+        mock_settings.get_active_features.return_value = ["planning"]
+
+        # Create mock plan
+        mock_plan = Plan(
+            plan_id="integration-test-plan",
+            goal="Integration test goal",
+            steps=[
+                PlanStep(
+                    step_id="step-1",
+                    description="Execute tool",
+                    status=PlanStatus.PENDING,
+                    tool_calls=["test.tool"],
+                ),
+            ],
+        )
+
+        # Create mock planner
+        mock_planner = MagicMock()
+        mock_planner.create_plan = AsyncMock(return_value=mock_plan)
+
+        # Create mock plan executor
+        mock_executor = MagicMock()
+        mock_result = PlanResult(
+            plan_id="integration-test-plan",
+            success=True,
+            state=ExecutionState.COMPLETED,
+            step_results=[
+                StepResult(
+                    step_id="step-1",
+                    status=StepStatus.COMPLETED,
+                    output="Tool executed successfully",
+                    tokens_used=0,
+                ),
+            ],
+            total_tokens=0,
+            total_duration_ms=500.0,
+            final_output="Tool executed successfully",
+        )
+        mock_executor.execute = AsyncMock(return_value=mock_result)
+
+        # Create orchestrator
+        orchestrator = SigilOrchestrator(
+            settings=mock_settings,
+            planner=mock_planner,
+            plan_executor=mock_executor,
+        )
+
+        # Process request
+        request = OrchestratorRequest(
+            message="Execute integration test",
+            session_id="integration-test-session",
+        )
+
+        response = await orchestrator.process(request)
+
+        # Verify response
+        assert response is not None
+        assert response.status in [OrchestratorStatus.SUCCESS, OrchestratorStatus.PARTIAL]
+        assert response.plan_id == "integration-test-plan"
+        assert response.execution_time_ms > 0
+
+    @pytest.mark.asyncio
+    async def test_step_execute_output_structure(
+        self,
+        mock_settings_with_planning,
+        mock_plan_with_tool_steps,
+    ):
+        """Test that step execution output has correct structure."""
+        from sigil.planning.schemas import StepResult, StepStatus, PlanResult, ExecutionState
+
+        # Create mock plan executor
+        mock_executor = MagicMock()
+        mock_result = PlanResult(
+            plan_id="test-plan",
+            success=True,
+            state=ExecutionState.COMPLETED,
+            step_results=[
+                StepResult(
+                    step_id="step-1",
+                    status=StepStatus.COMPLETED,
+                    output="Search results",
+                    tokens_used=0,
+                ),
+                StepResult(
+                    step_id="step-2",
+                    status=StepStatus.COMPLETED,
+                    output="Summary of results",
+                    tokens_used=150,
+                ),
+            ],
+            total_tokens=150,
+            total_duration_ms=800.0,
+            final_output="Search results\nSummary of results",
+        )
+        mock_executor.execute = AsyncMock(return_value=mock_result)
+
+        orchestrator = SigilOrchestrator(
+            settings=mock_settings_with_planning,
+            plan_executor=mock_executor,
+        )
+
+        # Create context
+        request = OrchestratorRequest(
+            message="Test",
+            session_id="test-session",
+        )
+        ctx = PipelineContext(request)
+        ctx.route_decision = RouteDecision(
+            intent=Intent.GENERAL_CHAT,
+            confidence=0.9,
+            complexity=0.7,
+            handler_name="default",
+            use_planning=True,
+        )
+        ctx.plan = mock_plan_with_tool_steps
+        ctx.plan_id = mock_plan_with_tool_steps.plan_id
+
+        # Execute
+        await orchestrator._step_execute(ctx)
+
+        # Verify output structure
+        assert ctx.output is not None
+        assert "result" in ctx.output
+        assert "plan_id" in ctx.output
+        assert "steps_executed" in ctx.output
+        assert "step_results" in ctx.output
+        assert "total_tokens" in ctx.output
+        assert "total_duration_ms" in ctx.output
+
+        # Verify step results structure
+        step_results = ctx.output["step_results"]
+        assert len(step_results) == 2
+        for sr in step_results:
+            assert "step_id" in sr
+            assert "status" in sr
+            assert "tokens_used" in sr
