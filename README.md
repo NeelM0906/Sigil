@@ -1,263 +1,460 @@
-# Sigil
+# Sigil: Meta-Agent Framework for Building Executable AI Agents
 
-**A meta-agent framework for creating executable AI agents with real tool capabilities.**
+**Build AI agents with real tool capabilities using the ACTi methodology and Sigil's modular architecture.**
 
-Sigil is a Python-based agent builder that uses the ACTi methodology to design and generate AI agents. Unlike traditional workflow builders that produce static configurations, Sigil creates agents that can actually *do things* - make calls, search the web, schedule meetings, and more - through real MCP (Model Context Protocol) tool integrations.
+Sigil is a comprehensive AI agent framework that combines meta-agent design patterns with production-ready execution infrastructure. It enables both interactive CLI-based agent workflows and programmatic generation of task-specific agents through a builder framework.
 
-## Features
+## Core Vision
 
-- **Meta-Agent Architecture**: A builder agent that creates other agents through natural language conversation
-- **ACTi Methodology**: Five-stratum framework for classifying and designing agents:
-  - **RTI** (Reality & Truth Intelligence): Data gathering, fact verification
-  - **RAI** (Readiness & Agreement Intelligence): Lead qualification, rapport building
-  - **ZACS** (Zone Action & Conversion Systems): Scheduling, conversions
-  - **EEI** (Economic & Ecosystem Intelligence): Analytics, optimization
-  - **IGE** (Integrity & Governance Engine): Compliance, quality control
-- **Real Tool Capabilities**: Agents connect to actual services via MCP servers:
-  - Voice synthesis (ElevenLabs)
-  - Web search (Tavily)
-  - Calendar management (Google Calendar)
-  - Communication (Twilio)
-  - CRM integration (HubSpot)
-- **Subagent Delegation**: Specialized subagents for prompt engineering and pattern analysis
-- **Reference Pattern Learning**: Learn from Bland AI and N8N workflow patterns
+Sigil provides two complementary paradigms:
 
-## Architecture
+1. **Interactive Agent CLI** - Ready-to-use agent interface with planning, routing, memory management, and real-time tool execution
+2. **Agent Builder Framework** - Meta-agent that designs and generates new agents for specific tasks
+
+Both leverage the same underlying architecture: **Planning → Routing → Memory → Reasoning → Contract Validation**
+
+---
+
+## Architecture Overview
+
+### System Architecture
 
 ```
-                     ┌─────────────────────────────────┐
-                     │         Sigil Builder           │
-                     │    (deepagents meta-agent)      │
-                     └───────────────┬─────────────────┘
-                                     │
-              ┌──────────────────────┼──────────────────────┐
-              │                      │                      │
-    ┌─────────▼─────────┐  ┌────────▼────────┐  ┌─────────▼─────────┐
-    │  prompt-engineer  │  │ pattern-analyzer│  │   Builder Tools   │
-    │    (subagent)     │  │   (subagent)    │  │ create_agent_config│
-    └───────────────────┘  └─────────────────┘  │ list_available_tools│
-                                                │ get_agent_config   │
-                                                │ list_created_agents│
-                                                └─────────────────────┘
-                                                          │
-                                                          ▼
-                                               ┌─────────────────────┐
-                                               │  Generated Agents   │
-                                               │  (with MCP tools)   │
-                                               └─────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                    Sigil Agent System                         │
+└──────────────────────────────────────────────────────────────┘
+                            │
+        ┌───────────────────┼───────────────────┐
+        │                   │                   │
+        ▼                   ▼                   ▼
+   ┌─────────────┐   ┌─────────────┐   ┌──────────────┐
+   │  Interactive│   │   Agent     │   │   Tool       │
+   │  CLI        │   │   Builder   │   │   Runtime    │
+   │             │   │             │   │              │
+   │ • Routing   │   │ • ACTi      │   │ • MCP Server │
+   │ • Planning  │   │   Strata    │   │ • Executors  │
+   │ • Memory    │   │ • Prompt    │   │ • Results    │
+   │ • Reasoning │   │   Crafting  │   │   Mgmt       │
+   └─────────────┘   └─────────────┘   └──────────────┘
+        │                   │                   │
+        └───────────────────┴───────────────────┘
+                        │
+            ┌───────────┴───────────┐
+            │                       │
+      ┌─────▼──────┐         ┌─────▼──────┐
+      │   LLM      │         │   Context  │
+      │  (Claude)  │         │   & State  │
+      └────────────┘         └────────────┘
 ```
+
+### Execution Pipeline
+
+```
+Request Entry Point
+        │
+        ▼
+    ┌─────────────────────────────────┐
+    │ 1. ROUTING                      │
+    │ Intent classification &         │
+    │ complexity assessment           │
+    └────────┬────────────────────────┘
+             │
+             ▼
+    ┌─────────────────────────────────┐
+    │ 2. PLANNING (if complex)        │
+    │ Goal decomposition &            │
+    │ step sequencing                 │
+    └────────┬────────────────────────┘
+             │
+             ▼
+    ┌─────────────────────────────────┐
+    │ 3. CONTEXT ASSEMBLY             │
+    │ Memory retrieval & history      │
+    │ synthesis                       │
+    └────────┬────────────────────────┘
+             │
+             ▼
+    ┌─────────────────────────────────┐
+    │ 4. EXECUTION                    │
+    │ Tool calls & reasoning steps    │
+    │ with result integration         │
+    └────────┬────────────────────────┘
+             │
+             ▼
+    ┌─────────────────────────────────┐
+    │ 5. VALIDATION (if contracted)   │
+    │ Output contract verification    │
+    └────────┬────────────────────────┘
+             │
+             ▼
+        Response Output
+```
+
+### Component Responsibilities
+
+#### **Router** (`sigil/routing/`)
+- Classifies user intent from message content
+- Assesses task complexity (0.0-1.0)
+- Determines if planning, memory, contracts are needed
+- **Keyword detection** for tool-triggering queries ("search", "news", "latest", etc.)
+
+#### **Planner** (`sigil/planning/`)
+- Decomposes goals into executable steps
+- Creates step sequences with dependencies
+- Attaches tool specifications (websearch, calendar, etc.)
+- Extracts query arguments from user intent
+- **Tool-aware planning**: Automatically includes search parameters in plan
+
+#### **Tool Executor** (`sigil/planning/tool_executor.py`)
+- Routes TOOL_CALL steps to appropriate executors:
+  - **TavilyExecutor**: Direct Tavily API integration (~1s response)
+  - **MCPExecutor**: MCP server tool invocation
+  - **BuiltinExecutor**: Memory/planning builtin tools
+- Formats tool results explicitly for LLM consumption
+- Handles timeouts, errors, and fallback reasoning
+
+#### **Memory Manager** (`sigil/memory/`)
+- Retrieves relevant historical context (RAG)
+- Stores memories from interactions
+- Supports layered memory (short-term, semantic, event-based)
+
+#### **Reasoning Manager** (`sigil/reasoning/`)
+- Selects strategy based on complexity:
+  - **0.0-0.3**: Direct (fastest, single-pass)
+  - **0.3-0.5**: Chain of Thought (explicit reasoning)
+  - **0.5-0.7**: Tree of Thoughts (multi-branch exploration)
+  - **0.7-0.9**: ReAct (reasoning + action loops)
+  - **0.9-1.0**: MCTS (Monte Carlo tree search)
+- **Tool-aware prompting**: Integrates tool results into strategy decisions
+
+#### **Contract System** (`sigil/contracts/`)
+- Validates agent outputs against expected schemas
+- Ensures structured compliance for specific intents
+- Provides validation feedback
+
+---
+
+## Key Features
+
+### 1. Real Tool Integration
+- **Tavily Web Search**: Direct API + formatted result synthesis
+- **ElevenLabs Voice**: Text-to-speech synthesis
+- **Google Calendar**: Event scheduling and availability
+- **Twilio**: SMS and phone communication
+- **HubSpot**: CRM operations and contact management
+- **Extensible MCP**: Add new tools via Model Context Protocol
+
+### 2. Planning & Tool Awareness
+- Automatic query extraction for search tools
+- Explicit tool result formatting in LLM prompts
+- Result truncation with memory limits (prevent token bloat)
+- Multi-step plans with dependency resolution
+
+### 3. Intelligent Routing
+- Intent-based message classification
+- Tool keyword detection (automatically triggers planning)
+- Complexity-driven strategy selection
+- Fallback mechanisms for graceful degradation
+
+### 4. Memory & Context Management
+- Multi-layer memory system
+- Semantic similarity retrieval
+- Event-based memory indexing
+- Customizable memory templates
+
+### 5. Agent Builder Framework (ACTi)
+Meta-agent system that creates task-specific agents by:
+- Analyzing user requirements
+- Selecting appropriate tools from available catalog
+- Crafting optimized system prompts via subagent delegation
+- Learning from reference patterns (Bland AI, N8N)
+- Generating structured agent configurations
+
+---
 
 ## Quick Start
 
 ### Prerequisites
-
-- Python 3.11 or higher
-- An Anthropic API key
+- Python 3.11+
+- Anthropic API key
+- (Optional) MCP server API keys (Tavily, ElevenLabs, etc.)
 
 ### Installation
 
 ```bash
-# Clone the repository
+# Clone and setup
 git clone https://github.com/NeelM0906/Sigil.git
 cd Sigil
 
-# Create and activate virtual environment
+# Create virtual environment
 python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -e .
 
-# Set up environment variables
+# Configure environment
 cp .env.example .env
-# Edit .env and add your ANTHROPIC_API_KEY
+# Edit .env and add ANTHROPIC_API_KEY and tool-specific keys
 ```
 
-### Usage
-
-#### Interactive CLI
+### Interactive CLI Usage
 
 ```bash
-# Run the builder in interactive mode
-python -m src.builder
+# Launch interactive agent
+python -m sigil.interfaces.cli interactive
+
+# Example queries:
+# >>> find me the latest news about Iran
+# >>> search for AI developments in 2025
+# >>> what happened in tech this week
 ```
 
-Example session:
-```
-You: Create a lead qualification agent for B2B SaaS companies
+The CLI automatically:
+1. Routes your query (detects "news/search" keywords)
+2. Plans multi-step execution if needed
+3. Executes Tavily search (~1 second)
+4. Synthesizes results into readable response
 
-Builder: I'll create a lead qualification agent for you. Let me first analyze
-the requirements and select appropriate tools...
-
-[Agent analyzes requirements, selects tools, crafts system prompt]
-
-Builder: I've created the lead_qualifier agent with the following configuration:
-- Stratum: RAI (Readiness & Agreement Intelligence)
-- Tools: communication, crm
-- Saved to: outputs/agents/lead_qualifier.json
-```
-
-#### Programmatic Usage
+### Agent Builder Usage
 
 ```python
 from src.builder import create_builder
 from langchain_core.messages import HumanMessage
 
-# Create the builder agent
+# Create builder meta-agent
 builder = create_builder()
 
-# Generate an agent configuration
+# Generate new agent
 result = builder.invoke({
-    "messages": [HumanMessage(content="Create an appointment scheduling agent")]
+    "messages": [HumanMessage(
+        content="Create a lead qualification agent for B2B SaaS"
+    )]
 })
 
-# The agent config is saved to outputs/agents/
-print(result["messages"][-1].content)
+# Generated agent saved to outputs/agents/
 ```
 
-#### Using Builder Tools Directly
+---
 
-```python
-from src.tools import create_agent_config, list_available_tools
+## Data Flow: Tool Search Example
 
-# List available MCP tool categories
-print(list_available_tools.invoke({}))
-
-# Create an agent configuration
-result = create_agent_config.invoke({
-    "name": "research_assistant",
-    "description": "Researches topics and gathers facts from the web",
-    "system_prompt": "You are a research assistant that helps users find accurate information...",
-    "tools": ["websearch"],
-    "stratum": "RTI"
-})
-print(result)
-```
-
-## Project Structure
+**User Query**: "Tell me the latest news about Iran"
 
 ```
-sigil/
-├── src/
-│   ├── __init__.py          # Package exports
-│   ├── builder.py           # Main builder agent
-│   ├── tools.py             # LangChain tools for agent creation
-│   ├── schemas.py           # Pydantic data models
-│   └── prompts.py           # System prompts for builder and subagents
-├── tests/
-│   ├── conftest.py          # Shared test fixtures
-│   ├── test_schemas.py      # Schema validation tests
-│   ├── test_tools.py        # Tool functionality tests
-│   ├── test_prompts.py      # Prompt content tests
-│   └── test_builder.py      # Builder creation tests
-├── outputs/
-│   └── agents/              # Generated agent configurations
-├── docs/
-│   ├── api-contract-tools.md    # Tools API documentation
-│   └── api-contract-builder.md  # Builder API documentation
-├── pyproject.toml           # Project configuration
-└── README.md                # This file
+1. INPUT
+   Message: "Tell me the latest news about Iran"
+
+2. ROUTING
+   Router detects keywords: "news", "latest"
+   └─> Intent: run_agent
+   └─> Complexity: 0.09
+   └─> use_planning: TRUE (keyword-triggered)
+
+3. PLANNING
+   Planner.create_plan("Tell me the latest news about Iran")
+   └─> Step 1: websearch.search
+       └─> _tool_args: {"query": "Tell me the latest news about Iran", "max_results": 5}
+   └─> Step 2: Reason about search results
+   └─> Step 3: Generate final response
+
+4. TOOL EXECUTION
+   ToolStepExecutor._execute_tool_call(step_1)
+   └─> Detects tool_name: "websearch.search"
+   └─> Extracts _tool_args: {"query": "..."}
+   └─> Routes to TavilyExecutor (direct API)
+   └─> Returns: {
+         "results": [
+           {"title": "Iran News...", "url": "...", "content": "..."},
+           ...
+         ]
+       }
+
+5. REASONING CONTEXT INTEGRATION
+   ToolStepExecutor._execute_reasoning(step_2)
+   └─> Builds context with prior_outputs:
+       {
+         "prior_outputs": {
+           "step-1": {
+             "output": "<Tavily JSON>",
+             "tokens_used": 0
+           }
+         }
+       }
+   └─> format_tool_results_section() detected as Tavily format
+   └─> Formats as:
+       "## Tool Results
+        ### step-1
+        Search query: Tell me the latest news about Iran
+
+        1. Iran News Update
+           Latest developments in Iran...
+           Source: https://..."
+   └─> Frames reasoning task:
+       "Based on the following tool results, Generate final response:
+        ## Tool Results
+        [formatted results]
+
+        Generate a comprehensive response for the user."
+
+6. LLM REASONING
+   DirectStrategy.execute(task, context_with_formatted_results)
+   └─> Calls Claude with formatted tool results
+   └─> Returns synthesized response with citations
+
+7. OUTPUT AGGREGATION
+   PlanResult.from_step_results()
+   └─> Uses LAST step output (synthesis, not raw tool data)
+   └─> Returns: "# Latest News About Iran - Summary\n..."
+
+8. RESPONSE
+   {
+     "status": "success",
+     "result": "# Latest News About Iran...",
+     "tokens_used": 5397,
+     "time_ms": 14548
+   }
 ```
 
-## Available Tools
+---
 
-The builder can assign these MCP tool categories to generated agents:
+## Architecture Modules
 
-| Category | Provider | Capabilities |
-|----------|----------|--------------|
-| `voice` | ElevenLabs | Text-to-speech, voice synthesis |
-| `websearch` | Tavily | Web search, research, fact-finding |
-| `calendar` | Google Calendar | Scheduling, availability checks |
-| `communication` | Twilio | SMS, phone calls |
-| `crm` | HubSpot | Contact management, deal tracking |
+### `sigil/routing/`
+Intent classification and routing decisions. Single entry point for determining which subsystems activate.
 
-## ACTi Strata
+### `sigil/planning/`
+Task decomposition into executable steps with tool specifications and dependencies.
 
-Each agent is classified into one of five strata based on its primary function:
+**Submodules:**
+- `planner.py`: Goal decomposition engine
+- `executor.py`: Plan step sequencer
+- `tool_executor.py`: Tool call router and result formatter
+- `executors/`: Specific executor implementations
+  - `tavily_executor.py`: Direct Tavily API
+  - `mcp_executor.py`: MCP server interface
+  - `builtin_executor.py`: Memory/planning tools
+- `schemas.py`: Plan and step data models
 
-| Stratum | Purpose | Recommended Tools |
-|---------|---------|-------------------|
-| **RTI** | Data gathering, fact verification | websearch, crm |
-| **RAI** | Lead qualification, rapport building | communication, crm |
-| **ZACS** | Scheduling, conversions, follow-ups | calendar, communication, voice |
-| **EEI** | Analytics, market research | websearch, crm |
-| **IGE** | Compliance, quality control | all tools |
+### `sigil/reasoning/`
+Strategy selection and LLM reasoning. Complexity-based strategy routing.
 
-## Running Tests
+**Strategies:**
+- `direct.py`: Single-pass reasoning (0.0-0.3 complexity)
+- `chain_of_thought.py`: Step-by-step reasoning (0.3-0.5)
+- `tree_of_thoughts.py`: Multi-branch exploration (0.5-0.7)
+- `react.py`: Reason-Act loops (0.7-0.9)
+- `mcts.py`: Monte Carlo tree search (0.9-1.0)
+- `utils.py`: Tool result formatting utilities
+
+### `sigil/memory/`
+Context retrieval and storage. Multi-layer memory with semantic indexing.
+
+**Layers:**
+- Short-term: Recent messages and interactions
+- Semantic: Vector-indexed facts and insights
+- Event-based: Historical events and milestones
+
+### `sigil/contracts/`
+Output validation and schema enforcement for specific intents.
+
+### `sigil/interfaces/`
+User interaction surfaces:
+- `cli/`: Interactive command-line interface
+- `api/`: REST API endpoints (phase 3)
+
+### `src/`
+Agent builder framework (meta-agent):
+- `builder.py`: Main deepagents meta-agent
+- `tools.py`: Builder tools for creating agents
+- `prompts.py`: System prompts and templates
+- `schemas.py`: Agent configuration data models
+
+---
+
+## Advanced Configuration
+
+### Feature Flags
+Enable/disable subsystems via environment variables:
 
 ```bash
-# Activate virtual environment
-source venv/bin/activate
-
-# Run all tests
-PYTHONPATH=. pytest tests/ -v
-
-# Run specific test file
-PYTHONPATH=. pytest tests/test_schemas.py -v
-
-# Run with coverage
-PYTHONPATH=. pytest tests/ --cov=src --cov-report=html
+SIGIL_USE_PLANNING=true      # Enable task decomposition
+SIGIL_USE_ROUTING=true       # Enable intent classification
+SIGIL_USE_MEMORY=true        # Enable context retrieval
+SIGIL_USE_CONTRACTS=false    # Disable output validation
 ```
 
-## Configuration
-
-### Environment Variables
-
-Create a `.env` file in the project root:
-
+### Model Selection
 ```bash
-# Required
-ANTHROPIC_API_KEY=sk-ant-...
-
-# Optional (for MCP tool execution in Phase 2)
-ELEVENLABS_API_KEY=...
-TAVILY_API_KEY=...
-TWILIO_ACCOUNT_SID=...
-TWILIO_AUTH_TOKEN=...
-HUBSPOT_API_KEY=...
+SIGIL_LLM_MODEL=claude-opus-4-5-20251101  # Default
 ```
 
-### Model Configuration
-
-The default model is `anthropic:claude-opus-4-5-20251101`. You can override this:
-
-```python
-from src.builder import create_builder
-
-# Use a different model
-builder = create_builder(model="anthropic:claude-sonnet-4-20250514")
+### Token Management
+```bash
+SIGIL_MAX_INPUT_TOKENS=150000
+SIGIL_MAX_OUTPUT_TOKENS=102400
 ```
 
-## API Documentation
+---
 
-Detailed API documentation is available in the `docs/` directory:
+## Testing & Validation
 
-- [Tools API Contract](docs/api-contract-tools.md) - Builder tools specification
-- [Builder API Contract](docs/api-contract-builder.md) - Builder module specification
+See `Claude.md` for comprehensive testing methodologies, test harnesses, and validation frameworks for:
+- Memory system validation
+- Context management engine testing
+- Planning module integration tests
+- TextGrad optimization evaluation
+
+---
+
+## ACTi Methodology: Agent Strata
+
+The framework classifies agents into five intelligence strata:
+
+| Stratum | Purpose | Key Capabilities | Recommended Tools |
+|---------|---------|-----------------|-------------------|
+| **RTI** | Reality & Truth Intelligence | Data gathering, fact verification, research | websearch, crm |
+| **RAI** | Readiness & Agreement Intelligence | Lead qualification, rapport building, persuasion | communication, crm, voice |
+| **ZACS** | Zone Action & Conversion Systems | Scheduling, follow-ups, conversion optimization | calendar, communication, voice |
+| **EEI** | Economic & Ecosystem Intelligence | Market analysis, forecasting, optimization | websearch, crm, analytics |
+| **IGE** | Integrity & Governance Engine | Compliance, audit, quality assurance | all tools + contracts |
+
+---
 
 ## Roadmap
 
-- [x] **Phase 1: Foundation** - Builder agent with config generation
-- [x] **Phase 2: MCP Integration** - Real tool execution via MCP servers
-- [ ] **Phase 3: API Backend** - FastAPI server for frontend integration
-- [ ] **Phase 4: Frontend** - Web UI for agent creation and management
+- [x] **Phase 1**: Core architecture (routing, planning, reasoning, memory)
+- [x] **Phase 2**: MCP tool integration (Tavily, ElevenLabs, calendar, etc.)
+- [x] **Phase 3**: Interactive CLI with real-time tool execution
+- [x] **Phase 4**: Tool result synthesis and prompt integration
+- [x] **Phase 5**: Agent builder meta-agent framework
+- [ ] **Phase 6**: TextGrad optimization for prompt refinement
+- [ ] **Phase 7**: REST API backend for web UIs
+- [ ] **Phase 8**: Frontend dashboard for agent management
+
+---
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions welcome! Please:
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch (`git checkout -b feature/description`)
+3. Make changes following the modular architecture
+4. Add tests for new functionality
+5. Submit a Pull Request with clear description
+
+---
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) file
+
+---
 
 ## Acknowledgments
 
 - Built on [deepagents](https://github.com/deepagents/deepagents) framework
-- Inspired by ACTi methodology from the Unblinded Formula framework
-- Reference patterns from Bland AI and N8N workflows
+- Inspired by ACTi methodology and Unblinded Formula framework
+- Reference patterns from Bland AI and N8N
+- Tool integrations via Model Context Protocol (MCP)
