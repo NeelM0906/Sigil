@@ -607,11 +607,8 @@ class SigilOrchestrator:
         if not ctx.route_decision.use_planning or not self._planner:
             return
 
-        # Note: Complexity threshold is now handled in router._should_use_planning()
-        # This check is kept as a safety guard
-        if ctx.route_decision.complexity < 0.1:
-            logger.debug("Skipping planning for very simple task")
-            return
+        # Note: Complexity threshold and keyword detection are handled in router._should_use_planning()
+        # If use_planning is True, we trust the router's decision (including keyword-based triggers)
 
         try:
             # Get available tools to make planner tool-aware

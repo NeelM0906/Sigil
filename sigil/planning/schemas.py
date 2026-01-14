@@ -487,12 +487,13 @@ class PlanResult:
         total_duration = sum(r.duration_ms for r in results_list)
         errors = [r.error for r in results_list if r.error]
 
-        # Aggregate output from completed steps
-        outputs = [
-            str(r.output) for r in results_list
-            if r.status == StepStatus.COMPLETED and r.output
-        ]
-        final_output = "\n".join(outputs) if outputs else None
+        # Use the last completed step's output as final output (typically the synthesis/reasoning step)
+        # This avoids including raw tool outputs (like Tavily JSON) in the user-facing response
+        final_output = None
+        for r in reversed(results_list):
+            if r.status == StepStatus.COMPLETED and r.output:
+                final_output = str(r.output)
+                break
 
         return cls(
             plan_id=plan_id,

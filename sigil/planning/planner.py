@@ -1179,15 +1179,16 @@ Now generate a plan for the goal above:"""
         )
 
         # Add steps based on goal keywords
-        if any(kw in goal_lower for kw in ["research", "find", "search", "investigate"]):
-            steps.append(
-                PlanStep(
-                    step_id=generate_uuid(),
-                    description="Search for relevant information",
-                    dependencies=[steps[0].step_id],
-                    tool_calls=[t for t in tools if "search" in t.lower()] or None,
-                )
+        if any(kw in goal_lower for kw in ["research", "find", "search", "investigate", "news", "latest"]):
+            search_step = PlanStep(
+                step_id=generate_uuid(),
+                description=f"Search for: {goal}",
+                dependencies=[steps[0].step_id],
+                tool_calls=[t for t in tools if "search" in t.lower()] or None,
             )
+            # Extract query from goal for websearch tool
+            search_step._tool_args = {"query": goal}  # type: ignore
+            steps.append(search_step)
 
         if any(kw in goal_lower for kw in ["qualify", "assess", "evaluate"]):
             steps.append(

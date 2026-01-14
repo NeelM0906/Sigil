@@ -391,8 +391,15 @@ class ToolStepExecutor:
         Returns:
             Tool arguments dictionary.
         """
+        # Check for tool_args (standard attribute)
         if hasattr(step, "tool_args") and step.tool_args:
             return step.tool_args
+        # Check for _tool_args (set by planner's _enrich_steps_with_tools)
+        if hasattr(step, "_tool_args") and step._tool_args:
+            return step._tool_args
+        # Check for _parsed_tool_args (set during plan parsing)
+        if hasattr(step, "_parsed_tool_args") and step._parsed_tool_args:
+            return step._parsed_tool_args
         return {}
 
     async def _execute_tool_call(
