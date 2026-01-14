@@ -33,6 +33,7 @@ from sigil.reasoning.strategies.base import (
     StrategyConfig,
     utc_now,
 )
+from sigil.reasoning.strategies.utils import build_tool_aware_context_string
 
 
 # =============================================================================
@@ -180,9 +181,9 @@ class TreeOfThoughtsStrategy(BaseReasoningStrategy):
         """
         context_str = ""
         if context:
-            context_str = "\n\nContext:\n"
-            for key, value in context.items():
-                context_str += f"- {key}: {value}\n"
+            context_str = build_tool_aware_context_string(context)
+            if context_str:
+                context_str = "\n\nContext:\n" + context_str
 
         return f"""You are a strategic thinker. Generate {num_approaches} different approaches to solve the following task.
 
@@ -258,9 +259,9 @@ Evaluation:"""
         """
         context_str = ""
         if context:
-            context_str = "\n\nContext:\n"
-            for key, value in context.items():
-                context_str += f"- {key}: {value}\n"
+            context_str = build_tool_aware_context_string(context)
+            if context_str:
+                context_str = "\n\nContext:\n" + context_str
 
         return f"""You selected the following approach as the best for the task:
 

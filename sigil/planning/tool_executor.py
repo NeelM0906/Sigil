@@ -43,6 +43,7 @@ from sigil.planning.executors.mcp_executor import (
 )
 from sigil.planning.executors.builtin_executor import BuiltinToolExecutor
 from sigil.core.exceptions import SigilError
+from sigil.reasoning.strategies.utils import format_tool_results_section
 
 if TYPE_CHECKING:
     from sigil.config.schemas.plan import PlanStep
@@ -688,8 +689,24 @@ class ToolStepExecutor:
             return (output, 0)
 
         # Get reasoning task from step
-        reasoning_task = getattr(step, "reasoning_task", None) or step.description
+        base_task = getattr(step, "reasoning_task", None) or step.description
         context = self._build_execution_context(step, prior_results)
+
+        # Extract and format tool outputs for explicit inclusion in task
+        prior_outputs = context.get("prior_outputs", {})
+        if prior_outputs:
+            tool_results_section = format_tool_results_section(prior_outputs)
+            if tool_results_section:
+                reasoning_task = f"""Based on the following tool results, {base_task}:
+
+## Tool Results
+{tool_results_section}
+
+Generate a comprehensive, well-structured response for the user."""
+            else:
+                reasoning_task = base_task
+        else:
+            reasoning_task = base_task
 
         # Execute through reasoning manager
         try:

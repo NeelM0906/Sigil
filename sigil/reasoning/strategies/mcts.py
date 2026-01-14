@@ -35,6 +35,7 @@ from sigil.reasoning.strategies.base import (
     StrategyConfig,
     utc_now,
 )
+from sigil.reasoning.strategies.utils import build_tool_aware_context_string
 
 
 # =============================================================================
@@ -234,9 +235,9 @@ class MCTSStrategy(BaseReasoningStrategy):
         """
         context_str = ""
         if context:
-            context_str = "\n\nContext:\n"
-            for key, value in context.items():
-                context_str += f"- {key}: {value}\n"
+            context_str = build_tool_aware_context_string(context)
+            if context_str:
+                context_str = "\n\nContext:\n" + context_str
 
         parent_path = self._get_path_to_root(node)
         path_str = " -> ".join(parent_path) if parent_path else "root"
@@ -277,9 +278,9 @@ Generate possible actions:"""
         """
         context_str = ""
         if context:
-            context_str = "\n\nContext:\n"
-            for key, value in context.items():
-                context_str += f"- {key}: {value}\n"
+            context_str = build_tool_aware_context_string(context)
+            if context_str:
+                context_str = "\n\nContext:\n" + context_str
 
         parent_path = self._get_path_to_root(node)
         path_str = " -> ".join(parent_path) if parent_path else "root"
@@ -326,9 +327,9 @@ Evaluate:"""
         """
         context_str = ""
         if context:
-            context_str = "\n\nContext:\n"
-            for key, value in context.items():
-                context_str += f"- {key}: {value}\n"
+            context_str = build_tool_aware_context_string(context)
+            if context_str:
+                context_str = "\n\nContext:\n" + context_str
 
         path_str = "\n".join(f"  {i+1}. {step}" for i, step in enumerate(best_path))
 

@@ -32,6 +32,7 @@ from sigil.reasoning.strategies.base import (
     StrategyConfig,
     utc_now,
 )
+from sigil.reasoning.strategies.utils import build_tool_aware_context_string
 
 
 # =============================================================================
@@ -116,9 +117,9 @@ class DirectStrategy(BaseReasoningStrategy):
         """
         context_str = ""
         if context:
-            context_str = "\n\nContext:\n"
-            for key, value in context.items():
-                context_str += f"- {key}: {value}\n"
+            context_str = build_tool_aware_context_string(context)
+            if context_str:
+                context_str = "\n\nContext:\n" + context_str
 
         return f"""Answer the following task directly and concisely.
 {context_str}

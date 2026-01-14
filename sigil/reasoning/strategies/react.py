@@ -34,6 +34,7 @@ from sigil.reasoning.strategies.base import (
     StrategyConfig,
     utc_now,
 )
+from sigil.reasoning.strategies.utils import build_tool_aware_context_string
 
 
 # =============================================================================
@@ -207,11 +208,9 @@ class ReActStrategy(BaseReasoningStrategy):
 
         context_str = ""
         if context:
-            other_context = {k: v for k, v in context.items() if k != "tools"}
-            if other_context:
-                context_str = "\n\nContext:\n"
-                for key, value in other_context.items():
-                    context_str += f"- {key}: {value}\n"
+            context_str = build_tool_aware_context_string(context)
+            if context_str:
+                context_str = "\n\nContext:\n" + context_str
 
         return f"""You are a problem-solving agent using the ReAct framework.
 You have access to the following tools: {tools_str}
