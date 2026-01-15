@@ -13,11 +13,12 @@ Key Components:
 
 Pipeline Flow:
     1. Route: Classify intent and assess complexity
-    2. Plan: Generate execution plan if complex
-    3. Context: Assemble context from memory, plan, and history
-    4. Execute: Run through reasoning strategy
-    5. Validate: Verify output against contract (if applicable)
-    6. Return: Unified response with metrics
+    2. Ground: Gather information, identify gaps, enrich context
+    3. Plan: Generate execution plan if complex
+    4. Context: Assemble context from grounding, memory, plan, and history
+    5. Execute: Run through reasoning strategy
+    6. Validate: Verify output against contract (if applicable)
+    7. Return: Unified response with metrics
 
 Example:
     >>> from sigil.orchestrator import SigilOrchestrator, OrchestratorRequest
@@ -61,24 +62,80 @@ from sigil.reasoning.manager import ReasoningManager
 from sigil.contracts.executor import ContractExecutor, ContractResult
 from sigil.contracts.schema import Contract
 from sigil.contracts.templates.acti import get_contract_for_intent
+from sigil.grounding.grounder import Grounder
+from sigil.grounding.schemas import GroundingRequest, GroundingResult
 from sigil.state.events import Event, EventType, _generate_event_id, _get_utc_now
 from sigil.state.store import EventStore
 from sigil.telemetry.tokens import TokenTracker, TokenBudget
+
+# =============================================================================
+# Module Logger (defined early for use in tool registry)
+# =============================================================================
+
+logger = logging.getLogger(__name__)
 
 # Tool registry for getting available tools
 try:
     from src.tool_registry import get_configured_tools
 except ImportError:
-    # Fallback if tool_registry not available
+    # Fallback: Detect available tools based on configured API keys
+    import os
+    from pathlib import Path
+
+    # Load .env file at import time if dotenv is available
+    try:
+        from dotenv import load_dotenv
+        _env_path = Path(__file__).parent.parent / ".env"
+        if _env_path.exists():
+            load_dotenv(_env_path)
+            logger.debug(f"[ToolRegistry] Loaded .env from {_env_path}")
+    except ImportError:
+        pass  # dotenv not available, rely on environment variables
+
     def get_configured_tools() -> list[str]:
-        return []
+        """Return list of available tools based on configured API keys.
 
+        Checks for presence of API keys and returns tools that can be used.
+        """
+        tools: list[str] = []
 
-# =============================================================================
-# Module Logger
-# =============================================================================
+        # Tavily web search tools (if TAVILY_API_KEY is set)
+        if os.getenv("TAVILY_API_KEY"):
+            tools.extend([
+                "websearch.search",
+                "websearch.extract",
+                "websearch.qna",
+                "tavily_search",
+                "tavily_extract",
+                "tavily_qna",
+            ])
+            logger.debug("[ToolRegistry] Tavily tools enabled")
 
-logger = logging.getLogger(__name__)
+        # ElevenLabs voice tools (if ELEVENLABS_API_KEY is set)
+        if os.getenv("ELEVENLABS_API_KEY"):
+            tools.extend([
+                "voice.synthesize",
+                "voice.clone",
+            ])
+            logger.debug("[ToolRegistry] ElevenLabs tools enabled")
+
+        # Twilio communication tools (if both SID and token are set)
+        if os.getenv("TWILIO_ACCOUNT_SID") and os.getenv("TWILIO_AUTH_TOKEN"):
+            tools.extend([
+                "sms.send",
+                "call.initiate",
+            ])
+            logger.debug("[ToolRegistry] Twilio tools enabled")
+
+        # Builtin tools (always available)
+        tools.extend([
+            "memory.recall",
+            "memory.store",
+            "planning.decompose",
+        ])
+
+        logger.debug(f"[ToolRegistry] Configured tools: {tools}")
+        return tools
 
 
 # =============================================================================
@@ -289,6 +346,7 @@ class PipelineContext:
     Attributes:
         request: The original request
         route_decision: Routing decision
+        grounding_result: Result from information grounding
         plan: Generated plan (if any)
         assembled_context: Assembled context from memory
         reasoning_result: Result from reasoning
@@ -301,6 +359,7 @@ class PipelineContext:
     def __init__(self, request: OrchestratorRequest) -> None:
         self.request = request
         self.route_decision: Optional[RouteDecision] = None
+        self.grounding_result: Optional[GroundingResult] = None
         self.plan: Optional[Any] = None
         self.plan_id: Optional[str] = None
         self.assembled_context: dict[str, Any] = {}
@@ -342,11 +401,12 @@ class SigilOrchestrator:
 
     The orchestrator manages the complete lifecycle of request processing:
     1. Route: Classify intent and determine complexity
-    2. Plan: Generate execution plan if needed
-    3. Context: Assemble context from memory/history
-    4. Execute: Run through appropriate reasoning strategy
-    5. Validate: Check output against contract
-    6. Return: Unified response with metrics
+    2. Ground: Gather information, identify gaps, enrich context
+    3. Plan: Generate execution plan if needed
+    4. Context: Assemble context from grounding/memory/history
+    5. Execute: Run through appropriate reasoning strategy
+    6. Validate: Check output against contract
+    7. Return: Unified response with metrics
 
     Features:
         - Unified request/response format
@@ -437,6 +497,13 @@ class SigilOrchestrator:
         else:
             self._contract_executor = contract_executor
 
+        # Initialize grounder for information gathering
+        self._grounder = Grounder(
+            memory_manager=self._memory_manager,
+            event_store=self._event_store,
+            strict_mode=False,  # Allow proceeding with gaps
+        )
+
         # Request metrics
         self._total_requests: int = 0
         self._successful_requests: int = 0
@@ -486,6 +553,7 @@ class SigilOrchestrator:
         try:
             # Execute pipeline steps
             await self._step_route(ctx)
+            await self._step_ground(ctx)  # Ground: gather info, identify gaps
             await self._step_plan(ctx)
             await self._step_assemble_context(ctx)
             await self._step_execute(ctx)
@@ -595,8 +663,73 @@ class SigilOrchestrator:
                 handler_name="default",
             )
 
+    async def _step_ground(self, ctx: PipelineContext) -> None:
+        """Step 2: Ground the request by gathering information and identifying gaps.
+
+        The grounding phase:
+        1. Analyzes the message to identify information needs
+        2. Checks existing knowledge (memory, context)
+        3. Identifies gaps that may need clarification
+        4. Enriches the context for subsequent steps
+
+        Args:
+            ctx: Pipeline context
+        """
+        if not ctx.route_decision:
+            return
+
+        # Skip grounding for very simple requests (chat, low complexity)
+        if (
+            ctx.route_decision.intent == Intent.GENERAL_CHAT
+            and ctx.route_decision.complexity < 0.2
+        ):
+            logger.debug("Skipping grounding for simple chat request")
+            return
+
+        try:
+            # Build grounding request
+            grounding_request = GroundingRequest(
+                message=ctx.request.message,
+                session_id=ctx.request.session_id,
+                context=ctx.request.context,
+                route_intent=ctx.route_decision.intent.value if ctx.route_decision else None,
+                route_complexity=ctx.route_decision.complexity if ctx.route_decision else 0.5,
+                available_tools=get_configured_tools(),
+            )
+
+            # Execute grounding
+            ctx.grounding_result = await self._grounder.ground(
+                grounding_request,
+                correlation_id=ctx.request.correlation_id,
+            )
+
+            # Add any grounding tokens
+            ctx.add_tokens(ctx.grounding_result.tokens_used)
+
+            # Log grounding result
+            logger.debug(
+                f"Grounding completed: status={ctx.grounding_result.status.value}, "
+                f"needs={len(ctx.grounding_result.information_needs)}, "
+                f"gaps={len(ctx.grounding_result.information_gaps)}, "
+                f"can_proceed={ctx.grounding_result.can_proceed}"
+            )
+
+            # If grounding says we can't proceed, add warning but continue
+            # (non-strict mode allows proceeding with gaps)
+            if not ctx.grounding_result.can_proceed:
+                ctx.add_warning(
+                    f"Grounding identified {len(ctx.grounding_result.information_gaps)} "
+                    f"information gaps that may affect results"
+                )
+
+        except Exception as e:
+            ctx.add_warning(f"Grounding failed, proceeding without enrichment: {e}")
+            logger.warning(f"Grounding error: {e}", exc_info=True)
+
     async def _step_plan(self, ctx: PipelineContext) -> None:
-        """Step 2: Generate execution plan if complexity warrants it.
+        """Step 3: Generate execution plan if complexity warrants it.
+
+        Uses enriched context from grounding phase if available.
 
         Args:
             ctx: Pipeline context
@@ -627,7 +760,10 @@ class SigilOrchestrator:
             ctx.add_warning(f"Planning failed, proceeding without plan: {e}")
 
     async def _step_assemble_context(self, ctx: PipelineContext) -> None:
-        """Step 3: Assemble context from memory, plan, and history.
+        """Step 4: Assemble context from grounding, memory, plan, and history.
+
+        Combines information from all previous phases into a unified context
+        for the execution phase.
 
         Args:
             ctx: Pipeline context
@@ -645,6 +781,22 @@ class SigilOrchestrator:
                 "handler": ctx.route_decision.handler_name,
             }
 
+        # Add grounding info (enriched context from information gathering)
+        if ctx.grounding_result:
+            # Merge enriched context from grounding
+            assembled.update(ctx.grounding_result.enriched_context)
+
+            # Add grounding metadata
+            assembled["grounding"] = {
+                "status": ctx.grounding_result.status.value,
+                "confidence": ctx.grounding_result.confidence,
+                "gaps_count": len(ctx.grounding_result.information_gaps),
+            }
+
+            # Include clarification questions if any (for potential user interaction)
+            if ctx.grounding_result.clarification_questions:
+                assembled["clarification_needed"] = ctx.grounding_result.clarification_questions
+
         # Add plan info
         if ctx.plan:
             assembled["plan"] = {
@@ -657,11 +809,12 @@ class SigilOrchestrator:
                 ],
             }
 
-        # Fetch from memory if enabled
+        # Fetch from memory if enabled (skip if grounding already retrieved memories)
         if (
             ctx.route_decision
             and ctx.route_decision.use_memory
             and self._memory_manager
+            and "memory_context" not in assembled  # Avoid duplicate retrieval
         ):
             try:
                 memories = await self._memory_manager.retrieve(
@@ -680,7 +833,7 @@ class SigilOrchestrator:
         ctx.assembled_context = assembled
 
     async def _step_execute(self, ctx: PipelineContext) -> None:
-        """Step 4: Execute plan steps with tools or fall back to reasoning.
+        """Step 5: Execute plan steps with tools or fall back to reasoning.
 
         This method executes plans using the ToolStepExecutor which routes:
         - TOOL_CALL steps to MCP or builtin tool executors
@@ -816,7 +969,7 @@ class SigilOrchestrator:
             ctx.output = {"error": str(e)}
 
     async def _step_validate(self, ctx: PipelineContext) -> None:
-        """Step 5: Validate output against contract.
+        """Step 6: Validate output against contract.
 
         Args:
             ctx: Pipeline context
