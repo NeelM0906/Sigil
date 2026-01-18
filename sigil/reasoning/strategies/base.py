@@ -21,9 +21,10 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from sigil.config import get_settings
+from sigil.reasoning.llm_types import LLMResponse, ToolUseBlock
 from sigil.state.store import EventStore
 from sigil.telemetry.tokens import TokenTracker
 
@@ -287,7 +288,8 @@ class BaseReasoningStrategy(ABC):
         system_prompt: Optional[str] = None,
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
-    ) -> tuple[str, int]:
+        tools: Optional[list[dict]] = None,
+    ) -> Union[tuple[str, int], LLMResponse]:
         """Call the LLM with a prompt using the Anthropic API.
 
         Args:
@@ -295,9 +297,11 @@ class BaseReasoningStrategy(ABC):
             system_prompt: Optional system prompt to guide behavior.
             temperature: Optional temperature for response randomness.
             max_tokens: Optional max tokens in response.
+            tools: Optional list of Claude API tool schemas for function calling.
 
         Returns:
-            Tuple of (response_text, tokens_used).
+            If tools is None: Tuple of (response_text, tokens_used) for backward compatibility.
+            If tools is provided: LLMResponse with text, tool_uses, and stop_reason.
 
         Raises:
             ValueError: If API key is not configured.
@@ -350,11 +354,12 @@ class BaseReasoningStrategy(ABC):
             if system_prompt:
                 request_params["system"] = system_prompt
 
+            # Add tools if provided for function calling
+            if tools:
+                request_params["tools"] = tools
+
             # Make the API call
             message = client.messages.create(**request_params)
-
-            # Extract response text
-            response_text = message.content[0].text if message.content else ""
 
             # Calculate total tokens used
             input_tokens = message.usage.input_tokens
@@ -370,9 +375,37 @@ class BaseReasoningStrategy(ABC):
 
             logger.debug(
                 f"LLM call completed: model={model}, "
-                f"input_tokens={input_tokens}, output_tokens={output_tokens}"
+                f"input_tokens={input_tokens}, output_tokens={output_tokens}, "
+                f"stop_reason={message.stop_reason}"
             )
 
+            # If tools were provided, return LLMResponse with tool parsing
+            if tools is not None:
+                response_text = ""
+                tool_uses = []
+
+                # Parse response content for both text and tool_use blocks
+                for block in message.content:
+                    if block.type == "text":
+                        response_text += block.text
+                    elif block.type == "tool_use":
+                        tool_uses.append(
+                            ToolUseBlock(
+                                id=block.id,
+                                name=block.name,
+                                input=block.input,
+                            )
+                        )
+
+                return LLMResponse(
+                    text=response_text,
+                    tool_uses=tool_uses,
+                    stop_reason=message.stop_reason,
+                    tokens_used=tokens_used,
+                )
+
+            # Legacy return format for backward compatibility
+            response_text = message.content[0].text if message.content else ""
             return response_text, tokens_used
 
         except anthropic.APIConnectionError as e:
@@ -506,6 +539,9 @@ __all__ = [
     # Data classes
     "StrategyResult",
     "StrategyConfig",
+    # LLM types (re-exported for convenience)
+    "LLMResponse",
+    "ToolUseBlock",
     # Base class
     "BaseReasoningStrategy",
     # Constants

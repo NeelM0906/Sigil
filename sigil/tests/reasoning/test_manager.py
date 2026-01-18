@@ -117,13 +117,13 @@ class TestFallbackChain:
 
     def test_fallback_order_correct(self, reasoning_manager):
         """Test that fallback order is correct."""
-        expected_order = ["mcts", "react", "tree_of_thoughts", "chain_of_thought", "direct"]
+        expected_order = ["mcts", "function_calling", "react", "tree_of_thoughts", "chain_of_thought", "direct"]
         assert reasoning_manager.FALLBACK_ORDER == expected_order
 
     def test_build_fallback_chain_from_mcts(self, reasoning_manager):
         """Test building fallback chain from MCTS."""
         chain = reasoning_manager._build_fallback_chain("mcts")
-        assert chain == ["mcts", "react", "tree_of_thoughts", "chain_of_thought", "direct"]
+        assert chain == ["mcts", "function_calling", "react", "tree_of_thoughts", "chain_of_thought", "direct"]
 
     def test_build_fallback_chain_from_react(self, reasoning_manager):
         """Test building fallback chain from ReAct."""

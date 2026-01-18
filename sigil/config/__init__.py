@@ -28,6 +28,7 @@ from sigil.config.settings import (
     # Nested settings classes
     LLMSettings,
     MemorySettings,
+    ContextSettings,
     ExternalToolSettings,
     MCPSettings,  # Backward compatibility alias
     PathSettings,
@@ -50,6 +51,7 @@ __all__ = [
     # Nested settings classes
     "LLMSettings",
     "MemorySettings",
+    "ContextSettings",
     "ExternalToolSettings",
     "MCPSettings",  # Backward compatibility alias
     "PathSettings",

@@ -691,11 +691,13 @@ class TestOrchestratorToolExecution:
         assert "result" in ctx.output or "error" in ctx.output
 
     @pytest.mark.asyncio
+    @patch('sigil.orchestrator.get_tool_schemas_for_configured_tools', return_value=[])
     async def test_step_execute_fallback_to_reasoning(
         self,
+        mock_get_schemas,
         mock_settings_with_planning,
     ):
-        """Test that step execution falls back to reasoning when tools fail."""
+        """Test that step execution falls back to reasoning when no tools are available."""
         # Create mock reasoning manager that succeeds
         mock_reasoning = MagicMock()
         mock_reasoning.execute = AsyncMock(return_value=MagicMock(
@@ -732,23 +734,28 @@ class TestOrchestratorToolExecution:
         # Execute step
         await orchestrator._step_execute(ctx)
 
-        # Should use reasoning manager
+        # Should use reasoning manager (since no tools are available)
         mock_reasoning.execute.assert_called_once()
         assert ctx.output is not None
         assert ctx.output.get("result") == "Fallback answer"
         assert ctx.tokens_used == 150
 
     @pytest.mark.asyncio
+    @patch('sigil.orchestrator.get_tool_schemas_for_configured_tools', return_value=[])
+    @patch('sigil.orchestrator.PlanExecutor')
+    @patch('sigil.orchestrator.create_tool_step_executor')
     async def test_token_tracking_in_plan_execution(
         self,
+        mock_create_step_executor,
+        mock_plan_executor_class,
+        mock_get_schemas,
         mock_settings_with_planning,
         mock_plan_with_tool_steps,
     ):
-        """Test that tokens are tracked correctly during plan execution."""
+        """Test that tokens are tracked correctly during plan execution (legacy path)."""
         from sigil.planning.schemas import StepResult, StepStatus, PlanResult, ExecutionState
 
-        # Create mock plan executor that returns a result
-        mock_executor = MagicMock()
+        # Create mock plan result
         mock_result = PlanResult(
             plan_id="test-plan",
             success=True,
@@ -771,11 +778,19 @@ class TestOrchestratorToolExecution:
             total_duration_ms=1000.0,
             final_output="Final output",
         )
-        mock_executor.execute = AsyncMock(return_value=mock_result)
+
+        # Setup the mock plan executor
+        mock_executor_instance = MagicMock()
+        mock_executor_instance.execute = AsyncMock(return_value=mock_result)
+        mock_plan_executor_class.return_value = mock_executor_instance
+
+        # Mock the step executor
+        mock_step_executor = MagicMock()
+        mock_step_executor.execute_step = AsyncMock()
+        mock_create_step_executor.return_value = mock_step_executor
 
         orchestrator = SigilOrchestrator(
             settings=mock_settings_with_planning,
-            plan_executor=mock_executor,
         )
 
         # Create context with plan
@@ -802,19 +817,31 @@ class TestOrchestratorToolExecution:
         assert ctx.output.get("total_tokens") == 200
 
     @pytest.mark.asyncio
+    @patch('sigil.orchestrator.get_tool_schemas_for_configured_tools', return_value=[])
+    @patch('sigil.orchestrator.PlanExecutor')
+    @patch('sigil.orchestrator.create_tool_step_executor')
     async def test_plan_execution_error_handling(
         self,
+        mock_create_step_executor,
+        mock_plan_executor_class,
+        mock_get_schemas,
         mock_settings_with_planning,
         mock_plan_with_tool_steps,
     ):
-        """Test error handling during plan execution."""
+        """Test error handling during plan execution (legacy path)."""
         from sigil.core.exceptions import PlanExecutionError
 
-        # Create mock plan executor that raises an error
-        mock_executor = MagicMock()
-        mock_executor.execute = AsyncMock(
+        # Setup the mock plan executor to raise an error
+        mock_executor_instance = MagicMock()
+        mock_executor_instance.execute = AsyncMock(
             side_effect=PlanExecutionError("Tool execution failed", plan_id="test-plan")
         )
+        mock_plan_executor_class.return_value = mock_executor_instance
+
+        # Mock the step executor
+        mock_step_executor = MagicMock()
+        mock_step_executor.execute_step = AsyncMock()
+        mock_create_step_executor.return_value = mock_step_executor
 
         # Create mock reasoning manager for fallback
         mock_reasoning = MagicMock()
@@ -829,7 +856,6 @@ class TestOrchestratorToolExecution:
 
         orchestrator = SigilOrchestrator(
             settings=mock_settings_with_planning,
-            plan_executor=mock_executor,
             reasoning_manager=mock_reasoning,
         )
 
@@ -933,16 +959,21 @@ class TestOrchestratorToolExecution:
         assert response.execution_time_ms > 0
 
     @pytest.mark.asyncio
+    @patch('sigil.orchestrator.get_tool_schemas_for_configured_tools', return_value=[])
+    @patch('sigil.orchestrator.PlanExecutor')
+    @patch('sigil.orchestrator.create_tool_step_executor')
     async def test_step_execute_output_structure(
         self,
+        mock_create_step_executor,
+        mock_plan_executor_class,
+        mock_get_schemas,
         mock_settings_with_planning,
         mock_plan_with_tool_steps,
     ):
-        """Test that step execution output has correct structure."""
+        """Test that step execution output has correct structure (legacy plan-based path)."""
         from sigil.planning.schemas import StepResult, StepStatus, PlanResult, ExecutionState
 
-        # Create mock plan executor
-        mock_executor = MagicMock()
+        # Create mock plan result
         mock_result = PlanResult(
             plan_id="test-plan",
             success=True,
@@ -965,11 +996,19 @@ class TestOrchestratorToolExecution:
             total_duration_ms=800.0,
             final_output="Search results\nSummary of results",
         )
-        mock_executor.execute = AsyncMock(return_value=mock_result)
+
+        # Setup the mock plan executor
+        mock_executor_instance = MagicMock()
+        mock_executor_instance.execute = AsyncMock(return_value=mock_result)
+        mock_plan_executor_class.return_value = mock_executor_instance
+
+        # Mock the step executor
+        mock_step_executor = MagicMock()
+        mock_step_executor.execute_step = AsyncMock()
+        mock_create_step_executor.return_value = mock_step_executor
 
         orchestrator = SigilOrchestrator(
             settings=mock_settings_with_planning,
-            plan_executor=mock_executor,
         )
 
         # Create context
@@ -1007,3 +1046,127 @@ class TestOrchestratorToolExecution:
             assert "step_id" in sr
             assert "status" in sr
             assert "tokens_used" in sr
+
+    @pytest.mark.asyncio
+    @patch('sigil.orchestrator.FunctionCallingStrategy')
+    async def test_function_calling_strategy_primary_path(
+        self,
+        mock_fc_strategy_class,
+        mock_settings_with_planning,
+    ):
+        """Test that FunctionCallingStrategy is used as primary path when tools are available."""
+        from sigil.reasoning.strategies.base import StrategyResult
+        from datetime import datetime, timezone
+
+        # Create mock tool schemas
+        mock_tool_schemas = [
+            {"name": "websearch_search", "description": "Search the web", "input_schema": {}},
+        ]
+
+        # Create a mock result
+        mock_result = StrategyResult(
+            answer="I found the information you requested.",
+            confidence=0.85,
+            reasoning_trace=["Searched web", "Analyzed results"],
+            tokens_used=500,
+            execution_time_seconds=2.5,
+            model="test-model",
+            metadata={"strategy": "function_calling", "iterations": 2, "tool_calls": 1},
+            success=True,
+            started_at=datetime.now(timezone.utc),
+            completed_at=datetime.now(timezone.utc),
+        )
+
+        # Setup the mock strategy
+        mock_strategy_instance = MagicMock()
+        mock_strategy_instance.execute = AsyncMock(return_value=mock_result)
+        mock_fc_strategy_class.return_value = mock_strategy_instance
+
+        with patch('sigil.orchestrator.get_tool_schemas_for_configured_tools', return_value=mock_tool_schemas):
+            orchestrator = SigilOrchestrator(
+                settings=mock_settings_with_planning,
+            )
+
+            # Create context without plan and without forced strategy
+            request = OrchestratorRequest(
+                message="Search for the latest AI news",
+                session_id="test-session",
+            )
+            ctx = PipelineContext(request)
+            ctx.route_decision = RouteDecision(
+                intent=Intent.GENERAL_CHAT,
+                confidence=0.9,
+                complexity=0.5,
+                handler_name="default",
+                use_planning=False,
+            )
+            ctx.assembled_context = {"message": "Search for the latest AI news"}
+
+            # Execute step
+            await orchestrator._step_execute(ctx)
+
+            # Verify FunctionCallingStrategy was used
+            mock_fc_strategy_class.assert_called_once()
+            mock_strategy_instance.execute.assert_called_once_with(
+                task="Search for the latest AI news",
+                context={"message": "Search for the latest AI news"},
+                tools=mock_tool_schemas,
+            )
+
+            # Verify output structure for function calling path
+            assert ctx.output is not None
+            assert ctx.output.get("result") == "I found the information you requested."
+            assert ctx.output.get("strategy") == "function_calling"
+            assert ctx.output.get("confidence") == 0.85
+            assert ctx.tokens_used == 500
+
+    @pytest.mark.asyncio
+    async def test_force_strategy_bypasses_function_calling(
+        self,
+        mock_settings_with_planning,
+    ):
+        """Test that forcing a strategy bypasses the function calling primary path."""
+        mock_tool_schemas = [
+            {"name": "websearch_search", "description": "Search", "input_schema": {}},
+        ]
+
+        # Create mock reasoning manager
+        mock_reasoning = MagicMock()
+        mock_reasoning.execute = AsyncMock(return_value=MagicMock(
+            success=True,
+            answer="Direct reasoning answer",
+            tokens_used=100,
+            reasoning_trace=["step1"],
+            model="test-model",
+            confidence=0.8,
+        ))
+
+        with patch('sigil.orchestrator.get_tool_schemas_for_configured_tools', return_value=mock_tool_schemas):
+            orchestrator = SigilOrchestrator(
+                settings=mock_settings_with_planning,
+                reasoning_manager=mock_reasoning,
+            )
+
+            # Create context with forced strategy
+            request = OrchestratorRequest(
+                message="Test message",
+                session_id="test-session",
+                force_strategy="direct",  # Force a specific strategy
+            )
+            ctx = PipelineContext(request)
+            ctx.route_decision = RouteDecision(
+                intent=Intent.GENERAL_CHAT,
+                confidence=0.9,
+                complexity=0.5,
+                handler_name="default",
+                use_planning=False,
+            )
+            ctx.assembled_context = {"message": "Test message"}
+
+            # Execute step
+            await orchestrator._step_execute(ctx)
+
+            # Should have used reasoning manager with forced strategy
+            mock_reasoning.execute.assert_called_once()
+            call_kwargs = mock_reasoning.execute.call_args
+            assert call_kwargs[1].get("strategy") == "direct"

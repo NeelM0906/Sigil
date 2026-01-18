@@ -8,6 +8,7 @@ Settings Categories:
     - Core: Framework-level settings (debug mode, log level, etc.)
     - LLM: Language model provider settings (model, temperature, max tokens)
     - Memory: Memory system configuration (paths, embedding model)
+    - Context: Context management and truncation settings
     - External Tools: External tool settings (Tavily, etc.)
     - Paths: Directory paths for agents, memory, and output
     - Feature Flags: Toggle for v2 subsystems (memory, planning, contracts, etc.)
@@ -27,6 +28,24 @@ Environment Variables:
     TWILIO_ACCOUNT_SID: Twilio account SID
     TWILIO_AUTH_TOKEN: Twilio auth token
 
+    Context Management Variables (use SIGIL_CONTEXT__ prefix):
+    SIGIL_CONTEXT__MAX_CHARS_PER_TOOL_RESULT: Max chars per tool result (default: 4000)
+    SIGIL_CONTEXT__MAX_TAVILY_RESULTS: Max Tavily results to include (default: 20)
+    SIGIL_CONTEXT__MAX_CONTEXT_VALUE_LENGTH: Max length for context values (default: 200)
+    SIGIL_CONTEXT__MAX_MEMORY_ITEMS_IN_CONTEXT: Max memory items (default: 5)
+    SIGIL_CONTEXT__MAX_PLAN_STEPS_IN_CONTEXT: Max plan steps (default: 5)
+    SIGIL_CONTEXT__MAX_TOOL_OUTPUTS: Max tool outputs (default: 10)
+    SIGIL_CONTEXT__OFFLOAD_THRESHOLD_CHARS: Char threshold for offloading (default: 80000)
+    SIGIL_CONTEXT__OFFLOAD_STORAGE_PATH: Path for offloaded results (default: outputs/tool_results)
+    SIGIL_CONTEXT__ENABLE_AUTO_OFFLOAD: Enable auto-offloading (default: true)
+    SIGIL_CONTEXT__SUMMARIZATION_THRESHOLD_TOKENS: Token threshold for summarization (default: 120000)
+    SIGIL_CONTEXT__PRESERVE_RECENT_MESSAGES: Recent messages to preserve (default: 6)
+    SIGIL_CONTEXT__ENABLE_AUTO_SUMMARIZATION: Enable auto summarization (default: true)
+    SIGIL_CONTEXT__ENABLE_PRE_SEND_VALIDATION: Validate context before LLM calls (default: true)
+    SIGIL_CONTEXT__MAX_CONTEXT_TOKENS: Max tokens in context (default: 150000)
+    SIGIL_CONTEXT__CHARS_PER_TOKEN_ESTIMATE: Chars per token estimate (default: 4)
+    SIGIL_CONTEXT__VALIDATION_BUFFER_TOKENS: Buffer tokens for safety (default: 5000)
+
 Usage:
     from sigil.config.settings import get_settings
 
@@ -34,6 +53,7 @@ Usage:
     print(settings.debug)
     print(settings.llm.model)
     print(settings.paths.agents_dir)
+    print(settings.context.max_chars_per_tool_result)
 """
 
 from __future__ import annotations
@@ -202,6 +222,147 @@ class MemorySettings(BaseModel):
                 f"Invalid locking backend '{v}'. Must be one of: {', '.join(sorted(valid_backends))}"
             )
         return normalized
+
+
+class ContextSettings(BaseModel):
+    """Settings for context management and truncation.
+
+    These settings control how context is assembled, truncated, and validated
+    before being sent to the LLM.
+
+    Attributes:
+        max_chars_per_tool_result: Maximum characters per tool result before truncation.
+        max_tavily_results: Maximum Tavily search results to include.
+        max_context_value_length: Maximum length for context dictionary values.
+        max_memory_items_in_context: Maximum memory items included in context.
+        max_plan_steps_in_context: Maximum plan steps included in context.
+        max_tool_outputs: Maximum tool outputs to include.
+        offload_threshold_chars: Character threshold for auto-offloading large results.
+        offload_storage_path: Directory path for storing offloaded results.
+        enable_auto_offload: Whether to enable automatic offloading of large results.
+        summarization_threshold_tokens: Token threshold for triggering summarization.
+        preserve_recent_messages: Number of recent messages to preserve during summarization.
+        enable_auto_summarization: Whether to enable automatic conversation summarization.
+        enable_pre_send_validation: Whether to validate context size before LLM calls.
+        max_context_tokens: Maximum tokens allowed in assembled context.
+        chars_per_token_estimate: Estimated characters per token for size calculations.
+        validation_buffer_tokens: Buffer tokens reserved for safety margin.
+    """
+
+    # Truncation limits (current hardcoded values as defaults)
+    max_chars_per_tool_result: int = Field(
+        default=4000,
+        ge=500,
+        le=100000,
+        description="Maximum characters per tool result"
+    )
+    max_tavily_results: int = Field(
+        default=20,
+        ge=5,
+        le=100,
+        description="Maximum Tavily search results"
+    )
+    max_context_value_length: int = Field(
+        default=200,
+        ge=50,
+        le=2000,
+        description="Maximum length for context values"
+    )
+    max_memory_items_in_context: int = Field(
+        default=5,
+        ge=1,
+        le=20,
+        description="Maximum memory items in context"
+    )
+    max_plan_steps_in_context: int = Field(
+        default=5,
+        ge=1,
+        le=20,
+        description="Maximum plan steps in context"
+    )
+    max_tool_outputs: int = Field(
+        default=10,
+        ge=1,
+        le=50,
+        description="Maximum tool outputs to include"
+    )
+
+    # Offloading settings
+    offload_threshold_chars: int = Field(
+        default=80000,
+        ge=10000,
+        le=500000,
+        description="Character threshold for auto-offloading (approx 20K tokens)"
+    )
+    offload_storage_path: str = Field(
+        default="outputs/tool_results",
+        description="Directory for storing offloaded results"
+    )
+    enable_auto_offload: bool = Field(
+        default=True,
+        description="Enable automatic offloading of large results"
+    )
+
+    # Summarization settings
+    summarization_threshold_tokens: int = Field(
+        default=120000,
+        ge=50000,
+        le=200000,
+        description="Token threshold for triggering summarization"
+    )
+    preserve_recent_messages: int = Field(
+        default=6,
+        ge=2,
+        le=20,
+        description="Recent messages to preserve during summarization"
+    )
+    enable_auto_summarization: bool = Field(
+        default=True,
+        description="Enable automatic conversation summarization"
+    )
+
+    # Pre-send validation settings
+    enable_pre_send_validation: bool = Field(
+        default=True,
+        description="Validate context size before LLM calls"
+    )
+    max_context_tokens: int = Field(
+        default=150000,
+        ge=10000,
+        le=500000,
+        description="Maximum tokens in assembled context"
+    )
+    chars_per_token_estimate: int = Field(
+        default=4,
+        ge=2,
+        le=6,
+        description="Characters per token for estimation"
+    )
+    validation_buffer_tokens: int = Field(
+        default=5000,
+        ge=1000,
+        le=20000,
+        description="Buffer tokens reserved for safety margin"
+    )
+
+    def estimate_tokens(self, text: str) -> int:
+        """Estimate token count for a given text.
+
+        Args:
+            text: The text to estimate tokens for.
+
+        Returns:
+            Estimated token count based on chars_per_token_estimate.
+        """
+        return len(text) // self.chars_per_token_estimate
+
+    def get_effective_max_tokens(self) -> int:
+        """Get the effective maximum tokens accounting for buffer.
+
+        Returns:
+            Maximum tokens minus the validation buffer.
+        """
+        return self.max_context_tokens - self.validation_buffer_tokens
 
 
 class ExternalToolSettings(BaseModel):
@@ -518,6 +679,7 @@ class SigilSettings(BaseSettings):
         use_routing: Enable intent-based request routing.
         llm: Language model configuration.
         memory: Memory system configuration.
+        context: Context management configuration.
         external_tools: External tool configuration (Tavily, etc.).
         paths: Directory path configuration.
         telemetry: Observability configuration.
@@ -578,6 +740,10 @@ class SigilSettings(BaseSettings):
     memory: MemorySettings = Field(
         default_factory=MemorySettings,
         description="Memory system configuration"
+    )
+    context: ContextSettings = Field(
+        default_factory=ContextSettings,
+        description="Context management configuration"
     )
     external_tools: ExternalToolSettings = Field(
         default_factory=ExternalToolSettings,
@@ -788,6 +954,7 @@ __all__ = [
     # Nested settings classes
     "LLMSettings",
     "MemorySettings",
+    "ContextSettings",
     "ExternalToolSettings",
     "MCPSettings",  # Backward compatibility alias
     "PathSettings",

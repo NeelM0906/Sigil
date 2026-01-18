@@ -41,6 +41,17 @@ from sigil.context.compression import (
     PrioritizeStrategy,
 )
 
+from sigil.context.validator import (
+    ContextValidator,
+    ValidationResult,
+    ReductionResult,
+    ReductionStrategy,
+    create_validator_from_settings,
+    DEFAULT_MAX_TOKENS,
+    DEFAULT_BUFFER_TOKENS,
+    DEFAULT_CHARS_PER_TOKEN,
+)
+
 __all__ = [
     # Manager
     "ContextManager",
@@ -61,4 +72,13 @@ __all__ = [
     # Constants
     "DEFAULT_MAX_CONTEXT_TOKENS",
     "DEFAULT_RESERVED_FOR_RESPONSE",
+    # Validator
+    "ContextValidator",
+    "ValidationResult",
+    "ReductionResult",
+    "ReductionStrategy",
+    "create_validator_from_settings",
+    "DEFAULT_MAX_TOKENS",
+    "DEFAULT_BUFFER_TOKENS",
+    "DEFAULT_CHARS_PER_TOKEN",
 ]

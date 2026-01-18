@@ -42,6 +42,7 @@ from sigil.reasoning.strategies.chain_of_thought import ChainOfThoughtStrategy
 from sigil.reasoning.strategies.tree_of_thoughts import TreeOfThoughtsStrategy
 from sigil.reasoning.strategies.react import ReActStrategy
 from sigil.reasoning.strategies.mcts import MCTSStrategy
+from sigil.reasoning.strategies.function_calling import FunctionCallingStrategy
 
 
 # =============================================================================
@@ -236,7 +237,7 @@ class ReasoningManager:
     """
 
     # Strategy names in fallback order (most complex to least)
-    FALLBACK_ORDER = ["mcts", "react", "tree_of_thoughts", "chain_of_thought", "direct"]
+    FALLBACK_ORDER = ["mcts", "function_calling", "react", "tree_of_thoughts", "chain_of_thought", "direct"]
 
     def __init__(
         self,
@@ -286,6 +287,10 @@ class ReasoningManager:
             token_tracker=self._token_tracker,
         )
         self._strategies["mcts"] = MCTSStrategy(
+            event_store=self._event_store,
+            token_tracker=self._token_tracker,
+        )
+        self._strategies["function_calling"] = FunctionCallingStrategy(
             event_store=self._event_store,
             token_tracker=self._token_tracker,
         )

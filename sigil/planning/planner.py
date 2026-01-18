@@ -460,9 +460,12 @@ class Planner:
     ) -> Plan:
         """Generate a plan using LLM decomposition.
 
-        This method uses the LLM to decompose a goal into executable steps.
-        When use_tool_aware=True, it generates plans with full tool metadata
-        including tool names, arguments, and executor types.
+        This method uses structured decomposition to create plans.
+        The LLM will determine if tools are needed based on the goal and context,
+        rather than relying on keyword matching.
+
+        In production, this would call the actual LLM API with the planning prompt.
+        For now, it uses heuristic-based structured decomposition.
 
         Args:
             goal: The goal to plan for.
@@ -473,37 +476,27 @@ class Planner:
             use_tool_aware: Whether to use tool-aware planning (default True).
 
         Returns:
-            Generated Plan with tool metadata populated.
+            Generated Plan with steps.
         """
         # Expand tool categories to full tool names
         expanded_tools = self._expand_tool_categories(tools) if tools else []
 
+        # Build prompt for logging/future LLM integration
         if use_tool_aware and expanded_tools:
-            # Use tool-aware planning with detailed prompts
             prompt = self._build_tool_aware_planning_prompt(
                 goal=goal,
                 context=context,
                 available_tools=expanded_tools,
                 constraints=constraints,
             )
-
-            # In production, this would call the LLM API with the prompt
-            # For now, use structured decomposition with tool awareness
-            llm_response = await self._simulate_tool_aware_llm_response(
-                goal, context, expanded_tools, max_steps, constraints
-            )
-
-            # Parse the LLM response to extract tool metadata
-            steps = self._parse_tool_aware_plan(llm_response, expanded_tools)
-
-            # Validate and enrich with executor type information
-            steps = self._validate_and_enrich_tools(steps, expanded_tools)
         else:
-            # Fall back to legacy planning (no tool metadata)
             prompt = self._build_planning_prompt(goal, context, tools, constraints)
-            steps = await self._structured_decomposition(
-                goal, context, tools, max_steps, constraints
-            )
+
+        # Use structured decomposition for plan generation
+        # In production, this would be replaced by actual LLM API call
+        steps = await self._structured_decomposition(
+            goal, context, expanded_tools or tools, max_steps, constraints
+        )
 
         # Track tokens (simulated for now)
         tokens_used = len(prompt) // 4 + len(str(steps)) // 4
@@ -525,150 +518,6 @@ class Planner:
         )
 
         return plan
-
-    async def _simulate_tool_aware_llm_response(
-        self,
-        goal: str,
-        context: dict[str, Any],
-        available_tools: list[str],
-        max_steps: int,
-        constraints: PlanConstraints,
-    ) -> str:
-        """Simulate an LLM response for tool-aware planning.
-
-        This method generates a structured plan response in the expected format.
-        In production, this would be replaced by actual LLM API calls.
-
-        Args:
-            goal: The goal to plan for.
-            context: Context information.
-            available_tools: List of available tool names.
-            max_steps: Maximum number of steps.
-            constraints: Planning constraints.
-
-        Returns:
-            Simulated LLM response string in the expected plan format.
-        """
-        goal_lower = goal.lower()
-        response_parts = []
-        step_num = 1
-        dependencies = []
-
-        # Check for memory tools
-        has_memory = any("memory" in t for t in available_tools)
-        # Check for search tools
-        has_search = any("search" in t or "websearch" in t for t in available_tools)
-        # Check for calendar tools
-        has_calendar = any("calendar" in t for t in available_tools)
-        # Check for communication tools
-        has_comm = any("communication" in t or "sms" in t for t in available_tools)
-        # Check for CRM tools
-        has_crm = any("crm" in t for t in available_tools)
-
-        # Step 1: Memory recall if available and relevant
-        if has_memory:
-            response_parts.append(f"""Step {step_num}: Retrieve relevant context from memory
-  Tool: memory.recall
-  Args: {{"query": "{goal[:100]}", "k": 5}}
-  Depends: []""")
-            dependencies.append(step_num)
-            step_num += 1
-
-        # Step 2: Web search if relevant keywords and tool available
-        if has_search and any(kw in goal_lower for kw in ["research", "find", "search", "news", "latest", "investigate"]):
-            # Build search query from goal
-            search_query = goal.replace("Research ", "").replace("Find ", "").replace("Search for ", "")[:100]
-            response_parts.append(f"""Step {step_num}: Search for relevant information
-  Tool: websearch.search
-  Args: {{"query": "{search_query}", "max_results": 5}}
-  Depends: []""")
-            dependencies.append(step_num)
-            step_num += 1
-
-        # Step 3: CRM lookup if relevant
-        if has_crm and any(kw in goal_lower for kw in ["lead", "contact", "customer", "client", "deal"]):
-            # Extract potential contact info from context
-            email = context.get("email", context.get("contact_email", ""))
-            if email:
-                response_parts.append(f"""Step {step_num}: Look up contact information in CRM
-  Tool: crm.get_contact
-  Args: {{"email": "{email}"}}
-  Depends: []""")
-            else:
-                response_parts.append(f"""Step {step_num}: Search for contact in CRM
-  Tool: crm.get_contact
-  Args: {{}}
-  Depends: []""")
-            dependencies.append(step_num)
-            step_num += 1
-
-        # Step 4: Calendar check if scheduling related
-        if has_calendar and any(kw in goal_lower for kw in ["schedule", "meeting", "appointment", "calendar", "book"]):
-            response_parts.append(f"""Step {step_num}: Check calendar availability
-  Tool: calendar.list_events
-  Args: {{"max_results": 10}}
-  Depends: []""")
-            dependencies.append(step_num)
-            step_num += 1
-
-        # Step 5: Reasoning/Analysis step - depends on previous steps
-        if dependencies:
-            deps_str = ", ".join(str(d) for d in dependencies)
-            response_parts.append(f"""Step {step_num}: Analyze gathered information and determine next actions
-  Tool: reasoning
-  Args: {{"task": "Analyze the results from previous steps and synthesize findings for: {goal[:80]}"}}
-  Depends: [{deps_str}]""")
-            step_num += 1
-
-        # Step 6: Communication step if needed
-        if has_comm and any(kw in goal_lower for kw in ["contact", "reach", "notify", "send", "message"]):
-            response_parts.append(f"""Step {step_num}: Send communication
-  Tool: communication.send_sms
-  Args: {{"to": "{{{{context.phone}}}}", "body": "Following up on {goal[:50]}"}}
-  Depends: [{step_num - 1}]""")
-            step_num += 1
-
-        # Step 7: Calendar creation if scheduling
-        if has_calendar and any(kw in goal_lower for kw in ["schedule", "book", "create meeting"]):
-            response_parts.append(f"""Step {step_num}: Schedule meeting
-  Tool: calendar.create_event
-  Args: {{"title": "{goal[:50]}", "start_time": "{{{{computed.start_time}}}}", "end_time": "{{{{computed.end_time}}}}"}}
-  Depends: [{step_num - 1}]""")
-            step_num += 1
-
-        # Step 8: Memory store if we should remember results
-        if has_memory and len(response_parts) > 1:
-            response_parts.append(f"""Step {step_num}: Store results in memory for future reference
-  Tool: memory.store
-  Args: {{"content": "Completed task: {goal[:80]}", "category": "task_results"}}
-  Depends: [{step_num - 1}]""")
-            step_num += 1
-
-        # Final reasoning step for summary
-        if len(response_parts) > 0:
-            final_deps = list(range(1, step_num))
-            deps_str = ", ".join(str(d) for d in final_deps[-3:])  # Depend on last 3 steps
-            response_parts.append(f"""Step {step_num}: Generate final response and summary
-  Tool: reasoning
-  Args: {{"task": "Summarize the results of all previous steps and provide a comprehensive response to: {goal[:80]}"}}
-  Depends: [{deps_str}]""")
-
-        # If no steps were generated, create a basic reasoning plan
-        if not response_parts:
-            response_parts.append(f"""Step 1: Analyze the goal and formulate approach
-  Tool: reasoning
-  Args: {{"task": "Analyze and plan approach for: {goal}"}}
-  Depends: []""")
-            response_parts.append(f"""Step 2: Execute the plan
-  Tool: reasoning
-  Args: {{"task": "Execute the planned approach and generate response for: {goal}"}}
-  Depends: [1]""")
-
-        # Limit to max_steps
-        if len(response_parts) > max_steps:
-            response_parts = response_parts[:max_steps]
-
-        return "\n\n".join(response_parts)
 
     def _build_planning_prompt(
         self,

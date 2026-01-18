@@ -44,6 +44,11 @@ from sigil.reasoning.strategies.chain_of_thought import ChainOfThoughtStrategy
 from sigil.reasoning.strategies.tree_of_thoughts import TreeOfThoughtsStrategy, ThoughtNode
 from sigil.reasoning.strategies.react import ReActStrategy, ReActStep, StepType
 from sigil.reasoning.strategies.mcts import MCTSStrategy, MCTSNode
+from sigil.reasoning.strategies.function_calling import (
+    FunctionCallingStrategy,
+    FunctionCallingStep,
+    ToolUseBlock,
+)
 from sigil.reasoning.strategies.utils import (
     extract_tool_outputs,
     format_tool_results_section,
@@ -70,11 +75,14 @@ __all__ = [
     "TreeOfThoughtsStrategy",
     "ReActStrategy",
     "MCTSStrategy",
+    "FunctionCallingStrategy",
     # Supporting types
     "ThoughtNode",
     "ReActStep",
     "StepType",
     "MCTSNode",
+    "FunctionCallingStep",
+    "ToolUseBlock",
     # Utility functions
     "extract_tool_outputs",
     "format_tool_results_section",

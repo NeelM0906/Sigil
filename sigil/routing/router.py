@@ -286,16 +286,6 @@ class ComplexityAssessor:
         True
     """
 
-    # Known tool-related keywords
-    _TOOL_KEYWORDS = [
-        "search", "web", "crm", "calendar", "email", "sms", "voice", "call",
-        "database", "api", "file", "document", "spreadsheet", "pdf",
-        "slack", "discord", "webhook", "http", "rest", "graphql",
-        "scrape", "extract", "parse", "analyze", "generate", "transform",
-        # News/information retrieval
-        "find", "news", "latest", "current", "recent", "today", "look up",
-    ]
-
     # Domain-specific vocabulary indicators
     _DOMAIN_KEYWORDS = [
         "qualification", "bant", "pipeline", "funnel", "conversion",
@@ -322,10 +312,6 @@ class ComplexityAssessor:
 
         Compiles regex patterns for efficient keyword matching.
         """
-        self._tool_pattern = re.compile(
-            r"\b(" + "|".join(re.escape(kw) for kw in self._TOOL_KEYWORDS) + r")\b",
-            re.IGNORECASE,
-        )
         self._domain_pattern = re.compile(
             r"\b(" + "|".join(re.escape(kw) for kw in self._DOMAIN_KEYWORDS) + r")\b",
             re.IGNORECASE,
@@ -363,30 +349,23 @@ class ComplexityAssessor:
         # Factor 1: Message length (0.0 - 1.0)
         length_factor = min(len(message) / self._MAX_LENGTH, 1.0)
 
-        # Factor 2: Tool requirements (0.0 - 1.0)
-        tool_matches = self._tool_pattern.findall(message_lower)
-        # Cap at 5 unique tools for max score
-        unique_tools = len(set(tool_matches))
-        tools_factor = min(unique_tools / 5.0, 1.0)
-
-        # Factor 3: Domain specificity (0.0 - 1.0)
+        # Factor 2: Domain specificity (0.0 - 1.0)
         domain_matches = self._domain_pattern.findall(message_lower)
         # Cap at 4 domain terms for max score
         unique_domains = len(set(domain_matches))
         domain_factor = min(unique_domains / 4.0, 1.0)
 
-        # Factor 4: Decision complexity (0.0 - 1.0)
+        # Factor 3: Decision complexity (0.0 - 1.0)
         decision_matches = self._decision_pattern.findall(message_lower)
         # Cap at 4 decision indicators for max score
         unique_decisions = len(set(decision_matches))
         decision_factor = min(unique_decisions / 4.0, 1.0)
 
-        # Weight each factor equally
+        # Weight each factor (3 factors now)
         complexity = (
-            length_factor * 0.25
-            + tools_factor * 0.25
-            + domain_factor * 0.25
-            + decision_factor * 0.25
+            length_factor * 0.34
+            + domain_factor * 0.33
+            + decision_factor * 0.33
         )
 
         # Intent-based adjustments
@@ -400,7 +379,7 @@ class ComplexityAssessor:
 
         logger.debug(
             f"Complexity assessment: {complexity:.2f} "
-            f"(length={length_factor:.2f}, tools={tools_factor:.2f}, "
+            f"(length={length_factor:.2f}, "
             f"domain={domain_factor:.2f}, decision={decision_factor:.2f})"
         )
 
@@ -582,7 +561,7 @@ class Router:
         handler_name = self._HANDLER_MAP.get(intent, "chat")
 
         # Step 4: Determine subsystem flags
-        use_planning = self._should_use_planning(complexity, message)
+        use_planning = self._should_use_planning(message, complexity)
         use_memory = self._should_use_memory(intent, complexity)
         use_contracts = self._should_use_contracts(complexity)
 
@@ -616,34 +595,24 @@ class Router:
 
         return decision
 
-    def _should_use_planning(self, complexity: float, message: str = "") -> bool:
-        """Determine if planning subsystem should be engaged.
+    def _should_use_planning(self, message: str, complexity: float) -> bool:
+        """Determine if planning is needed based on complexity only.
 
         Planning is enabled if:
         - The use_planning feature flag is True
-        - AND either:
-          - The complexity score is greater than 0.2, OR
-          - The message contains tool-related keywords
+        - AND the complexity score is greater than 0.3
+
+        The LLM will decide if tools are needed - no keyword matching here.
 
         Args:
+            message: The user message (unused, kept for API compatibility).
             complexity: The assessed complexity score.
-            message: The user message to check for tool keywords.
 
         Returns:
             True if planning should be used.
         """
-        if not self.settings.use_planning:
-            return False
-
-        # Check for tool keywords - if found, enable planning regardless of complexity
-        message_lower = message.lower()
-        assessor = self.assessor  # Access the shared assessor with tool keywords
-        for keyword in assessor._TOOL_KEYWORDS:
-            if keyword in message_lower:
-                return True
-
-        # Otherwise, use complexity threshold (lowered from 0.5 to 0.2)
-        return complexity > 0.2
+        # LLM will decide if tools are needed - no keyword matching
+        return self.settings.use_planning and complexity > 0.3
 
     def _should_use_memory(self, intent: Intent, complexity: float) -> bool:
         """Determine if memory subsystem should be engaged.

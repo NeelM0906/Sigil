@@ -75,6 +75,8 @@ from sigil.core.middleware import (
     StepName,
     StepRegistry,
 )
+from sigil.tools.schemas import get_all_tool_schemas
+from sigil.reasoning.strategies.function_calling import FunctionCallingStrategy
 
 # =============================================================================
 # Module Logger (defined early for use in tool registry)
@@ -147,6 +149,150 @@ def get_configured_tools() -> list[str]:
 
     logger.debug(f"[ToolRegistry] Configured tools: {tools}")
     return tools
+
+
+# =============================================================================
+# Tool Registry with Schemas
+# =============================================================================
+# Defines tool schemas for conversion to Claude API format.
+# These definitions describe tools available for LLM-native function calling.
+
+TOOL_REGISTRY: dict[str, dict] = {
+    # Tavily Web Search Tools
+    "websearch.search": {
+        "description": "Search the web for real-time information. Returns titles, snippets, and URLs.",
+        "arguments": {
+            "query": {
+                "type": "string",
+                "description": "The search query to execute",
+                "required": True,
+            },
+            "max_results": {
+                "type": "integer",
+                "description": "Maximum number of results to return (default: 5)",
+                "required": False,
+            },
+            "search_depth": {
+                "type": "string",
+                "description": "Search depth: 'basic' or 'advanced' (default: basic)",
+                "required": False,
+            },
+        },
+    },
+    "websearch.extract": {
+        "description": "Extract content from one or more URLs.",
+        "arguments": {
+            "urls": {
+                "type": "array",
+                "description": "List of URLs to extract content from",
+                "required": True,
+            },
+        },
+    },
+    "websearch.qna": {
+        "description": "Get a direct answer to a question using web search.",
+        "arguments": {
+            "query": {
+                "type": "string",
+                "description": "The question to answer",
+                "required": True,
+            },
+        },
+    },
+    # Tavily aliases (same as websearch.*)
+    "tavily_search": {
+        "description": "Search the web for real-time information. Returns titles, snippets, and URLs.",
+        "arguments": {
+            "query": {
+                "type": "string",
+                "description": "The search query to execute",
+                "required": True,
+            },
+            "max_results": {
+                "type": "integer",
+                "description": "Maximum number of results to return (default: 5)",
+                "required": False,
+            },
+        },
+    },
+    "tavily_extract": {
+        "description": "Extract content from one or more URLs.",
+        "arguments": {
+            "urls": {
+                "type": "array",
+                "description": "List of URLs to extract content from",
+                "required": True,
+            },
+        },
+    },
+    "tavily_qna": {
+        "description": "Get a direct answer to a question using web search.",
+        "arguments": {
+            "query": {
+                "type": "string",
+                "description": "The question to answer",
+                "required": True,
+            },
+        },
+    },
+    # Memory Tools
+    "memory.recall": {
+        "description": "Recall information from memory based on a query.",
+        "arguments": {
+            "query": {
+                "type": "string",
+                "description": "The query to search memory for",
+                "required": True,
+            },
+            "k": {
+                "type": "integer",
+                "description": "Number of memories to retrieve (default: 5)",
+                "required": False,
+            },
+        },
+    },
+    "memory.store": {
+        "description": "Store information in memory for later recall.",
+        "arguments": {
+            "content": {
+                "type": "string",
+                "description": "The content to store in memory",
+                "required": True,
+            },
+            "category": {
+                "type": "string",
+                "description": "Category to organize the memory (e.g., 'facts', 'preferences')",
+                "required": False,
+            },
+        },
+    },
+    # Planning Tools
+    "planning.decompose": {
+        "description": "Decompose a complex task into subtasks.",
+        "arguments": {
+            "task": {
+                "type": "string",
+                "description": "The complex task to decompose",
+                "required": True,
+            },
+            "context": {
+                "type": "string",
+                "description": "Additional context for decomposition",
+                "required": False,
+            },
+        },
+    },
+}
+
+
+def get_tool_schemas_for_configured_tools() -> list[dict]:
+    """Get Claude API formatted schemas for all configured tools.
+
+    Returns:
+        List of tool schemas in Claude API format ready for function calling.
+    """
+    configured = get_configured_tools()
+    return get_all_tool_schemas(configured, TOOL_REGISTRY)
 
 
 # =============================================================================
@@ -1064,14 +1210,16 @@ class SigilOrchestrator:
         ctx.assembled_context = assembled
 
     async def _step_execute(self, ctx: PipelineContext) -> None:
-        """Step 5: Execute plan steps with tools or fall back to reasoning.
+        """Step 5: Execute using FunctionCallingStrategy (primary) or fallback to reasoning.
 
-        This method executes plans using the ToolStepExecutor which routes:
-        - TOOL_CALL steps to Tavily (websearch) or builtin tool executors
-        - REASONING steps to the reasoning manager for response generation
+        This method uses LLM-native function calling as the primary execution path when
+        tools are available. The FunctionCallingStrategy implements a ReAct loop that:
+        - Uses Claude's native tool_use capability for reliable tool invocation
+        - Lets the LLM decide when and how to call tools
+        - Processes tool results and generates final answers
 
-        If no plan exists or tool execution fails, falls back to direct
-        reasoning using the reasoning manager.
+        If no tools are available or function calling fails, falls back to the
+        reasoning manager for strategy-based execution.
 
         Args:
             ctx: Pipeline context
@@ -1079,8 +1227,69 @@ class SigilOrchestrator:
         complexity = ctx.route_decision.complexity if ctx.route_decision else 0.5
         strategy = ctx.request.force_strategy
 
-        # If we have a plan, execute it with tool-aware executor
-        if ctx.plan and self._plan_executor:
+        # Get available tools and their schemas
+        tool_schemas = get_tool_schemas_for_configured_tools()
+        has_tools = len(tool_schemas) > 0
+
+        # Primary path: Use FunctionCallingStrategy when tools are available
+        # and no specific strategy is forced
+        if has_tools and not strategy:
+            try:
+                logger.info(
+                    f"Using FunctionCallingStrategy with {len(tool_schemas)} tools"
+                )
+                logger.debug(f"Available tools: {[t['name'] for t in tool_schemas]}")
+
+                # Create FunctionCallingStrategy instance
+                function_calling_strategy = FunctionCallingStrategy(
+                    event_store=self._event_store,
+                    token_tracker=self._token_tracker,
+                )
+
+                # Execute with tools
+                result = await function_calling_strategy.execute(
+                    task=ctx.request.message,
+                    context=ctx.assembled_context,
+                    tools=tool_schemas,
+                )
+
+                ctx.tokens_used += result.tokens_used
+                ctx.reasoning_result = result
+
+                if result.success:
+                    logger.info(
+                        f"FunctionCallingStrategy completed successfully "
+                        f"(tokens={result.tokens_used}, confidence={result.confidence:.2f})"
+                    )
+                    ctx.output = {
+                        "result": result.answer,
+                        "reasoning_trace": result.reasoning_trace[:10],  # Include more trace for tool usage
+                        "model": result.model,
+                        "confidence": result.confidence,
+                        "strategy": "function_calling",
+                        "metadata": result.metadata,
+                    }
+                    return
+                else:
+                    # Function calling failed, log and fall through to reasoning manager
+                    logger.warning(
+                        f"FunctionCallingStrategy failed: {result.error}. "
+                        f"Falling back to reasoning manager."
+                    )
+                    ctx.add_warning(f"Function calling failed, falling back to reasoning: {result.error}")
+                    # Fall through to reasoning manager below
+
+            except Exception as e:
+                logger.warning(
+                    f"Unexpected error in FunctionCallingStrategy: {e}. "
+                    f"Falling back to reasoning manager."
+                )
+                ctx.add_warning(f"Function calling error, falling back to reasoning: {e}")
+                # Fall through to reasoning manager below
+
+        # Legacy path: If we have a plan, execute it with tool-aware executor
+        # This is kept for backward compatibility but is no longer the primary path
+        elif ctx.plan and self._plan_executor and not has_tools:
             try:
                 logger.info(
                     f"Starting plan execution for plan {ctx.plan_id} "
@@ -1165,7 +1374,11 @@ class SigilOrchestrator:
                 ctx.add_warning(f"Tool execution failed, falling back to reasoning: {e}")
                 # Fall through to reasoning manager below
 
-        # Fall back to reasoning manager if no plan or tool execution failed
+        # Fallback: Use reasoning manager for direct reasoning
+        # This is used when:
+        # 1. No tools are configured
+        # 2. A specific strategy is forced
+        # 3. Function calling or plan execution failed
         logger.debug(
             f"Using reasoning manager directly "
             f"(complexity={complexity:.2f}, strategy={strategy or 'auto'})"
@@ -1360,6 +1573,10 @@ __all__ = [
     "SigilMiddleware",
     "StepName",
     "StepRegistry",
+    # Tool Registry and Functions
+    "TOOL_REGISTRY",
+    "get_configured_tools",
+    "get_tool_schemas_for_configured_tools",
     # Convenience functions
     "process_message",
     # Constants
