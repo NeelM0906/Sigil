@@ -31,7 +31,7 @@ Both leverage the same underlying architecture: **Planning → Routing → Memor
    │  Interactive│   │   Agent     │   │   Tool       │
    │  CLI        │   │   Builder   │   │   Runtime    │
    │             │   │             │   │              │
-   │ • Routing   │   │ • ACTi      │   │ • MCP Server │
+   │ • Routing   │   │ • ACTi      │   │ • Tavily     │
    │ • Planning  │   │   Strata    │   │ • Executors  │
    │ • Memory    │   │ • Prompt    │   │ • Results    │
    │ • Reasoning │   │   Crafting  │   │   Mgmt       │
@@ -108,7 +108,6 @@ Request Entry Point
 #### **Tool Executor** (`sigil/planning/tool_executor.py`)
 - Routes TOOL_CALL steps to appropriate executors:
   - **TavilyExecutor**: Direct Tavily API integration (~1s response)
-  - **MCPExecutor**: MCP server tool invocation
   - **BuiltinExecutor**: Memory/planning builtin tools
 - Formats tool results explicitly for LLM consumption
 - Handles timeouts, errors, and fallback reasoning
@@ -142,7 +141,7 @@ Request Entry Point
 - **Google Calendar**: Event scheduling and availability
 - **Twilio**: SMS and phone communication
 - **HubSpot**: CRM operations and contact management
-- **Extensible MCP**: Add new tools via Model Context Protocol
+- **Extensible Architecture**: Add new tools via custom executors
 
 ### 2. Planning & Tool Awareness
 - Automatic query extraction for search tools
@@ -177,7 +176,7 @@ Meta-agent system that creates task-specific agents by:
 ### Prerequisites
 - Python 3.11+
 - Anthropic API key
-- (Optional) MCP server API keys (Tavily, ElevenLabs, etc.)
+- (Optional) Tool API keys (Tavily, ElevenLabs, etc.)
 
 ### Installation
 
@@ -219,20 +218,21 @@ The CLI automatically:
 ### Agent Builder Usage
 
 ```python
-from src.builder import create_builder
-from langchain_core.messages import HumanMessage
+from sigil.orchestrator import SigilOrchestrator
+from sigil.core.schemas import OrchestratorRequest
 
-# Create builder meta-agent
-builder = create_builder()
+# Create orchestrator
+orchestrator = SigilOrchestrator()
 
-# Generate new agent
-result = builder.invoke({
-    "messages": [HumanMessage(
-        content="Create a lead qualification agent for B2B SaaS"
-    )]
-})
+# Process a request
+request = OrchestratorRequest(
+    message="Create a lead qualification agent for B2B SaaS",
+    session_id="builder-session"
+)
+response = await orchestrator.process(request)
 
-# Generated agent saved to outputs/agents/
+# Access generated output
+print(response.output["result"])
 ```
 
 ---
@@ -332,7 +332,6 @@ Task decomposition into executable steps with tool specifications and dependenci
 - `tool_executor.py`: Tool call router and result formatter
 - `executors/`: Specific executor implementations
   - `tavily_executor.py`: Direct Tavily API
-  - `mcp_executor.py`: MCP server interface
   - `builtin_executor.py`: Memory/planning tools
 - `schemas.py`: Plan and step data models
 
@@ -361,14 +360,7 @@ Output validation and schema enforcement for specific intents.
 ### `sigil/interfaces/`
 User interaction surfaces:
 - `cli/`: Interactive command-line interface
-- `api/`: REST API endpoints (phase 3)
-
-### `src/`
-Agent builder framework (meta-agent):
-- `builder.py`: Main deepagents meta-agent
-- `tools.py`: Builder tools for creating agents
-- `prompts.py`: System prompts and templates
-- `schemas.py`: Agent configuration data models
+- `api/`: REST API endpoints (planned)
 
 ---
 
@@ -424,7 +416,7 @@ The framework classifies agents into five intelligence strata:
 ## Roadmap
 
 - [x] **Phase 1**: Core architecture (routing, planning, reasoning, memory)
-- [x] **Phase 2**: MCP tool integration (Tavily, ElevenLabs, calendar, etc.)
+- [x] **Phase 2**: Tool integration (Tavily, ElevenLabs, calendar, etc.)
 - [x] **Phase 3**: Interactive CLI with real-time tool execution
 - [x] **Phase 4**: Tool result synthesis and prompt integration
 - [x] **Phase 5**: Agent builder meta-agent framework
@@ -457,4 +449,3 @@ MIT License - see [LICENSE](LICENSE) file
 - Built on [deepagents](https://github.com/deepagents/deepagents) framework
 - Inspired by ACTi methodology and Unblinded Formula framework
 - Reference patterns from Bland AI and N8N
-- Tool integrations via Model Context Protocol (MCP)

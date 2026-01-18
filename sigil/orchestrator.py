@@ -67,6 +67,14 @@ from sigil.grounding.schemas import GroundingRequest, GroundingResult
 from sigil.state.events import Event, EventType, _generate_event_id, _get_utc_now
 from sigil.state.store import EventStore
 from sigil.telemetry.tokens import TokenTracker, TokenBudget
+from sigil.core.middleware import (
+    MiddlewareChain,
+    MiddlewareConfig,
+    PipelineRunner,
+    SigilMiddleware,
+    StepName,
+    StepRegistry,
+)
 
 # =============================================================================
 # Module Logger (defined early for use in tool registry)
@@ -74,68 +82,71 @@ from sigil.telemetry.tokens import TokenTracker, TokenBudget
 
 logger = logging.getLogger(__name__)
 
-# Tool registry for getting available tools
+# =============================================================================
+# Tool Registry Implementation
+# =============================================================================
+# Detects available tools based on configured API keys in the environment.
+# This implementation checks for API keys and returns the corresponding tools
+# that can be used in planning and execution.
+
+import os
+from pathlib import Path
+
+# Load .env file at import time if dotenv is available
 try:
-    from src.tool_registry import get_configured_tools
+    from dotenv import load_dotenv
+    _env_path = Path(__file__).parent.parent / ".env"
+    if _env_path.exists():
+        load_dotenv(_env_path)
+        logger.debug(f"[ToolRegistry] Loaded .env from {_env_path}")
 except ImportError:
-    # Fallback: Detect available tools based on configured API keys
-    import os
-    from pathlib import Path
+    pass  # dotenv not available, rely on environment variables
 
-    # Load .env file at import time if dotenv is available
-    try:
-        from dotenv import load_dotenv
-        _env_path = Path(__file__).parent.parent / ".env"
-        if _env_path.exists():
-            load_dotenv(_env_path)
-            logger.debug(f"[ToolRegistry] Loaded .env from {_env_path}")
-    except ImportError:
-        pass  # dotenv not available, rely on environment variables
 
-    def get_configured_tools() -> list[str]:
-        """Return list of available tools based on configured API keys.
+def get_configured_tools() -> list[str]:
+    """Return list of available tools based on configured API keys.
 
-        Checks for presence of API keys and returns tools that can be used.
-        """
-        tools: list[str] = []
+    Checks for presence of API keys and returns tools that can be used.
+    """
+    tools: list[str] = []
 
-        # Tavily web search tools (if TAVILY_API_KEY is set)
-        if os.getenv("TAVILY_API_KEY"):
-            tools.extend([
-                "websearch.search",
-                "websearch.extract",
-                "websearch.qna",
-                "tavily_search",
-                "tavily_extract",
-                "tavily_qna",
-            ])
-            logger.debug("[ToolRegistry] Tavily tools enabled")
-
-        # ElevenLabs voice tools (if ELEVENLABS_API_KEY is set)
-        if os.getenv("ELEVENLABS_API_KEY"):
-            tools.extend([
-                "voice.synthesize",
-                "voice.clone",
-            ])
-            logger.debug("[ToolRegistry] ElevenLabs tools enabled")
-
-        # Twilio communication tools (if both SID and token are set)
-        if os.getenv("TWILIO_ACCOUNT_SID") and os.getenv("TWILIO_AUTH_TOKEN"):
-            tools.extend([
-                "sms.send",
-                "call.initiate",
-            ])
-            logger.debug("[ToolRegistry] Twilio tools enabled")
-
-        # Builtin tools (always available)
+    # Tavily web search tools (if TAVILY_API_KEY is set)
+    if os.getenv("TAVILY_API_KEY"):
         tools.extend([
-            "memory.recall",
-            "memory.store",
-            "planning.decompose",
+            "websearch.search",
+            "websearch.extract",
+            "websearch.qna",
+            "tavily_search",
+            "tavily_extract",
+            "tavily_qna",
         ])
+        logger.debug("[ToolRegistry] Tavily tools enabled")
 
-        logger.debug(f"[ToolRegistry] Configured tools: {tools}")
-        return tools
+    # ElevenLabs voice tools (if ELEVENLABS_API_KEY is set)
+    if os.getenv("ELEVENLABS_API_KEY"):
+        tools.extend([
+            "voice.synthesize",
+            "voice.clone",
+        ])
+        logger.debug("[ToolRegistry] ElevenLabs tools enabled")
+
+    # Twilio communication tools (if both SID and token are set)
+    if os.getenv("TWILIO_ACCOUNT_SID") and os.getenv("TWILIO_AUTH_TOKEN"):
+        tools.extend([
+            "sms.send",
+            "call.initiate",
+        ])
+        logger.debug("[ToolRegistry] Twilio tools enabled")
+
+    # Builtin tools (always available)
+    tools.extend([
+        "memory.recall",
+        "memory.store",
+        "planning.decompose",
+    ])
+
+    logger.debug(f"[ToolRegistry] Configured tools: {tools}")
+    return tools
 
 
 # =============================================================================
@@ -447,6 +458,7 @@ class SigilOrchestrator:
         contract_executor: Optional[ContractExecutor] = None,
         event_store: Optional[EventStore] = None,
         token_tracker: Optional[TokenTracker] = None,
+        middleware_chain: Optional[MiddlewareChain] = None,
     ) -> None:
         """Initialize the orchestrator.
 
@@ -460,6 +472,7 @@ class SigilOrchestrator:
             contract_executor: Optional custom contract executor
             event_store: Optional custom event store
             token_tracker: Optional custom token tracker
+            middleware_chain: Optional middleware chain for pipeline hooks
         """
         self._settings = settings or get_settings()
         self._event_store = event_store or EventStore()
@@ -504,6 +517,11 @@ class SigilOrchestrator:
             strict_mode=False,  # Allow proceeding with gaps
         )
 
+        # Initialize middleware architecture
+        self._middleware_chain = middleware_chain or MiddlewareChain()
+        self._step_registry = StepRegistry()
+        self._register_default_steps()
+
         # Request metrics
         self._total_requests: int = 0
         self._successful_requests: int = 0
@@ -515,6 +533,159 @@ class SigilOrchestrator:
             f"SigilOrchestrator initialized with features: "
             f"{self._settings.get_active_features()}"
         )
+
+    def _register_default_steps(self) -> None:
+        """Register the default pipeline steps in order."""
+        self._step_registry.register(
+            name=StepName.ROUTE.value,
+            handler=self._step_route,
+            required=True,  # Routing is always required
+        )
+        self._step_registry.register(
+            name=StepName.GROUND.value,
+            handler=self._step_ground,
+            after=StepName.ROUTE.value,
+        )
+        self._step_registry.register(
+            name=StepName.PLAN.value,
+            handler=self._step_plan,
+            after=StepName.GROUND.value,
+        )
+        self._step_registry.register(
+            name=StepName.ASSEMBLE.value,
+            handler=self._step_assemble_context,
+            after=StepName.PLAN.value,
+        )
+        self._step_registry.register(
+            name=StepName.EXECUTE.value,
+            handler=self._step_execute,
+            after=StepName.ASSEMBLE.value,
+            required=True,  # Execution is always required
+        )
+        self._step_registry.register(
+            name=StepName.VALIDATE.value,
+            handler=self._step_validate,
+            after=StepName.EXECUTE.value,
+        )
+
+    # =========================================================================
+    # Middleware API
+    # =========================================================================
+
+    def add_middleware(self, middleware: SigilMiddleware) -> "SigilOrchestrator":
+        """Add a middleware to the pipeline.
+
+        Middleware are executed in the order they are added for pre_step hooks,
+        and in reverse order for post_step and on_error hooks.
+
+        Args:
+            middleware: The middleware to add
+
+        Returns:
+            Self for method chaining
+
+        Example:
+            >>> from sigil.core.middlewares import LoggingMiddleware
+            >>> orchestrator.add_middleware(LoggingMiddleware())
+        """
+        self._middleware_chain.add(middleware)
+        logger.debug(f"Added middleware: {middleware.name}")
+        return self
+
+    def remove_middleware(self, name: str) -> bool:
+        """Remove a middleware by name.
+
+        Args:
+            name: Name of the middleware to remove
+
+        Returns:
+            True if middleware was found and removed
+        """
+        return self._middleware_chain.remove(name)
+
+    @property
+    def middleware_chain(self) -> MiddlewareChain:
+        """Get the middleware chain.
+
+        Returns:
+            The middleware chain
+        """
+        return self._middleware_chain
+
+    @property
+    def step_registry(self) -> StepRegistry:
+        """Get the step registry.
+
+        Returns:
+            The step registry
+        """
+        return self._step_registry
+
+    def register_step(
+        self,
+        name: str,
+        handler: Callable[[PipelineContext], Awaitable[None]],
+        after: Optional[str] = None,
+        before: Optional[str] = None,
+        enabled: bool = True,
+    ) -> "SigilOrchestrator":
+        """Register a custom pipeline step.
+
+        Args:
+            name: Unique name for the step
+            handler: Async function that executes the step
+            after: Name of step to insert after
+            before: Name of step to insert before
+            enabled: Whether the step is enabled
+
+        Returns:
+            Self for method chaining
+
+        Example:
+            >>> async def my_custom_step(ctx: PipelineContext) -> None:
+            ...     # Custom logic here
+            ...     pass
+            >>> orchestrator.register_step(
+            ...     "custom",
+            ...     my_custom_step,
+            ...     after="plan",
+            ... )
+        """
+        self._step_registry.register(
+            name=name,
+            handler=handler,
+            after=after,
+            before=before,
+            enabled=enabled,
+        )
+        return self
+
+    def enable_step(self, name: str) -> "SigilOrchestrator":
+        """Enable a pipeline step.
+
+        Args:
+            name: Name of the step to enable
+
+        Returns:
+            Self for method chaining
+        """
+        self._step_registry.enable(name)
+        return self
+
+    def disable_step(self, name: str) -> "SigilOrchestrator":
+        """Disable a pipeline step.
+
+        Args:
+            name: Name of the step to disable
+
+        Returns:
+            Self for method chaining
+
+        Raises:
+            ValueError: If the step is required and cannot be disabled
+        """
+        self._step_registry.disable(name)
+        return self
 
     async def process(
         self,
@@ -551,13 +722,8 @@ class SigilOrchestrator:
         self._total_requests += 1
 
         try:
-            # Execute pipeline steps
-            await self._step_route(ctx)
-            await self._step_ground(ctx)  # Ground: gather info, identify gaps
-            await self._step_plan(ctx)
-            await self._step_assemble_context(ctx)
-            await self._step_execute(ctx)
-            await self._step_validate(ctx)
+            # Execute pipeline with middleware support
+            await self._execute_pipeline(ctx)
 
             # Determine final status
             if ctx.errors:
@@ -628,6 +794,71 @@ class SigilOrchestrator:
         )
 
         return response
+
+    async def _execute_pipeline(self, ctx: PipelineContext) -> None:
+        """Execute the orchestrator pipeline with middleware support.
+
+        This method coordinates the execution of pipeline steps with middleware
+        hooks. Steps are executed in the order defined by the step registry,
+        with pre_step and post_step middleware hooks around each step.
+
+        Per-request middleware configuration can be provided via the request
+        context using the "middleware_config" key.
+
+        Args:
+            ctx: Pipeline context
+        """
+        # Get middleware config from request context if present
+        mw_config: Optional[MiddlewareConfig] = ctx.request.context.get(
+            "middleware_config"
+        )
+
+        # Determine which middleware chain to use
+        chain = self._middleware_chain
+        if mw_config and mw_config.chain:
+            # Merge request-specific middleware with default chain
+            merged_chain = MiddlewareChain()
+            merged_chain.middlewares = list(self._middleware_chain.middlewares)
+            for mw in mw_config.chain.middlewares:
+                merged_chain.add(mw)
+            chain = merged_chain
+
+        # Get enabled steps
+        steps = self._step_registry.get_enabled_steps()
+
+        for step in steps:
+            # Check if step is disabled for this request
+            if mw_config and step.name in mw_config.disabled_steps:
+                logger.debug(f"Skipping disabled step '{step.name}' for this request")
+                continue
+
+            # Get handler (may be overridden per-request)
+            handler = step.handler
+            if mw_config and step.name in mw_config.step_overrides:
+                handler = mw_config.step_overrides[step.name]
+
+            try:
+                # Pre-step middleware
+                ctx = await chain.run_pre_step(step.name, ctx)
+
+                # Execute step
+                await handler(ctx)
+
+                # Post-step middleware
+                await chain.run_post_step(step.name, ctx, None)
+
+            except Exception as e:
+                logger.error(f"Error in step '{step.name}': {e}")
+
+                # Try error recovery via middleware
+                try:
+                    recovery = await chain.run_on_error(step.name, ctx, e)
+                    if recovery is not None:
+                        logger.info(f"Recovered from error in '{step.name}'")
+                        continue
+                except Exception:
+                    # Middleware couldn't recover, re-raise original error
+                    raise
 
     async def _step_route(self, ctx: PipelineContext) -> None:
         """Step 1: Route the request to determine intent and complexity.
@@ -1123,6 +1354,12 @@ __all__ = [
     # Main class
     "SigilOrchestrator",
     "PipelineContext",
+    # Middleware (re-exported for convenience)
+    "MiddlewareChain",
+    "MiddlewareConfig",
+    "SigilMiddleware",
+    "StepName",
+    "StepRegistry",
     # Convenience functions
     "process_message",
     # Constants

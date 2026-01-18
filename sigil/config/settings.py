@@ -16,11 +16,11 @@ Settings Categories:
 Environment Variables:
     SIGIL_DEBUG: Enable debug mode (default: false)
     SIGIL_LOG_LEVEL: Logging level (default: INFO)
-    SIGIL_USE_MEMORY: Enable 3-layer memory system (default: false)
-    SIGIL_USE_PLANNING: Enable task decomposition (default: false)
-    SIGIL_USE_CONTRACTS: Enable output verification (default: false)
+    SIGIL_USE_MEMORY: Enable 3-layer memory system (default: true)
+    SIGIL_USE_PLANNING: Enable task decomposition (default: true)
+    SIGIL_USE_CONTRACTS: Enable output verification (default: true)
     SIGIL_USE_EVOLUTION: Enable self-improvement (default: false)
-    SIGIL_USE_ROUTING: Enable intent-based routing (default: false)
+    SIGIL_USE_ROUTING: Enable intent-based routing (default: true)
     ANTHROPIC_API_KEY: API key for Anthropic Claude
     ELEVENLABS_API_KEY: API key for ElevenLabs voice
     TAVILY_API_KEY: API key for Tavily web search
@@ -110,16 +110,42 @@ class MemorySettings(BaseModel):
     """Settings for the 3-layer memory system.
 
     Attributes:
-        backend: Storage backend ('sqlite', 'postgres', 'memory').
+        backend: Storage backend type ('filesystem', 'memory').
+        vector_backend: Vector storage backend ('faiss', 'memory').
+        locking_backend: Locking backend type ('filesystem', 'memory').
         embedding_model: Model for generating embeddings.
         cache_ttl: Time-to-live for cached items in seconds.
         max_items_per_query: Maximum items returned from RAG retrieval.
         consolidation_threshold: Number of items before triggering consolidation.
+
+    Storage Backend Types:
+        - 'filesystem': Local filesystem storage using JSON files (default).
+            Requires paths.memory_dir to be set.
+        - 'memory': In-memory storage for testing. Data is lost on restart.
+
+    Vector Backend Types:
+        - 'faiss': FAISS-based vector index for similarity search (default).
+            Provides efficient approximate nearest neighbor search.
+        - 'memory': In-memory brute-force search for testing.
+
+    Locking Backend Types:
+        - 'filesystem': File-based locking using portalocker (default).
+            Works across processes on the same machine.
+        - 'memory': In-memory locking for testing.
+            Only works within the same process.
     """
 
     backend: str = Field(
-        default="sqlite",
-        description="Storage backend type"
+        default="filesystem",
+        description="Storage backend type: 'filesystem' or 'memory'"
+    )
+    vector_backend: str = Field(
+        default="faiss",
+        description="Vector storage backend: 'faiss' or 'memory'"
+    )
+    locking_backend: str = Field(
+        default="filesystem",
+        description="Locking backend type: 'filesystem' or 'memory'"
     )
     embedding_model: str = Field(
         default="text-embedding-3-small",
@@ -140,6 +166,42 @@ class MemorySettings(BaseModel):
         ge=1,
         description="Items before consolidation triggers"
     )
+
+    @field_validator("backend")
+    @classmethod
+    def validate_backend(cls, v: str) -> str:
+        """Validate storage backend type."""
+        valid_backends = {"filesystem", "memory"}
+        normalized = v.lower().strip()
+        if normalized not in valid_backends:
+            raise ValueError(
+                f"Invalid storage backend '{v}'. Must be one of: {', '.join(sorted(valid_backends))}"
+            )
+        return normalized
+
+    @field_validator("vector_backend")
+    @classmethod
+    def validate_vector_backend(cls, v: str) -> str:
+        """Validate vector backend type."""
+        valid_backends = {"faiss", "memory"}
+        normalized = v.lower().strip()
+        if normalized not in valid_backends:
+            raise ValueError(
+                f"Invalid vector backend '{v}'. Must be one of: {', '.join(sorted(valid_backends))}"
+            )
+        return normalized
+
+    @field_validator("locking_backend")
+    @classmethod
+    def validate_locking_backend(cls, v: str) -> str:
+        """Validate locking backend type."""
+        valid_backends = {"filesystem", "memory"}
+        normalized = v.lower().strip()
+        if normalized not in valid_backends:
+            raise ValueError(
+                f"Invalid locking backend '{v}'. Must be one of: {', '.join(sorted(valid_backends))}"
+            )
+        return normalized
 
 
 class ExternalToolSettings(BaseModel):
