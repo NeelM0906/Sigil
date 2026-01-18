@@ -4,18 +4,17 @@ This module implements the bridge between PlanExecutor and tool executors,
 routing plan steps to appropriate executors based on step type and tool name.
 
 The ToolStepExecutor:
-- Routes TOOL_CALL steps to MCPToolExecutor or BuiltinToolExecutor
+- Routes TOOL_CALL steps to TavilyExecutor (websearch) or BuiltinToolExecutor
 - Routes REASONING steps to the reasoning manager for response generation
 - Returns proper StepResult objects with correct token counts
 - Handles errors gracefully with fallback to LLM reasoning
-- Fails fast with clear error messages instead of hanging
 
 Example:
     >>> executor = ToolStepExecutor(
-    ...     mcp_executor=MCPToolExecutor(),
+    ...     tavily_executor=TavilyExecutor(),
     ...     builtin_executor=BuiltinToolExecutor(memory_manager=mm),
     ...     reasoning_manager=reasoning_manager,
-    ...     allow_reasoning_fallback=True,  # Enable fallback on MCP failure
+    ...     allow_reasoning_fallback=True,
     ... )
     >>> result = await executor.execute_step(plan_step, prior_results)
 """
@@ -34,12 +33,9 @@ from sigil.planning.schemas import (
     StepType,
     utc_now,
 )
-from sigil.planning.executors.mcp_executor import (
-    MCPToolExecutor,
-    MCPConnectionError,
-    MCPTimeoutError,
-    MCPNotAvailableError,
-    MCPExecutorError,
+from sigil.planning.executors.tavily_executor import (
+    TavilyExecutor,
+    TavilyExecutorError,
 )
 from sigil.planning.executors.builtin_executor import BuiltinToolExecutor
 from sigil.core.exceptions import SigilError
@@ -112,25 +108,26 @@ class ToolStepExecutor:
     """Routes plan steps to appropriate tool executors.
 
     The ToolStepExecutor serves as the bridge between the PlanExecutor and
-    the various tool executors (MCP, builtin) and reasoning manager.
+    the various tool executors (Tavily, builtin) and reasoning manager.
 
     For TOOL_CALL steps:
     - If tool_name starts with "memory." or "planning." -> BuiltinToolExecutor
-    - Otherwise -> MCPToolExecutor
+    - If tool_name is websearch/tavily related -> TavilyExecutor
+    - Otherwise -> Fallback to reasoning or error
 
     For REASONING steps:
     - Route to ReasoningManager with context from prior results
     - Used for response generation and aggregation tasks
 
     Attributes:
-        mcp_executor: Executor for MCP tools.
+        tavily_executor: Executor for web search tools.
         builtin_executor: Executor for builtin tools.
         reasoning_manager: Optional manager for reasoning steps.
         allow_reasoning_fallback: Whether to fallback to reasoning on tool failure.
 
     Example:
         >>> executor = ToolStepExecutor(
-        ...     mcp_executor=MCPToolExecutor(),
+        ...     tavily_executor=TavilyExecutor(),
         ...     builtin_executor=BuiltinToolExecutor(memory_manager=mm),
         ... )
         >>> result = await executor.execute_step(step, prior_results)
@@ -138,7 +135,7 @@ class ToolStepExecutor:
 
     def __init__(
         self,
-        mcp_executor: Optional[MCPToolExecutor] = None,
+        tavily_executor: Optional[TavilyExecutor] = None,
         builtin_executor: Optional[BuiltinToolExecutor] = None,
         reasoning_manager: Optional["ReasoningManager"] = None,
         allow_reasoning_fallback: bool = False,
@@ -146,23 +143,17 @@ class ToolStepExecutor:
         """Initialize the tool step executor.
 
         Args:
-            mcp_executor: Executor for MCP tools.
+            tavily_executor: Executor for web search tools.
             builtin_executor: Executor for builtin tools.
             reasoning_manager: Optional manager for reasoning steps.
             allow_reasoning_fallback: Whether to fallback to reasoning on failure.
         """
-        # Initialize executors with appropriate timeouts
-        # Connection timeout: 5 seconds (quick fail if server is down)
-        # Tool execution timeout: 30 seconds (per tool call, accounts for API latency)
-        # Wrapper timeout: 5 + 10 = 15 seconds for initial calculation
-        # Note: Actual tool execution can take up to 30 seconds due to external API latency
-        self._mcp_executor = mcp_executor or MCPToolExecutor(
-            connection_timeout=5.0,
-            tool_execution_timeout=30.0,
-        )
+        self._tavily_executor = tavily_executor or TavilyExecutor()
         self._builtin_executor = builtin_executor or BuiltinToolExecutor()
         self._reasoning_manager = reasoning_manager
         self._allow_reasoning_fallback = allow_reasoning_fallback
+        # Timeout for tool execution
+        self._tool_execution_timeout = 30.0
 
     def _determine_executor_type(self, tool_name: str) -> str:
         """Determine which executor should handle this tool.
@@ -171,11 +162,13 @@ class ToolStepExecutor:
             tool_name: Full tool name (e.g., "websearch.search").
 
         Returns:
-            "builtin" or "mcp".
+            "builtin", "tavily", or "unsupported".
         """
         if BuiltinToolExecutor.is_builtin_tool(tool_name):
             return "builtin"
-        return "mcp"
+        if TavilyExecutor.is_tavily_tool(tool_name):
+            return "tavily"
+        return "unsupported"
 
     def _build_execution_context(
         self,
@@ -391,15 +384,9 @@ class ToolStepExecutor:
         Returns:
             Tool arguments dictionary.
         """
-        # Check for tool_args (standard attribute)
+        # tool_args is now a standard attribute on PlanStep
         if hasattr(step, "tool_args") and step.tool_args:
             return step.tool_args
-        # Check for _tool_args (set by planner's _enrich_steps_with_tools)
-        if hasattr(step, "_tool_args") and step._tool_args:
-            return step._tool_args
-        # Check for _parsed_tool_args (set during plan parsing)
-        if hasattr(step, "_parsed_tool_args") and step._parsed_tool_args:
-            return step._parsed_tool_args
         return {}
 
     async def _execute_tool_call(
@@ -409,8 +396,8 @@ class ToolStepExecutor:
     ) -> str:
         """Execute a TOOL_CALL step.
 
-        For MCP tools, includes timeout protection and detailed error messages.
-        On MCP failure, can fall back to reasoning if enabled.
+        For Tavily tools, includes timeout protection and detailed error messages.
+        On tool failure, can fall back to reasoning if enabled.
 
         Args:
             step: The step to execute.
@@ -440,31 +427,38 @@ class ToolStepExecutor:
                 tool_args=tool_args,
                 context=context,
             )
-        else:
-            # MCP tool execution with timeout and detailed error handling
-            return await self._execute_mcp_tool_with_fallback(
+        elif executor_type == "tavily":
+            # Tavily tool execution with timeout and error handling
+            return await self._execute_tavily_tool(
                 tool_name=tool_name,
                 tool_args=tool_args,
                 step=step,
                 prior_results=prior_results,
             )
+        else:
+            # Unsupported tool - try reasoning fallback or error
+            raise StepExecutionError(
+                f"Unsupported tool executor type for '{tool_name}'. "
+                f"Only builtin and tavily tools are supported.",
+                step_id=step.step_id,
+            )
 
-    async def _execute_mcp_tool_with_fallback(
+    async def _execute_tavily_tool(
         self,
         tool_name: str,
         tool_args: dict[str, Any],
         step: "PlanStep",
         prior_results: dict[str, StepResult],
     ) -> str:
-        """Execute an MCP tool with timeout protection and optional reasoning fallback.
+        """Execute a Tavily tool with timeout protection and optional reasoning fallback.
 
         This method:
-        1. Wraps MCP execution in a timeout to prevent indefinite hangs
+        1. Wraps Tavily execution in a timeout to prevent indefinite hangs
         2. Logs detailed error information for debugging
         3. Falls back to LLM reasoning if enabled and tool execution fails
 
         Args:
-            tool_name: The MCP tool to execute.
+            tool_name: The Tavily tool to execute.
             tool_args: Arguments for the tool.
             step: The plan step being executed.
             prior_results: Results from prior steps.
@@ -475,34 +469,32 @@ class ToolStepExecutor:
         Raises:
             StepExecutionError: If execution fails and no fallback is available.
         """
-        # Use the MCP executor's tool execution timeout with buffer for network delays
-        # This gives the tool the full time it needs to execute before timing out
-        tool_timeout = self._mcp_executor._tool_execution_timeout
+        tool_timeout = self._tool_execution_timeout
 
         try:
             logger.debug(
-                f"[ToolExecutor] Calling MCP tool '{tool_name}' with args: {tool_args}"
+                f"[ToolExecutor] Calling Tavily tool '{tool_name}' with args: {tool_args}"
             )
 
-            # Wrap MCP execution in a timeout
+            # Wrap Tavily execution in a timeout
             result = await asyncio.wait_for(
-                self._mcp_executor.execute(
+                self._tavily_executor.execute(
                     tool_name=tool_name,
                     tool_args=tool_args,
                 ),
                 timeout=tool_timeout,
             )
 
-            logger.info(f"[ToolExecutor] MCP tool '{tool_name}' completed successfully")
+            logger.info(f"[ToolExecutor] Tavily tool '{tool_name}' completed successfully")
             return result
 
         except asyncio.TimeoutError:
             error_msg = (
-                f"MCP tool '{tool_name}' timed out after {tool_timeout}s. "
-                f"The MCP server may be unresponsive or hanging."
+                f"Tavily tool '{tool_name}' timed out after {tool_timeout}s. "
+                f"The service may be overloaded."
             )
             logger.error(f"[ToolExecutor] {error_msg}")
-            return await self._handle_mcp_failure(
+            return await self._handle_tool_failure(
                 tool_name=tool_name,
                 tool_args=tool_args,
                 error=error_msg,
@@ -511,42 +503,9 @@ class ToolStepExecutor:
                 prior_results=prior_results,
             )
 
-        except MCPTimeoutError as e:
-            logger.error(f"[ToolExecutor] MCP timeout: {e}")
-            return await self._handle_mcp_failure(
-                tool_name=tool_name,
-                tool_args=tool_args,
-                error=str(e),
-                error_type="timeout",
-                step=step,
-                prior_results=prior_results,
-            )
-
-        except MCPNotAvailableError as e:
-            logger.error(f"[ToolExecutor] MCP not available: {e}")
-            return await self._handle_mcp_failure(
-                tool_name=tool_name,
-                tool_args=tool_args,
-                error=str(e),
-                error_type="not_available",
-                step=step,
-                prior_results=prior_results,
-            )
-
-        except MCPConnectionError as e:
-            logger.error(f"[ToolExecutor] MCP connection error: {e}")
-            return await self._handle_mcp_failure(
-                tool_name=tool_name,
-                tool_args=tool_args,
-                error=str(e),
-                error_type=e.error_type,
-                step=step,
-                prior_results=prior_results,
-            )
-
-        except MCPExecutorError as e:
-            logger.error(f"[ToolExecutor] MCP executor error: {e}")
-            return await self._handle_mcp_failure(
+        except TavilyExecutorError as e:
+            logger.error(f"[ToolExecutor] Tavily executor error: {e}")
+            return await self._handle_tool_failure(
                 tool_name=tool_name,
                 tool_args=tool_args,
                 error=str(e),
@@ -561,7 +520,7 @@ class ToolStepExecutor:
                 f"{type(e).__name__}: {e}",
                 exc_info=True,
             )
-            return await self._handle_mcp_failure(
+            return await self._handle_tool_failure(
                 tool_name=tool_name,
                 tool_args=tool_args,
                 error=str(e),
@@ -570,7 +529,7 @@ class ToolStepExecutor:
                 prior_results=prior_results,
             )
 
-    async def _handle_mcp_failure(
+    async def _handle_tool_failure(
         self,
         tool_name: str,
         tool_args: dict[str, Any],
@@ -579,13 +538,13 @@ class ToolStepExecutor:
         step: "PlanStep",
         prior_results: dict[str, StepResult],
     ) -> str:
-        """Handle MCP tool execution failure with optional fallback to reasoning.
+        """Handle tool execution failure with optional fallback to reasoning.
 
         Args:
             tool_name: The failed tool name.
             tool_args: The tool arguments that were passed.
             error: The error message.
-            error_type: Type of error (timeout, not_available, connection, etc).
+            error_type: Type of error (timeout, execution, unknown, etc).
             step: The plan step being executed.
             prior_results: Results from prior steps.
 
@@ -599,23 +558,18 @@ class ToolStepExecutor:
         if error_type == "timeout":
             user_message = (
                 f"The '{tool_name}' tool is taking too long to respond. "
-                f"The external service may be down or overloaded."
+                f"The service may be down or overloaded."
             )
         elif error_type == "not_available":
             user_message = (
                 f"The '{tool_name}' tool is not available. "
                 f"This may be due to missing configuration or credentials."
             )
-        elif error_type == "connection_refused":
-            user_message = (
-                f"Could not connect to the '{tool_name}' service. "
-                f"The server may not be running."
-            )
         else:
             user_message = f"The '{tool_name}' tool encountered an error: {error}"
 
         logger.warning(
-            f"[ToolExecutor] MCP failure handled. Type: {error_type}. "
+            f"[ToolExecutor] Tool failure handled. Type: {error_type}. "
             f"Fallback enabled: {self._allow_reasoning_fallback}"
         )
 
@@ -852,6 +806,8 @@ def create_tool_step_executor(
     planner: Optional[Any] = None,
     reasoning_manager: Optional[Any] = None,
     allow_reasoning_fallback: bool = True,
+    tool_execution_timeout: float = 30.0,
+    # Deprecated parameters (kept for backward compatibility, but ignored)
     mcp_connection_timeout: float = 15.0,
     mcp_tool_execution_timeout: float = 30.0,
 ) -> ToolStepExecutor:
@@ -862,36 +818,36 @@ def create_tool_step_executor(
         planner: Planner for builtin planning tools.
         reasoning_manager: ReasoningManager for reasoning steps.
         allow_reasoning_fallback: Whether to fallback to reasoning on failure.
-            Defaults to True to ensure users get responses even when MCP fails.
-        mcp_connection_timeout: Timeout for MCP server connections in seconds.
-            Defaults to 15 seconds to fail fast instead of hanging.
-        mcp_tool_execution_timeout: Timeout for individual MCP tool executions in seconds.
+            Defaults to True to ensure users get responses even when tools fail.
+        tool_execution_timeout: Timeout for tool executions in seconds.
             Defaults to 30 seconds to account for external API latency.
+        mcp_connection_timeout: Deprecated, ignored. Kept for backward compatibility.
+        mcp_tool_execution_timeout: Deprecated, ignored. Kept for backward compatibility.
 
     Returns:
         Configured ToolStepExecutor.
 
     Note:
-        The reasoning fallback is enabled by default. When MCP tools fail
-        (due to timeout, missing credentials, or server unavailability),
+        The reasoning fallback is enabled by default. When tools fail
+        (due to timeout, missing credentials, or service unavailability),
         the executor will attempt to use LLM reasoning to provide a response
         based on the task description and available context.
     """
-    mcp_executor = MCPToolExecutor(
-        connection_timeout=mcp_connection_timeout,
-        tool_execution_timeout=mcp_tool_execution_timeout,
-    )
+    tavily_executor = TavilyExecutor()
     builtin_executor = BuiltinToolExecutor(
         memory_manager=memory_manager,
         planner=planner,
     )
 
-    return ToolStepExecutor(
-        mcp_executor=mcp_executor,
+    executor = ToolStepExecutor(
+        tavily_executor=tavily_executor,
         builtin_executor=builtin_executor,
         reasoning_manager=reasoning_manager,
         allow_reasoning_fallback=allow_reasoning_fallback,
     )
+    executor._tool_execution_timeout = tool_execution_timeout
+
+    return executor
 
 
 # =============================================================================

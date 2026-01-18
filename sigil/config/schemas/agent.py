@@ -10,7 +10,7 @@ Classes:
     AgentConfig: Configuration for agent initialization
 
 Constants:
-    MCP_TOOL_CATEGORIES: Available MCP tool categories
+    TOOL_CATEGORIES: Available tool categories
 """
 
 from __future__ import annotations
@@ -52,14 +52,16 @@ class Stratum(str, Enum):
     IGE = "IGE"
 
 
-# Available MCP tool categories mapped to their capabilities
-MCP_TOOL_CATEGORIES: dict[str, str] = {
-    "voice": "Text-to-speech, voice synthesis (ElevenLabs)",
+# Available tool categories mapped to their capabilities
+# Currently only websearch is supported via Tavily
+TOOL_CATEGORIES: dict[str, str] = {
     "websearch": "Web research, fact-finding (Tavily)",
-    "calendar": "Scheduling, availability checks (Google Calendar)",
-    "communication": "SMS, calls (Twilio)",
-    "crm": "Contact management, deals (HubSpot)",
+    "memory": "Memory storage and retrieval (builtin)",
+    "planning": "Task decomposition and planning (builtin)",
 }
+
+# Backward compatibility alias
+MCP_TOOL_CATEGORIES = TOOL_CATEGORIES
 
 
 class AgentMetadata(BaseModel):
@@ -133,18 +135,17 @@ class AgentMetadata(BaseModel):
 
 
 class AgentConfig(BaseModel):
-    """Configuration for an executable agent with real MCP tool capabilities.
+    """Configuration for an executable agent with tool capabilities.
 
     This is the core output of the builder - a complete agent specification
-    that can be instantiated with real tools via MCP protocol. This schema
-    is migrated from v1 with additional v2 fields for memory, planning,
-    and contracts.
+    that can be instantiated with available tools. This schema is migrated
+    from v1 with additional v2 fields for memory, planning, and contracts.
 
     Attributes:
         name: Unique identifier for the agent (snake_case)
         description: What the agent does - clear, concise purpose statement
         system_prompt: Complete system prompt defining agent behavior
-        tools: List of MCP tool category names the agent should have access to
+        tools: List of tool category names the agent should have access to
         model: Model identifier for the agent's LLM backbone
         stratum: ACTi stratum classification for the agent's primary function
         metadata: Agent lifecycle metadata (auto-populated on creation/update)
@@ -158,7 +159,7 @@ class AgentConfig(BaseModel):
             name="lead_qualifier",
             description="Qualifies inbound leads by assessing BANT criteria",
             system_prompt="You are a professional lead qualification specialist...",
-            tools=["communication", "crm"],
+            tools=["websearch", "memory"],
             stratum=Stratum.RAI,
             memory_enabled=True
         )
@@ -186,8 +187,8 @@ class AgentConfig(BaseModel):
     )
     tools: list[str] = Field(
         default_factory=list,
-        description="List of MCP tool category names the agent should have access to",
-        examples=[["voice", "calendar"], ["websearch", "crm"]],
+        description="List of tool category names the agent should have access to",
+        examples=[["websearch", "memory"], ["websearch", "planning"]],
     )
     model: str = Field(
         default=DEFAULT_MODEL,
@@ -239,7 +240,7 @@ class AgentConfig(BaseModel):
     @field_validator("tools")
     @classmethod
     def validate_tools(cls, v: list[str]) -> list[str]:
-        """Validate that all tools are recognized MCP tool categories.
+        """Validate that all tools are recognized tool categories.
 
         Args:
             v: List of tool names to validate.
@@ -250,9 +251,9 @@ class AgentConfig(BaseModel):
         Raises:
             ValueError: If any tool name is not recognized.
         """
-        invalid_tools = [t for t in v if t not in MCP_TOOL_CATEGORIES]
+        invalid_tools = [t for t in v if t not in TOOL_CATEGORIES]
         if invalid_tools:
-            valid_tools = ", ".join(MCP_TOOL_CATEGORIES.keys())
+            valid_tools = ", ".join(TOOL_CATEGORIES.keys())
             raise ValueError(
                 f"Invalid tool(s): {invalid_tools}. "
                 f"Valid options: {valid_tools}"
@@ -304,7 +305,8 @@ class AgentConfig(BaseModel):
 
 __all__ = [
     "Stratum",
-    "MCP_TOOL_CATEGORIES",
+    "TOOL_CATEGORIES",
+    "MCP_TOOL_CATEGORIES",  # Backward compatibility alias
     "AgentMetadata",
     "AgentConfig",
 ]

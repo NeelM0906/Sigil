@@ -111,9 +111,9 @@ class TestExtractionOperations:
     @pytest.mark.asyncio
     async def test_extract_nonexistent_resource(self, memory_manager):
         """Test extracting from non-existent resource raises error."""
-        from sigil.core.exceptions import MemoryRetrievalError
+        from sigil.core.exceptions import SigilMemoryRetrievalError
 
-        with pytest.raises(MemoryRetrievalError):
+        with pytest.raises(SigilMemoryRetrievalError):
             await memory_manager.extract_and_store("nonexistent-id")
 
 

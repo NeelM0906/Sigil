@@ -227,8 +227,9 @@ BUILTIN_TOOL_DESCRIPTIONS: dict[str, dict[str, Any]] = {
     },
 }
 
-# MCP tool descriptions (category-level with capabilities)
-MCP_TOOL_DESCRIPTIONS: dict[str, dict[str, Any]] = {
+# External tool descriptions (category-level with capabilities)
+# Currently only websearch is supported via Tavily
+EXTERNAL_TOOL_DESCRIPTIONS: dict[str, dict[str, Any]] = {
     "websearch": {
         "description": "Tavily web search and research capabilities",
         "tools": {
@@ -247,102 +248,10 @@ MCP_TOOL_DESCRIPTIONS: dict[str, dict[str, Any]] = {
             },
         },
     },
-    "voice": {
-        "description": "ElevenLabs voice synthesis and text-to-speech",
-        "tools": {
-            "text_to_speech": {
-                "description": "Convert text to speech audio",
-                "arguments": {
-                    "text": {"type": "string", "required": True, "description": "Text to convert"},
-                    "voice_id": {"type": "string", "required": False, "description": "Voice identifier"},
-                },
-            },
-            "list_voices": {
-                "description": "List available voices",
-                "arguments": {},
-            },
-        },
-    },
-    "calendar": {
-        "description": "Google Calendar integration for scheduling",
-        "tools": {
-            "list_events": {
-                "description": "List calendar events",
-                "arguments": {
-                    "start_time": {"type": "string", "required": False, "description": "Start time (ISO format)"},
-                    "end_time": {"type": "string", "required": False, "description": "End time (ISO format)"},
-                    "max_results": {"type": "integer", "required": False, "default": 10, "description": "Maximum events"},
-                },
-            },
-            "create_event": {
-                "description": "Create a new calendar event",
-                "arguments": {
-                    "title": {"type": "string", "required": True, "description": "Event title"},
-                    "start_time": {"type": "string", "required": True, "description": "Start time (ISO format)"},
-                    "end_time": {"type": "string", "required": True, "description": "End time (ISO format)"},
-                    "description": {"type": "string", "required": False, "description": "Event description"},
-                    "attendees": {"type": "array", "required": False, "description": "List of attendee emails"},
-                },
-            },
-            "get_freebusy": {
-                "description": "Check availability for a time range",
-                "arguments": {
-                    "start_time": {"type": "string", "required": True, "description": "Start time"},
-                    "end_time": {"type": "string", "required": True, "description": "End time"},
-                },
-            },
-        },
-    },
-    "communication": {
-        "description": "Twilio SMS and voice communication",
-        "tools": {
-            "send_sms": {
-                "description": "Send an SMS message",
-                "arguments": {
-                    "to": {"type": "string", "required": True, "description": "Recipient phone number"},
-                    "body": {"type": "string", "required": True, "description": "Message content"},
-                    "from": {"type": "string", "required": False, "description": "Sender phone number"},
-                },
-            },
-            "make_call": {
-                "description": "Initiate a phone call",
-                "arguments": {
-                    "to": {"type": "string", "required": True, "description": "Recipient phone number"},
-                    "from": {"type": "string", "required": True, "description": "Caller phone number"},
-                    "message": {"type": "string", "required": False, "description": "Message to speak"},
-                },
-            },
-        },
-    },
-    "crm": {
-        "description": "HubSpot CRM for contact and deal management",
-        "tools": {
-            "get_contact": {
-                "description": "Get contact information",
-                "arguments": {
-                    "email": {"type": "string", "required": False, "description": "Contact email"},
-                    "contact_id": {"type": "string", "required": False, "description": "Contact ID"},
-                },
-            },
-            "create_contact": {
-                "description": "Create a new contact",
-                "arguments": {
-                    "email": {"type": "string", "required": True, "description": "Contact email"},
-                    "first_name": {"type": "string", "required": False, "description": "First name"},
-                    "last_name": {"type": "string", "required": False, "description": "Last name"},
-                    "company": {"type": "string", "required": False, "description": "Company name"},
-                },
-            },
-            "get_deals": {
-                "description": "Get deals for a contact",
-                "arguments": {
-                    "contact_id": {"type": "string", "required": False, "description": "Contact ID"},
-                    "stage": {"type": "string", "required": False, "description": "Deal stage filter"},
-                },
-            },
-        },
-    },
 }
+
+# Backward compatibility alias
+MCP_TOOL_DESCRIPTIONS = EXTERNAL_TOOL_DESCRIPTIONS
 
 
 def get_tool_description(tool_name: str) -> Optional[dict[str, Any]]:
@@ -359,16 +268,16 @@ def get_tool_description(tool_name: str) -> Optional[dict[str, Any]]:
     if tool_name in BUILTIN_TOOL_DESCRIPTIONS:
         return BUILTIN_TOOL_DESCRIPTIONS[tool_name]
 
-    # Parse tool name for MCP tools
+    # Parse tool name for external tools
     parts = tool_name.split(".", 1)
     if len(parts) != 2:
         return None
 
     category, operation = parts
 
-    # Check MCP tool categories
-    if category in MCP_TOOL_DESCRIPTIONS:
-        category_info = MCP_TOOL_DESCRIPTIONS[category]
+    # Check external tool categories (e.g., websearch)
+    if category in EXTERNAL_TOOL_DESCRIPTIONS:
+        category_info = EXTERNAL_TOOL_DESCRIPTIONS[category]
         tools = category_info.get("tools", {})
         if operation in tools:
             return tools[operation]
@@ -994,8 +903,9 @@ Now generate a plan for the goal above:"""
             )
 
             # Store parsed metadata for later enrichment
+            # Use standard tool_args attribute instead of private _parsed_tool_args
+            step.tool_args = tool_args
             step._parsed_tool_name = tool_name  # type: ignore
-            step._parsed_tool_args = tool_args  # type: ignore
             step._parsed_dependencies = dependencies  # type: ignore
 
             steps.append(step)
@@ -1038,13 +948,12 @@ Now generate a plan for the goal above:"""
         for step in steps:
             # Get parsed metadata
             tool_name = getattr(step, "_parsed_tool_name", None)
-            tool_args = getattr(step, "_parsed_tool_args", {})
+            # tool_args is now a standard attribute on PlanStep
+            tool_args = step.tool_args or {}
 
             # Clean up temporary attributes
             if hasattr(step, "_parsed_tool_name"):
                 delattr(step, "_parsed_tool_name")
-            if hasattr(step, "_parsed_tool_args"):
-                delattr(step, "_parsed_tool_args")
             if hasattr(step, "_parsed_dependencies"):
                 delattr(step, "_parsed_dependencies")
 
@@ -1087,9 +996,10 @@ Now generate a plan for the goal above:"""
 
             if tool_valid:
                 # Set tool metadata on step
+                # Use standard tool_args attribute instead of private _tool_args
                 step.tool_calls = [tool_name]
+                step.tool_args = tool_args
                 step._tool_name = tool_name  # type: ignore
-                step._tool_args = tool_args  # type: ignore
                 step._step_type = StepType.TOOL_CALL  # type: ignore
                 step._tool_executor_type = tool_executor_type  # type: ignore
                 logger.debug(f"Step {step.step_id}: tool={tool_name}, executor={tool_executor_type}")
@@ -1125,9 +1035,9 @@ Now generate a plan for the goal above:"""
             if "." in tool:
                 # Already a full tool name
                 expanded.append(tool)
-            elif tool in MCP_TOOL_DESCRIPTIONS:
+            elif tool in EXTERNAL_TOOL_DESCRIPTIONS:
                 # It's a category, expand to all operations
-                category_info = MCP_TOOL_DESCRIPTIONS[tool]
+                category_info = EXTERNAL_TOOL_DESCRIPTIONS[tool]
                 for operation in category_info.get("tools", {}).keys():
                     expanded.append(f"{tool}.{operation}")
             elif tool in ("memory", "planning"):
@@ -1185,9 +1095,9 @@ Now generate a plan for the goal above:"""
                 description=f"Search for: {goal}",
                 dependencies=[steps[0].step_id],
                 tool_calls=[t for t in tools if "search" in t.lower()] or None,
+                # Use standard tool_args attribute instead of private _tool_args
+                tool_args={"query": goal},
             )
-            # Extract query from goal for websearch tool
-            search_step._tool_args = {"query": goal}  # type: ignore
             steps.append(search_step)
 
         if any(kw in goal_lower for kw in ["qualify", "assess", "evaluate"]):
@@ -1589,7 +1499,8 @@ __all__ = [
     "create_plan_created_event",
     # Tool description utilities
     "BUILTIN_TOOL_DESCRIPTIONS",
-    "MCP_TOOL_DESCRIPTIONS",
+    "EXTERNAL_TOOL_DESCRIPTIONS",
+    "MCP_TOOL_DESCRIPTIONS",  # Backward compatibility alias
     "get_tool_description",
     "format_tool_for_prompt",
 ]

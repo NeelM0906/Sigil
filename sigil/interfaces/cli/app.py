@@ -698,13 +698,13 @@ def interactive(
     click.echo(f"Enabled: {colorize(', '.join(features_enabled), 'green')}")
     click.echo()
 
-    # Check MCP server availability
-    from sigil.interfaces.cli.health_check import display_mcp_status
+    # Check external tool availability
+    from sigil.interfaces.cli.health_check import display_tool_status
     try:
-        mcp_status = asyncio.run(display_mcp_status(echo_func=click.echo))
+        tool_status = asyncio.run(display_tool_status(echo_func=click.echo))
     except Exception as e:
-        click.echo(colorize(f"Could not check MCP servers: {e}", "yellow"))
-        mcp_status = {}
+        click.echo(colorize(f"Could not check external tools: {e}", "yellow"))
+        tool_status = {}
 
     click.echo()
     click.echo("Type your queries below. Type 'exit' or 'quit' to exit.")

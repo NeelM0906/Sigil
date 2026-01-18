@@ -75,8 +75,8 @@ from sigil.planning.tool_executor import (
 )
 
 from sigil.planning.executors import (
-    MCPToolExecutor,
     BuiltinToolExecutor,
+    TavilyExecutor,
 )
 
 
@@ -117,8 +117,8 @@ __all__ = [
     # Tool executors
     "ToolStepExecutor",
     "create_tool_step_executor",
-    "MCPToolExecutor",
     "BuiltinToolExecutor",
+    "TavilyExecutor",
     # Tool executor exceptions
     "StepExecutionError",
     "NoToolSpecifiedError",

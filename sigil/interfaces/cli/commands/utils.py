@@ -227,7 +227,7 @@ def format_error(error: Exception) -> str:
     suggestions = {
         "TokenBudgetExceeded": "Try simplifying your query or use /budget reset",
         "ContractViolation": "The output did not meet contract requirements. Try /contracts test <name>",
-        "MemoryError": "Memory operation failed. Try /memory stats to check health",
+        "SigilMemoryError": "Memory operation failed. Try /memory stats to check health",
         "RoutingError": "Could not route request. Use /help for command syntax",
         "SessionNotFoundError": "Session not found. Use /sessions list to see available sessions",
         "ValidationError": "Invalid input. Check argument format and try again",

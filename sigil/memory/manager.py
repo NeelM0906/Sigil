@@ -28,7 +28,7 @@ from typing import Any, Optional
 
 from sigil.config import get_settings
 from sigil.config.schemas.memory import Resource, MemoryItem, MemoryCategory
-from sigil.core.exceptions import MemoryError, MemoryWriteError, MemoryRetrievalError
+from sigil.core.exceptions import SigilMemoryError, SigilMemoryWriteError, SigilMemoryRetrievalError
 from sigil.state.events import EventType, create_memory_extracted_event
 from sigil.state.store import EventStore
 
@@ -331,7 +331,7 @@ class MemoryManager:
         # Get the resource
         resource = self.resource_layer.get(resource_id)
         if resource is None:
-            raise MemoryRetrievalError(
+            raise SigilMemoryRetrievalError(
                 f"Resource not found: {resource_id}",
                 layer="resources",
             )

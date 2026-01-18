@@ -2,7 +2,7 @@
 
 Tests cover:
 - Step type determination
-- Routing to MCP vs builtin executors
+- Routing to Tavily vs builtin executors
 - REASONING step execution
 - Error handling and fallback
 - Context building
@@ -35,25 +35,25 @@ class TestToolStepExecutorInit:
     def test_default_initialization(self):
         """Test default initialization."""
         executor = ToolStepExecutor()
-        assert executor._mcp_executor is not None
+        assert executor._tavily_executor is not None
         assert executor._builtin_executor is not None
         assert executor._reasoning_manager is None
         assert executor._allow_reasoning_fallback is False
 
     def test_initialization_with_managers(self):
         """Test initialization with custom managers."""
-        mock_mcp = MagicMock()
+        mock_tavily = MagicMock()
         mock_builtin = MagicMock()
         mock_reasoning = MagicMock()
 
         executor = ToolStepExecutor(
-            mcp_executor=mock_mcp,
+            tavily_executor=mock_tavily,
             builtin_executor=mock_builtin,
             reasoning_manager=mock_reasoning,
             allow_reasoning_fallback=True,
         )
 
-        assert executor._mcp_executor is mock_mcp
+        assert executor._tavily_executor is mock_tavily
         assert executor._builtin_executor is mock_builtin
         assert executor._reasoning_manager is mock_reasoning
         assert executor._allow_reasoning_fallback is True
@@ -77,13 +77,13 @@ class TestExecutorTypeRouting:
         assert executor._determine_executor_type("planning.create_plan") == "builtin"
         assert executor._determine_executor_type("planning.get_status") == "builtin"
 
-    def test_determine_mcp(self):
-        """Test routing MCP tools to MCP executor."""
+    def test_determine_tavily(self):
+        """Test routing websearch tools to Tavily executor."""
         executor = ToolStepExecutor()
 
-        assert executor._determine_executor_type("websearch.search") == "mcp"
-        assert executor._determine_executor_type("calendar.create_event") == "mcp"
-        assert executor._determine_executor_type("voice.generate") == "mcp"
+        assert executor._determine_executor_type("websearch.search") == "tavily"
+        assert executor._determine_executor_type("tavily_search") == "tavily"
+        assert executor._determine_executor_type("websearch.extract") == "tavily"
 
 
 class TestStepTypeDetermination:
@@ -181,13 +181,13 @@ class TestToolCallExecution:
         mock_builtin.execute.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_execute_mcp_tool_call(self):
-        """Test executing an MCP tool call."""
-        mock_mcp = MagicMock()
-        mock_mcp.execute = AsyncMock(return_value="Search results")
-        mock_mcp._tool_execution_timeout = 60.0  # Must be a real number for asyncio.wait_for
+    async def test_execute_tavily_tool_call(self):
+        """Test executing a Tavily tool call."""
+        mock_tavily = MagicMock()
+        mock_tavily.execute = AsyncMock(return_value="Search results")
 
-        executor = ToolStepExecutor(mcp_executor=mock_mcp)
+        executor = ToolStepExecutor(tavily_executor=mock_tavily)
+        executor._tool_execution_timeout = 60.0
 
         step = MagicMock()
         step.step_id = "step-1"
@@ -201,7 +201,7 @@ class TestToolCallExecution:
 
         assert result.status == StepStatus.COMPLETED
         assert result.output == "Search results"
-        mock_mcp.execute.assert_called_once()
+        mock_tavily.execute.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_execute_tool_call_with_tool_calls_list(self):
@@ -337,11 +337,11 @@ class TestErrorHandling:
     @pytest.mark.asyncio
     async def test_tool_execution_failure(self):
         """Test handling of tool execution failure."""
-        mock_mcp = MagicMock()
-        mock_mcp.execute = AsyncMock(side_effect=Exception("API error"))
-        mock_mcp._tool_execution_timeout = 60.0  # Must be a real number for asyncio.wait_for
+        mock_tavily = MagicMock()
+        mock_tavily.execute = AsyncMock(side_effect=Exception("API error"))
 
-        executor = ToolStepExecutor(mcp_executor=mock_mcp)
+        executor = ToolStepExecutor(tavily_executor=mock_tavily)
+        executor._tool_execution_timeout = 60.0
 
         step = MagicMock()
         step.step_id = "step-1"
@@ -360,9 +360,8 @@ class TestErrorHandling:
     @pytest.mark.asyncio
     async def test_reasoning_fallback_on_failure(self):
         """Test reasoning fallback when tool fails."""
-        mock_mcp = MagicMock()
-        mock_mcp.execute = AsyncMock(side_effect=Exception("API error"))
-        mock_mcp._tool_execution_timeout = 60.0  # Must be a real number for asyncio.wait_for
+        mock_tavily = MagicMock()
+        mock_tavily.execute = AsyncMock(side_effect=Exception("API error"))
 
         mock_reasoning = MagicMock()
         mock_result = MagicMock()
@@ -371,10 +370,11 @@ class TestErrorHandling:
         mock_reasoning.execute = AsyncMock(return_value=mock_result)
 
         executor = ToolStepExecutor(
-            mcp_executor=mock_mcp,
+            tavily_executor=mock_tavily,
             reasoning_manager=mock_reasoning,
             allow_reasoning_fallback=True,
         )
+        executor._tool_execution_timeout = 60.0
 
         step = MagicMock()
         step.step_id = "step-1"
@@ -393,17 +393,17 @@ class TestErrorHandling:
     @pytest.mark.asyncio
     async def test_no_fallback_when_disabled(self):
         """Test no fallback when allow_reasoning_fallback is False."""
-        mock_mcp = MagicMock()
-        mock_mcp.execute = AsyncMock(side_effect=Exception("API error"))
-        mock_mcp._tool_execution_timeout = 60.0  # Must be a real number for asyncio.wait_for
+        mock_tavily = MagicMock()
+        mock_tavily.execute = AsyncMock(side_effect=Exception("API error"))
 
         mock_reasoning = MagicMock()
 
         executor = ToolStepExecutor(
-            mcp_executor=mock_mcp,
+            tavily_executor=mock_tavily,
             reasoning_manager=mock_reasoning,
             allow_reasoning_fallback=False,  # Disabled
         )
+        executor._tool_execution_timeout = 60.0
 
         step = MagicMock()
         step.step_id = "step-1"
@@ -482,10 +482,10 @@ class TestFactoryFunction:
         """Test factory with default values."""
         executor = create_tool_step_executor()
 
-        assert executor._mcp_executor is not None
+        assert executor._tavily_executor is not None
         assert executor._builtin_executor is not None
         assert executor._reasoning_manager is None
-        # Default changed to True for better UX - fallback provides response even when MCP fails
+        # Default changed to True for better UX - fallback provides response even when tools fail
         assert executor._allow_reasoning_fallback is True
 
     def test_create_tool_step_executor_with_managers(self):
@@ -513,11 +513,11 @@ class TestStepResultTokenTracking:
     @pytest.mark.asyncio
     async def test_tool_call_zero_tokens(self):
         """Test that tool calls report 0 tokens."""
-        mock_mcp = MagicMock()
-        mock_mcp.execute = AsyncMock(return_value="results")
-        mock_mcp._tool_execution_timeout = 60.0  # Must be a real number for asyncio.wait_for
+        mock_tavily = MagicMock()
+        mock_tavily.execute = AsyncMock(return_value="results")
 
-        executor = ToolStepExecutor(mcp_executor=mock_mcp)
+        executor = ToolStepExecutor(tavily_executor=mock_tavily)
+        executor._tool_execution_timeout = 60.0
 
         step = MagicMock()
         step.step_id = "step-1"

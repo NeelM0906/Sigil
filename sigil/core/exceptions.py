@@ -11,9 +11,9 @@ Exception Hierarchy:
     │   ├── AgentInitializationError: Failed to initialize agent
     │   ├── AgentExecutionError: Failed during task execution
     │   └── AgentTimeoutError: Agent execution exceeded time limit
-    ├── MemoryError: Memory system failures
-    │   ├── MemoryWriteError: Failed to write to memory
-    │   ├── MemoryRetrievalError: Failed to retrieve from memory
+    ├── SigilMemoryError: Memory system failures
+    │   ├── SigilMemoryWriteError: Failed to write to memory
+    │   ├── SigilMemoryRetrievalError: Failed to retrieve from memory
     │   └── MemoryLayerError: Memory layer-specific errors
     ├── ReasoningError: Reasoning and strategy failures
     │   ├── StrategyNotFoundError: Requested strategy not available
@@ -24,17 +24,17 @@ Exception Hierarchy:
     ├── ToolError: Tool execution failures
     │   ├── ToolNotFoundError: Requested tool not available
     │   ├── ToolExecutionError: Tool execution failed
-    │   └── MCPConnectionError: Failed to connect to MCP server
+    │   └── ServiceConnectionError: Failed to connect to external service
     └── EvolutionError: Self-evolution failures
         ├── OptimizationError: TextGrad optimization failed
         └── PromptMutationError: Prompt evolution failed
 
-TODO:
-    - Implement full exception hierarchy
-    - Add context information to each exception type
-    - Add error codes for programmatic handling
-    - Add recovery suggestions where applicable
-    - Integrate with telemetry for error tracking
+Features:
+    - Complete exception hierarchy with specific error types
+    - Context information included in each exception type
+    - Error codes for programmatic handling
+    - Optional telemetry integration via emit_event method
+    - Structured logging support via to_log_dict method
 """
 
 from typing import Any, Optional
@@ -53,10 +53,9 @@ class SigilError(Exception):
         context: Additional context information about the error
         recoverable: Whether the error is potentially recoverable
 
-    TODO:
-        - Add error code registry
-        - Add telemetry integration
-        - Add structured logging support
+    Methods:
+        emit_event: Optional hook for telemetry integration
+        to_log_dict: Returns structured dict for logging
     """
 
     def __init__(
@@ -75,97 +74,243 @@ class SigilError(Exception):
     def __str__(self) -> str:
         return f"[{self.code}] {self.message}"
 
+    def emit_event(self, telemetry_client: Optional[Any] = None) -> None:
+        """Optional hook for telemetry integration.
+
+        Override this method or pass a telemetry client to emit error events
+        to your observability platform.
+
+        Args:
+            telemetry_client: Optional client with an emit() method
+        """
+        if telemetry_client is not None and hasattr(telemetry_client, "emit"):
+            telemetry_client.emit(self.to_log_dict())
+
+    def to_log_dict(self) -> dict[str, Any]:
+        """Return structured dict for logging.
+
+        Returns:
+            Dictionary with error details suitable for structured logging
+        """
+        return {
+            "error_type": self.__class__.__name__,
+            "error_code": self.code,
+            "message": self.message,
+            "recoverable": self.recoverable,
+            "context": self.context,
+        }
+
 
 class ConfigurationError(SigilError):
     """Raised when configuration is invalid or missing.
 
-    TODO: Add config validation details
+    Attributes:
+        config_key: The configuration key that caused the error
+        validation_details: Details about why validation failed
     """
 
-    def __init__(self, message: str, config_key: Optional[str] = None, **kwargs: Any) -> None:
-        super().__init__(message, code="CONFIG_ERROR", **kwargs)
+    def __init__(
+        self,
+        message: str,
+        config_key: Optional[str] = None,
+        validation_details: Optional[str] = None,
+        **kwargs: Any,
+    ) -> None:
+        context = kwargs.pop("context", {}) or {}
+        if config_key:
+            context["config_key"] = config_key
+        if validation_details:
+            context["validation_details"] = validation_details
+        super().__init__(message, code="CONFIG_ERROR", context=context, **kwargs)
         self.config_key = config_key
+        self.validation_details = validation_details
 
 
 class AgentError(SigilError):
     """Base exception for agent-related errors.
 
-    TODO: Add agent identification to context
+    Attributes:
+        agent_id: Identifier of the agent that encountered the error
     """
 
     def __init__(self, message: str, agent_id: Optional[str] = None, **kwargs: Any) -> None:
-        super().__init__(message, code="AGENT_ERROR", **kwargs)
+        context = kwargs.pop("context", {}) or {}
+        if agent_id:
+            context["agent_id"] = agent_id
+        super().__init__(message, code="AGENT_ERROR", context=context, **kwargs)
         self.agent_id = agent_id
 
 
 class AgentInitializationError(AgentError):
     """Raised when an agent fails to initialize.
 
-    TODO: Add initialization step that failed
+    Attributes:
+        initialization_step: The step during initialization that failed
     """
-    pass
+
+    def __init__(
+        self,
+        message: str,
+        agent_id: Optional[str] = None,
+        initialization_step: Optional[str] = None,
+        **kwargs: Any,
+    ) -> None:
+        context = kwargs.pop("context", {}) or {}
+        if initialization_step:
+            context["initialization_step"] = initialization_step
+        super().__init__(message, agent_id=agent_id, context=context, **kwargs)
+        self.initialization_step = initialization_step
 
 
 class AgentExecutionError(AgentError):
     """Raised when an agent fails during task execution.
 
-    TODO: Add task context and partial results
+    Attributes:
+        task_context: Context information about the task being executed
+        partial_results: Any partial results obtained before failure
     """
-    pass
+
+    def __init__(
+        self,
+        message: str,
+        agent_id: Optional[str] = None,
+        task_context: Optional[dict[str, Any]] = None,
+        partial_results: Optional[Any] = None,
+        **kwargs: Any,
+    ) -> None:
+        context = kwargs.pop("context", {}) or {}
+        if task_context:
+            context["task_context"] = task_context
+        if partial_results is not None:
+            context["partial_results"] = partial_results
+        super().__init__(message, agent_id=agent_id, context=context, **kwargs)
+        self.task_context = task_context
+        self.partial_results = partial_results
 
 
 class AgentTimeoutError(AgentError):
     """Raised when agent execution exceeds time limit.
 
-    TODO: Add timeout duration and progress info
+    Attributes:
+        timeout_seconds: The timeout duration that was exceeded
+        progress: Description of progress made before timeout
     """
-    pass
+
+    def __init__(
+        self,
+        message: str,
+        agent_id: Optional[str] = None,
+        timeout_seconds: Optional[float] = None,
+        progress: Optional[str] = None,
+        **kwargs: Any,
+    ) -> None:
+        context = kwargs.pop("context", {}) or {}
+        if timeout_seconds is not None:
+            context["timeout_seconds"] = timeout_seconds
+        if progress:
+            context["progress"] = progress
+        super().__init__(message, agent_id=agent_id, context=context, **kwargs)
+        self.timeout_seconds = timeout_seconds
+        self.progress = progress
 
 
-class MemoryError(SigilError):
+class SigilMemoryError(SigilError):
     """Base exception for memory system errors.
 
-    TODO: Add memory layer identification
+    Attributes:
+        layer: The memory layer that encountered the error (e.g., 'short_term', 'semantic')
     """
 
     def __init__(self, message: str, layer: Optional[str] = None, **kwargs: Any) -> None:
-        super().__init__(message, code="MEMORY_ERROR", **kwargs)
+        context = kwargs.pop("context", {}) or {}
+        if layer:
+            context["layer"] = layer
+        super().__init__(message, code="MEMORY_ERROR", context=context, **kwargs)
         self.layer = layer
 
 
-class MemoryWriteError(MemoryError):
+class SigilMemoryWriteError(SigilMemoryError):
     """Raised when writing to memory fails.
 
-    TODO: Add item details that failed to write
+    Attributes:
+        item_details: Details about the item that failed to write
     """
-    pass
+
+    def __init__(
+        self,
+        message: str,
+        layer: Optional[str] = None,
+        item_details: Optional[dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> None:
+        context = kwargs.pop("context", {}) or {}
+        if item_details:
+            context["item_details"] = item_details
+        super().__init__(message, layer=layer, context=context, **kwargs)
+        self.item_details = item_details
 
 
-class MemoryRetrievalError(MemoryError):
+class SigilMemoryRetrievalError(SigilMemoryError):
     """Raised when retrieving from memory fails.
 
-    TODO: Add query details
+    Attributes:
+        query_details: Details about the query that failed
     """
-    pass
+
+    def __init__(
+        self,
+        message: str,
+        layer: Optional[str] = None,
+        query_details: Optional[dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> None:
+        context = kwargs.pop("context", {}) or {}
+        if query_details:
+            context["query_details"] = query_details
+        super().__init__(message, layer=layer, context=context, **kwargs)
+        self.query_details = query_details
+
+
+# Aliases for backwards compatibility
+MemoryError = SigilMemoryError
+MemoryWriteError = SigilMemoryWriteError
+MemoryRetrievalError = SigilMemoryRetrievalError
 
 
 class ReasoningError(SigilError):
     """Base exception for reasoning and strategy errors.
 
-    TODO: Add strategy context
+    Attributes:
+        strategy: The reasoning strategy that encountered the error
     """
 
     def __init__(self, message: str, strategy: Optional[str] = None, **kwargs: Any) -> None:
-        super().__init__(message, code="REASONING_ERROR", **kwargs)
+        context = kwargs.pop("context", {}) or {}
+        if strategy:
+            context["strategy"] = strategy
+        super().__init__(message, code="REASONING_ERROR", context=context, **kwargs)
         self.strategy = strategy
 
 
 class StrategyNotFoundError(ReasoningError):
     """Raised when a requested strategy is not available.
 
-    TODO: Add available strategies list
+    Attributes:
+        available_strategies: List of strategies that are available
     """
-    pass
+
+    def __init__(
+        self,
+        message: str,
+        strategy: Optional[str] = None,
+        available_strategies: Optional[list[str]] = None,
+        **kwargs: Any,
+    ) -> None:
+        context = kwargs.pop("context", {}) or {}
+        if available_strategies:
+            context["available_strategies"] = available_strategies
+        super().__init__(message, strategy=strategy, context=context, **kwargs)
+        self.available_strategies = available_strategies or []
 
 
 class PlanExecutionError(SigilError):
@@ -253,63 +398,167 @@ ContractViolation = ContractValidationError
 class ToolError(SigilError):
     """Base exception for tool execution errors.
 
-    TODO: Add tool identification and parameters
+    Attributes:
+        tool_name: Name of the tool that encountered the error
+        tool_parameters: Parameters passed to the tool
     """
 
-    def __init__(self, message: str, tool_name: Optional[str] = None, **kwargs: Any) -> None:
-        super().__init__(message, code="TOOL_ERROR", **kwargs)
+    def __init__(
+        self,
+        message: str,
+        tool_name: Optional[str] = None,
+        tool_parameters: Optional[dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> None:
+        context = kwargs.pop("context", {}) or {}
+        if tool_name:
+            context["tool_name"] = tool_name
+        if tool_parameters:
+            context["tool_parameters"] = tool_parameters
+        super().__init__(message, code="TOOL_ERROR", context=context, **kwargs)
         self.tool_name = tool_name
+        self.tool_parameters = tool_parameters
 
 
 class ToolNotFoundError(ToolError):
     """Raised when a requested tool is not available.
 
-    TODO: Add available tools list
+    Attributes:
+        available_tools: List of tools that are available
     """
-    pass
+
+    def __init__(
+        self,
+        message: str,
+        tool_name: Optional[str] = None,
+        available_tools: Optional[list[str]] = None,
+        **kwargs: Any,
+    ) -> None:
+        context = kwargs.pop("context", {}) or {}
+        if available_tools:
+            context["available_tools"] = available_tools
+        super().__init__(message, tool_name=tool_name, context=context, **kwargs)
+        self.available_tools = available_tools or []
 
 
 class ToolExecutionError(ToolError):
     """Raised when tool execution fails.
 
-    TODO: Add execution context and partial results
+    Attributes:
+        execution_context: Context information about the execution
+        partial_results: Any partial results obtained before failure
+    """
+
+    def __init__(
+        self,
+        message: str,
+        tool_name: Optional[str] = None,
+        execution_context: Optional[dict[str, Any]] = None,
+        partial_results: Optional[Any] = None,
+        **kwargs: Any,
+    ) -> None:
+        context = kwargs.pop("context", {}) or {}
+        if execution_context:
+            context["execution_context"] = execution_context
+        if partial_results is not None:
+            context["partial_results"] = partial_results
+        super().__init__(message, tool_name=tool_name, context=context, **kwargs)
+        self.execution_context = execution_context
+        self.partial_results = partial_results
+
+
+class ServiceConnectionError(ToolError):
+    """Raised when connection to an external service fails.
+
+    This includes web search services, APIs, etc.
     """
     pass
 
 
-class MCPConnectionError(ToolError):
-    """Raised when connection to MCP server fails.
-
-    TODO: Add server details and connection parameters
-    """
-    pass
+# Backward compatibility alias
+MCPConnectionError = ServiceConnectionError
 
 
 class EvolutionError(SigilError):
     """Base exception for self-evolution errors.
 
-    TODO: Add evolution context and metrics
+    Attributes:
+        optimization_step: The step number in the optimization process
+        evolution_context: Context information about the evolution process
+        metrics: Metrics collected during evolution
     """
 
-    def __init__(self, message: str, optimization_step: Optional[int] = None, **kwargs: Any) -> None:
-        super().__init__(message, code="EVOLUTION_ERROR", **kwargs)
+    def __init__(
+        self,
+        message: str,
+        optimization_step: Optional[int] = None,
+        evolution_context: Optional[dict[str, Any]] = None,
+        metrics: Optional[dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> None:
+        context = kwargs.pop("context", {}) or {}
+        if optimization_step is not None:
+            context["optimization_step"] = optimization_step
+        if evolution_context:
+            context["evolution_context"] = evolution_context
+        if metrics:
+            context["metrics"] = metrics
+        super().__init__(message, code="EVOLUTION_ERROR", context=context, **kwargs)
         self.optimization_step = optimization_step
+        self.evolution_context = evolution_context
+        self.metrics = metrics
 
 
 class OptimizationError(EvolutionError):
     """Raised when TextGrad optimization fails.
 
-    TODO: Add gradient information and loss values
+    Attributes:
+        gradient_info: Information about the gradients computed
+        loss_values: Loss values at the time of failure
     """
-    pass
+
+    def __init__(
+        self,
+        message: str,
+        optimization_step: Optional[int] = None,
+        gradient_info: Optional[dict[str, Any]] = None,
+        loss_values: Optional[list[float]] = None,
+        **kwargs: Any,
+    ) -> None:
+        context = kwargs.pop("context", {}) or {}
+        if gradient_info:
+            context["gradient_info"] = gradient_info
+        if loss_values:
+            context["loss_values"] = loss_values
+        super().__init__(message, optimization_step=optimization_step, context=context, **kwargs)
+        self.gradient_info = gradient_info
+        self.loss_values = loss_values
 
 
 class PromptMutationError(EvolutionError):
     """Raised when prompt evolution fails.
 
-    TODO: Add mutation details and original prompt
+    Attributes:
+        mutation_details: Details about the attempted mutation
+        original_prompt: The original prompt before mutation
     """
-    pass
+
+    def __init__(
+        self,
+        message: str,
+        optimization_step: Optional[int] = None,
+        mutation_details: Optional[dict[str, Any]] = None,
+        original_prompt: Optional[str] = None,
+        **kwargs: Any,
+    ) -> None:
+        context = kwargs.pop("context", {}) or {}
+        if mutation_details:
+            context["mutation_details"] = mutation_details
+        if original_prompt:
+            context["original_prompt"] = original_prompt
+        super().__init__(message, optimization_step=optimization_step, context=context, **kwargs)
+        self.mutation_details = mutation_details
+        self.original_prompt = original_prompt
 
 
 # =============================================================================

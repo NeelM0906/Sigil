@@ -40,7 +40,11 @@ from sigil.core.exceptions import (
     AgentInitializationError,
     AgentExecutionError,
     AgentTimeoutError,
-    # Memory errors
+    # Memory errors (new names)
+    SigilMemoryError,
+    SigilMemoryWriteError,
+    SigilMemoryRetrievalError,
+    # Memory errors (backwards compatibility aliases)
     MemoryError,
     MemoryWriteError,
     MemoryRetrievalError,
@@ -59,7 +63,8 @@ from sigil.core.exceptions import (
     ToolError,
     ToolNotFoundError,
     ToolExecutionError,
-    MCPConnectionError,
+    ServiceConnectionError,
+    MCPConnectionError,  # Backward compatibility alias
     # Evolution errors
     EvolutionError,
     OptimizationError,
@@ -89,7 +94,11 @@ __all__ = [
     "AgentInitializationError",
     "AgentExecutionError",
     "AgentTimeoutError",
-    # Memory errors
+    # Memory errors (new names)
+    "SigilMemoryError",
+    "SigilMemoryWriteError",
+    "SigilMemoryRetrievalError",
+    # Memory errors (backwards compatibility aliases)
     "MemoryError",
     "MemoryWriteError",
     "MemoryRetrievalError",
@@ -108,7 +117,8 @@ __all__ = [
     "ToolError",
     "ToolNotFoundError",
     "ToolExecutionError",
-    "MCPConnectionError",
+    "ServiceConnectionError",
+    "MCPConnectionError",  # Backward compatibility alias
     # Evolution errors
     "EvolutionError",
     "OptimizationError",

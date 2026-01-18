@@ -1,19 +1,18 @@
 """Tools module for Sigil v2 framework.
 
 This module implements tool integration and execution:
-- MCP (Model Context Protocol) integrations
-- Built-in tool implementations
+- Web search via Tavily API
+- Built-in memory and planning tools
 - Tool registry and discovery
 - Tool execution sandboxing
 
 Key Components:
+    - TavilyExecutor: Executes web search via Tavily
+    - BuiltinToolExecutor: Executes memory and planning tools
     - ToolRegistry: Registry of available tools
-    - ToolExecutor: Executes tools with sandboxing
-    - ToolAdapter: Adapts external tools
-    - ToolSchema: Tool definition schemas
 
 TODO: Export ToolRegistry once implemented
 TODO: Export tool execution utilities once implemented
 """
 
-__all__ = []  # Will export: ToolRegistry, ToolExecutor, ToolAdapter
+__all__ = []  # Will export: TavilyExecutor, BuiltinToolExecutor, ToolRegistry

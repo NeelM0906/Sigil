@@ -8,7 +8,7 @@ Settings Categories:
     - Core: Framework-level settings (debug mode, log level, etc.)
     - LLM: Language model provider settings (model, temperature, max tokens)
     - Memory: Memory system configuration (paths, embedding model)
-    - MCP: Model Context Protocol server settings
+    - External Tools: External tool settings (Tavily, etc.)
     - Paths: Directory paths for agents, memory, and output
     - Feature Flags: Toggle for v2 subsystems (memory, planning, contracts, etc.)
     - API Keys: External service credentials
@@ -142,24 +142,19 @@ class MemorySettings(BaseModel):
     )
 
 
-class MCPSettings(BaseModel):
-    """Settings for Model Context Protocol (MCP) server integrations.
+class ExternalToolSettings(BaseModel):
+    """Settings for external tool integrations (e.g., Tavily web search).
 
     Attributes:
-        servers: List of MCP server configurations.
-        timeout: Default timeout for MCP calls in seconds.
+        timeout: Default timeout for external tool calls in seconds.
         max_retries: Maximum retry attempts for failed calls.
         retry_delay: Delay between retries in seconds.
     """
 
-    servers: list[dict[str, Any]] = Field(
-        default_factory=list,
-        description="List of MCP server configurations"
-    )
     timeout: int = Field(
         default=30,
         ge=1,
-        description="Default timeout for MCP calls"
+        description="Default timeout for external tool calls"
     )
     max_retries: int = Field(
         default=3,
@@ -171,6 +166,10 @@ class MCPSettings(BaseModel):
         ge=0.0,
         description="Delay between retries in seconds"
     )
+
+
+# Backward compatibility alias
+MCPSettings = ExternalToolSettings
 
 
 class PathSettings(BaseModel):
@@ -457,7 +456,7 @@ class SigilSettings(BaseSettings):
         use_routing: Enable intent-based request routing.
         llm: Language model configuration.
         memory: Memory system configuration.
-        mcp: MCP server configuration.
+        external_tools: External tool configuration (Tavily, etc.).
         paths: Directory path configuration.
         telemetry: Observability configuration.
         evolution: Self-improvement configuration.
@@ -487,25 +486,25 @@ class SigilSettings(BaseSettings):
         description="Deployment environment"
     )
 
-    # Feature flags (all disabled by default for gradual adoption)
+    # Feature flags (enabled by default, except experimental features)
     use_memory: bool = Field(
-        default=False,
+        default=True,
         description="Enable 3-layer memory system"
     )
     use_planning: bool = Field(
-        default=False,
+        default=True,
         description="Enable task decomposition"
     )
     use_contracts: bool = Field(
-        default=False,
+        default=True,
         description="Enable output verification"
     )
     use_evolution: bool = Field(
         default=False,
-        description="Enable self-improvement"
+        description="Enable self-improvement (experimental)"
     )
     use_routing: bool = Field(
-        default=False,
+        default=True,
         description="Enable intent-based routing"
     )
 
@@ -518,9 +517,14 @@ class SigilSettings(BaseSettings):
         default_factory=MemorySettings,
         description="Memory system configuration"
     )
-    mcp: MCPSettings = Field(
-        default_factory=MCPSettings,
-        description="MCP configuration"
+    external_tools: ExternalToolSettings = Field(
+        default_factory=ExternalToolSettings,
+        description="External tool configuration (Tavily, etc.)"
+    )
+    # Backward compatibility alias
+    mcp: ExternalToolSettings = Field(
+        default_factory=ExternalToolSettings,
+        description="Deprecated: Use external_tools instead"
     )
     paths: PathSettings = Field(
         default_factory=PathSettings,
@@ -722,7 +726,8 @@ __all__ = [
     # Nested settings classes
     "LLMSettings",
     "MemorySettings",
-    "MCPSettings",
+    "ExternalToolSettings",
+    "MCPSettings",  # Backward compatibility alias
     "PathSettings",
     "TelemetrySettings",
     "EvolutionSettings",

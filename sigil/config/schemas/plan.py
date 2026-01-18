@@ -14,7 +14,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -136,6 +136,10 @@ class PlanStep(BaseModel):
     tool_calls: Optional[list[str]] = Field(
         default=None,
         description="Optional list of tools this step may use",
+    )
+    tool_args: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Arguments for the tool (if step uses tools)",
     )
     result: Optional[str] = Field(
         default=None,

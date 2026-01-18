@@ -836,7 +836,7 @@ class SigilOrchestrator:
         """Step 5: Execute plan steps with tools or fall back to reasoning.
 
         This method executes plans using the ToolStepExecutor which routes:
-        - TOOL_CALL steps to MCP or builtin tool executors
+        - TOOL_CALL steps to Tavily (websearch) or builtin tool executors
         - REASONING steps to the reasoning manager for response generation
 
         If no plan exists or tool execution fails, falls back to direct
@@ -864,8 +864,7 @@ class SigilOrchestrator:
                     planner=self._planner,
                     reasoning_manager=self._reasoning_manager,
                     allow_reasoning_fallback=False,  # Pure Approach 1 - no fallback per step
-                    mcp_connection_timeout=5.0,  # Quick timeout: fail fast if server is down
-                    mcp_tool_execution_timeout=30.0,  # Allow 30s for tool execution (accounts for API latency)
+                    tool_execution_timeout=30.0,  # Allow 30s for tool execution (accounts for API latency)
                 )
 
                 # Create executor with custom step executor

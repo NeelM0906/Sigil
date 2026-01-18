@@ -42,7 +42,7 @@ from sigil.reasoning.strategies.utils import build_tool_aware_context_string
 DIRECT_MIN_COMPLEXITY = 0.0
 DIRECT_MAX_COMPLEXITY = 0.3
 DIRECT_MIN_TOKENS = 100
-DIRECT_MAX_TOKENS = 300
+DIRECT_MAX_TOKENS = 1024
 
 
 # =============================================================================

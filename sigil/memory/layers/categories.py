@@ -37,7 +37,7 @@ import threading
 import portalocker
 
 from sigil.config.schemas.memory import MemoryCategory, generate_uuid, utc_now
-from sigil.core.exceptions import MemoryError, MemoryWriteError, MemoryRetrievalError
+from sigil.core.exceptions import SigilMemoryError, SigilMemoryWriteError, SigilMemoryRetrievalError
 
 
 # =============================================================================
@@ -234,7 +234,7 @@ class CategoryLayer:
             ) as f:
                 f.write(content)
         except Exception as e:
-            raise MemoryWriteError(
+            raise SigilMemoryWriteError(
                 f"Failed to save category {category.name}: {e}",
                 layer="categories",
             )

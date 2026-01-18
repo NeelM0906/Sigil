@@ -36,7 +36,7 @@ import numpy as np
 import portalocker
 
 from sigil.config.schemas.memory import MemoryItem, generate_uuid, utc_now
-from sigil.core.exceptions import MemoryError, MemoryWriteError, MemoryRetrievalError
+from sigil.core.exceptions import SigilMemoryError, SigilMemoryWriteError, SigilMemoryRetrievalError
 
 
 # =============================================================================
@@ -714,7 +714,7 @@ class ItemLayer:
                 json.dump(data, f, indent=2)
 
         except Exception as e:
-            raise MemoryWriteError(f"Failed to save items: {e}", layer="items")
+            raise SigilMemoryWriteError(f"Failed to save items: {e}", layer="items")
 
     def _serialize_item(self, item: MemoryItem) -> dict[str, Any]:
         """Serialize a MemoryItem to a dictionary."""

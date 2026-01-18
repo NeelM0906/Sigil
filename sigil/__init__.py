@@ -1,7 +1,8 @@
 """Sigil v2 - Self-improving agent framework.
 
 A framework for creating executable AI agents with:
-- Real tool capabilities via MCP integrations
+- Web search capabilities via Tavily API
+- Built-in memory and planning tools
 - Persistent memory with 3-layer architecture
 - Hierarchical reasoning with strategy selection
 - Contract-based verification for guaranteed outputs

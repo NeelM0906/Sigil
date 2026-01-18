@@ -35,7 +35,7 @@ from typing import Any, Iterator, Optional
 import portalocker
 
 from sigil.config.schemas.memory import Resource, generate_uuid, utc_now
-from sigil.core.exceptions import MemoryError, MemoryWriteError, MemoryRetrievalError
+from sigil.core.exceptions import SigilMemoryError, SigilMemoryWriteError, SigilMemoryRetrievalError
 
 
 # =============================================================================
@@ -373,12 +373,12 @@ class ResourceLayer:
             ) as f:
                 json.dump(self._serialize_resource(resource), f, indent=2)
         except portalocker.LockException as e:
-            raise MemoryWriteError(
+            raise SigilMemoryWriteError(
                 f"Failed to acquire lock for resource {resource.resource_id}: {e}",
                 layer="resources",
             )
         except Exception as e:
-            raise MemoryWriteError(
+            raise SigilMemoryWriteError(
                 f"Failed to store resource {resource.resource_id}: {e}",
                 layer="resources",
             )
@@ -429,17 +429,17 @@ class ResourceLayer:
                         data = json.load(f)
                     return self._deserialize_resource(data)
                 except json.JSONDecodeError as e:
-                    raise MemoryRetrievalError(
+                    raise SigilMemoryRetrievalError(
                         f"Corrupted resource file for {resource_id}: {e}",
                         layer="resources",
                     )
                 except portalocker.LockException as e:
-                    raise MemoryRetrievalError(
+                    raise SigilMemoryRetrievalError(
                         f"Failed to acquire lock for resource {resource_id}: {e}",
                         layer="resources",
                     )
                 except Exception as e:
-                    raise MemoryRetrievalError(
+                    raise SigilMemoryRetrievalError(
                         f"Failed to read resource {resource_id}: {e}",
                         layer="resources",
                     )
@@ -469,7 +469,7 @@ class ResourceLayer:
                 data = json.load(f)
             return self._deserialize_resource(data)
         except Exception as e:
-            raise MemoryRetrievalError(
+            raise SigilMemoryRetrievalError(
                 f"Failed to read resource {resource_id}: {e}",
                 layer="resources",
             )
@@ -654,7 +654,7 @@ class ResourceLayer:
                     file_path.unlink()
                     return True
                 except Exception as e:
-                    raise MemoryWriteError(
+                    raise SigilMemoryWriteError(
                         f"Failed to delete resource {resource_id}: {e}",
                         layer="resources",
                     )

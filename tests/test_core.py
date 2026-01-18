@@ -31,6 +31,9 @@ from sigil.core import (
     AgentInitializationError,
     AgentExecutionError,
     AgentTimeoutError,
+    SigilMemoryError,
+    SigilMemoryWriteError,
+    SigilMemoryRetrievalError,
     MemoryError,
     MemoryWriteError,
     MemoryRetrievalError,
@@ -303,7 +306,7 @@ class TestExceptionHierarchy:
         """Test that SigilError is the base for all Sigil exceptions."""
         assert issubclass(ConfigurationError, SigilError)
         assert issubclass(AgentError, SigilError)
-        assert issubclass(MemoryError, SigilError)
+        assert issubclass(SigilMemoryError, SigilError)
         assert issubclass(ReasoningError, SigilError)
         assert issubclass(PlanExecutionError, SigilError)
         assert issubclass(RoutingError, SigilError)
@@ -319,7 +322,10 @@ class TestExceptionHierarchy:
         assert issubclass(AgentTimeoutError, AgentError)
 
     def test_memory_error_subtypes(self):
-        """Test MemoryError subtypes."""
+        """Test SigilMemoryError subtypes."""
+        assert issubclass(SigilMemoryWriteError, SigilMemoryError)
+        assert issubclass(SigilMemoryRetrievalError, SigilMemoryError)
+        # Backwards compatibility aliases
         assert issubclass(MemoryWriteError, MemoryError)
         assert issubclass(MemoryRetrievalError, MemoryError)
 
@@ -396,8 +402,8 @@ class TestSpecificExceptions:
         assert error.code == "AGENT_ERROR"
 
     def test_memory_error(self):
-        """Test MemoryError."""
-        error = MemoryError("Memory failed", layer="items")
+        """Test SigilMemoryError."""
+        error = SigilMemoryError("Memory failed", layer="items")
         assert error.layer == "items"
         assert error.code == "MEMORY_ERROR"
 
