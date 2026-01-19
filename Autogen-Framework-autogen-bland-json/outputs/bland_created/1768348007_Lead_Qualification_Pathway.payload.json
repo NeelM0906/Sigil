@@ -1,0 +1,60 @@
+{
+  "name": "Lead Qualification Pathway",
+  "description": "Pathway to qualify leads and route hot leads for transfer.",
+  "nodes": [
+    {
+      "id": "node1",
+      "type": "Default",
+      "data": {
+        "isStart": true,
+        "message": "Hello! Let's qualify your lead. Can you provide your name and email?"
+      }
+    },
+    {
+      "id": "node2",
+      "type": "Webhook",
+      "data": {
+        "url": "https://n8n.unblindedteam.com/webhook/bland/lead-intake",
+        "method": "POST",
+        "isStart": false
+      }
+    },
+    {
+      "id": "node3",
+      "type": "Transfer Node",
+      "data": {
+        "message": "Great! You're a hot lead. Transferring you now.",
+        "isStart": false
+      }
+    },
+    {
+      "id": "node4",
+      "type": "End Call",
+      "data": {
+        "message": "Thank you for your time. Unfortunately, we cannot proceed.",
+        "isStart": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "node1",
+      "target": "node2",
+      "label": "continue"
+    },
+    {
+      "source": "node2",
+      "target": "node3",
+      "label": "hot"
+    },
+    {
+      "source": "node2",
+      "target": "node4",
+      "label": "cold"
+    }
+  ],
+  "selected_workflow_id": null,
+  "selected_workflow_name": null,
+  "router_reasoning": null,
+  "matched_signals": []
+}

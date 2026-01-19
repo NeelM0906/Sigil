@@ -1,0 +1,34 @@
+{
+  "session_id": "wk-test-e26c8c1e",
+  "created_at": "2026-01-16T02:13:05.913289+00:00",
+  "updated_at": "2026-01-16T02:13:05.939614+00:00",
+  "events": [
+    {
+      "event_id": "0a8eb91b-a866-4ddb-a81e-239e3a59515d",
+      "event_type": "message.added",
+      "timestamp": "2026-01-16T02:13:05.911972+00:00",
+      "session_id": "wk-test-e26c8c1e",
+      "correlation_id": "a82aa1dd-7c6a-47cc-802c-3dee92ca43ed",
+      "payload": {
+        "request_id": "54d9f6f4-f73d-4174-ba0c-35e4e69c0351",
+        "message_preview": "What's a good cold call opening script?",
+        "started_at": "2026-01-16T02:13:05.911972+00:00"
+      }
+    },
+    {
+      "event_id": "5e82831f-99f7-4112-9f22-8131cd5959a0",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-16T02:13:05.939614+00:00",
+      "session_id": "wk-test-e26c8c1e",
+      "correlation_id": "a82aa1dd-7c6a-47cc-802c-3dee92ca43ed",
+      "payload": {
+        "request_id": "54d9f6f4-f73d-4174-ba0c-35e4e69c0351",
+        "status": "failed",
+        "tokens_used": 0,
+        "execution_time_ms": 26.711500016972423,
+        "error_count": 1,
+        "completed_at": "2026-01-16T02:13:05.939614+00:00"
+      }
+    }
+  ]
+}

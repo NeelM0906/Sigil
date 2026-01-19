@@ -1,0 +1,2155 @@
+openapi: 3.1.0
+info:
+  title: Sigil v2 Monitoring API
+  description: |
+    Real-time monitoring and logging API for Sigil v2 CLI execution visibility.
+
+    This API provides comprehensive observability into Sigil v2 operations including:
+    - Historical log retrieval with filtering and pagination
+    - Real-time log streaming via WebSocket
+    - Token usage metrics and budget tracking
+    - Dashboard data for monitoring interfaces
+
+    ## Authentication
+
+    All endpoints require Bearer token authentication:
+    ```
+    Authorization: Bearer <token>
+    ```
+
+    ## Rate Limiting
+
+    Rate limits are applied per-client:
+    - Standard endpoints: 100 requests/minute
+    - Streaming endpoints: 10 concurrent connections
+    - Metrics endpoints: 300 requests/minute (polling support)
+
+    Rate limit headers are included in all responses:
+    - `X-RateLimit-Limit`: Maximum requests allowed
+    - `X-RateLimit-Remaining`: Remaining requests in window
+    - `X-RateLimit-Reset`: Unix timestamp when limit resets
+
+    ## WebSocket Protocol
+
+    The `/logs/stream` endpoint uses WebSocket for real-time log streaming.
+    See the WebSocket section for protocol details.
+
+    ## Error Handling
+
+    All errors follow RFC 9457 Problem Details format.
+
+  version: 1.0.0
+  contact:
+    name: Sigil Monitoring Team
+    email: monitoring@sigil.acti.ai
+  license:
+    name: Proprietary
+    url: https://sigil.acti.ai/license
+
+servers:
+  - url: https://api.sigil.acti.ai/monitoring/v1
+    description: Production server
+  - url: https://staging-api.sigil.acti.ai/monitoring/v1
+    description: Staging server
+  - url: http://localhost:8000/monitoring/v1
+    description: Local development
+
+tags:
+  - name: Logs
+    description: Log retrieval and filtering operations
+  - name: Metrics
+    description: Token usage and performance metrics
+  - name: Dashboard
+    description: Real-time dashboard data
+  - name: System
+    description: System health and status
+
+paths:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Log Endpoints
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  /logs:
+    get:
+      operationId: getLogs
+      summary: Retrieve historical logs
+      description: |
+        Returns a paginated list of execution log entries matching the specified filters.
+
+        Logs are returned in descending chronological order by default.
+
+        ## Filtering
+
+        Multiple filters can be combined with AND logic. For complex queries,
+        use the POST /logs/filter endpoint instead.
+
+        ## Performance Notes
+
+        - Large date ranges may be slow; prefer shorter time windows
+        - Use `limit` and `offset` for pagination
+        - Consider using `session_id` to scope queries
+      tags:
+        - Logs
+      parameters:
+        - $ref: '#/components/parameters/SessionIdQuery'
+        - $ref: '#/components/parameters/CorrelationIdQuery'
+        - $ref: '#/components/parameters/ComponentsQuery'
+        - $ref: '#/components/parameters/LevelsQuery'
+        - $ref: '#/components/parameters/StartTimeQuery'
+        - $ref: '#/components/parameters/EndTimeQuery'
+        - $ref: '#/components/parameters/MinTokensQuery'
+        - $ref: '#/components/parameters/MaxTokensQuery'
+        - $ref: '#/components/parameters/HasErrorQuery'
+        - $ref: '#/components/parameters/SearchTextQuery'
+        - $ref: '#/components/parameters/SortByQuery'
+        - $ref: '#/components/parameters/SortOrderQuery'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/OffsetQuery'
+      responses:
+        '200':
+          description: Log entries retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogsResponse'
+              examples:
+                success:
+                  summary: Successful retrieval
+                  value:
+                    logs:
+                      - id: "log_001"
+                        timestamp: "2026-01-11T14:30:00.000Z"
+                        level: "info"
+                        component: "orchestrator"
+                        operation: "start_execution"
+                        message: "Starting agent execution: lead_qualifier"
+                        session_id: "sess_abc123"
+                        correlation_id: "corr_xyz789"
+                        operation_id: "op_001"
+                        tokens_used:
+                          input_tokens: 0
+                          output_tokens: 0
+                          total_tokens: 0
+                        metadata:
+                          agent_name: "lead_qualifier"
+                          execution_mode: "sync"
+                    pagination:
+                      total: 150
+                      limit: 100
+                      offset: 0
+                      has_more: true
+          headers:
+            X-Total-Count:
+              description: Total number of matching logs
+              schema:
+                type: integer
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /logs/{log_id}:
+    parameters:
+      - $ref: '#/components/parameters/LogIdPath'
+
+    get:
+      operationId: getLogById
+      summary: Get a single log entry
+      description: |
+        Retrieves a single log entry by its unique identifier.
+
+        Useful for fetching full details of a log referenced in summaries
+        or error reports.
+      tags:
+        - Logs
+      responses:
+        '200':
+          description: Log entry retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionLogEntry'
+              examples:
+                full_entry:
+                  summary: Full log entry with all fields
+                  value:
+                    id: "log_001"
+                    timestamp: "2026-01-11T14:30:00.000Z"
+                    level: "info"
+                    component: "reasoning"
+                    operation: "tree_of_thoughts"
+                    message: "Reasoning completed: explored 4 branches, confidence 0.86"
+                    session_id: "sess_abc123"
+                    correlation_id: "corr_xyz789"
+                    operation_id: "op_004"
+                    parent_operation_id: "op_001"
+                    duration_ms: 3200.0
+                    tokens_used:
+                      input_tokens: 8500
+                      output_tokens: 2800
+                      total_tokens: 11300
+                      model: "anthropic:claude-opus-4-5-20251101"
+                    metadata:
+                      strategy: "tree_of_thoughts"
+                      complexity: 0.72
+                      confidence: 0.86
+                      branches_explored: 4
+                      depth_reached: 3
+                    budget_snapshot:
+                      total_budget: 256000
+                      used: 15400
+                      remaining: 240600
+                      percentage_used: 6.02
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /logs/filter:
+    post:
+      operationId: filterLogs
+      summary: Query logs with advanced filters
+      description: |
+        Performs advanced log queries using a structured filter object.
+
+        Supports:
+        - Multiple component/level filtering
+        - Metadata field queries with operators ($eq, $gt, $lt, etc.)
+        - Full-text search in messages
+        - Complex time range filtering
+
+        ## Operators for Metadata Queries
+
+        | Operator | Description | Example |
+        |----------|-------------|---------|
+        | `$eq` | Equals | `{"strategy": {"$eq": "tree_of_thoughts"}}` |
+        | `$ne` | Not equals | `{"retry_number": {"$ne": 0}}` |
+        | `$gt` | Greater than | `{"confidence": {"$gt": 0.8}}` |
+        | `$gte` | Greater than or equal | `{"tokens_used": {"$gte": 1000}}` |
+        | `$lt` | Less than | `{"duration_ms": {"$lt": 5000}}` |
+        | `$lte` | Less than or equal | `{"retry_number": {"$lte": 2}}` |
+        | `$in` | In array | `{"component": {"$in": ["reasoning", "memory"]}}` |
+        | `$nin` | Not in array | `{"level": {"$nin": ["trace", "debug"]}}` |
+        | `$exists` | Field exists | `{"error_info": {"$exists": true}}` |
+        | `$regex` | Regex match | `{"message": {"$regex": ".*failed.*"}}` |
+      tags:
+        - Logs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogFilter'
+            examples:
+              high_token_operations:
+                summary: Find high-token operations
+                value:
+                  min_tokens: 5000
+                  sort_by: "tokens_used"
+                  sort_order: "desc"
+                  limit: 20
+              reasoning_errors:
+                summary: Find errors in reasoning component
+                value:
+                  components: ["reasoning"]
+                  has_error: true
+                  start_time: "2026-01-11T00:00:00Z"
+                  end_time: "2026-01-11T23:59:59Z"
+              contract_failures:
+                summary: Find contract validation failures
+                value:
+                  components: ["contracts"]
+                  operations: ["validate_output"]
+                  metadata_query:
+                    validation_passed:
+                      $eq: false
+              slow_tools:
+                summary: Find slow tool executions
+                value:
+                  components: ["tools"]
+                  metadata_query:
+                    execution_time_ms:
+                      $gt: 2000
+                  sort_by: "duration_ms"
+                  sort_order: "desc"
+      responses:
+        '200':
+          description: Filtered logs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogsResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /logs/stream:
+    get:
+      operationId: streamLogs
+      summary: Stream logs in real-time (WebSocket)
+      description: |
+        Establishes a WebSocket connection for real-time log streaming.
+
+        ## Connection Protocol
+
+        1. Connect with optional query parameters for initial filter
+        2. Receive initial heartbeat confirming connection
+        3. Send `StreamConfig` message to configure filtering and buffering
+        4. Receive log entries as they occur
+        5. Receive periodic heartbeats (every 5 seconds by default)
+
+        ## Message Types
+
+        ### Client -> Server
+
+        **StreamConfig**: Configure stream behavior
+        ```json
+        {
+          "type": "config",
+          "filter": { ... },
+          "buffer_size": 100,
+          "flush_interval_ms": 100,
+          "heartbeat_interval_ms": 5000
+        }
+        ```
+
+        **UpdateFilter**: Change active filter
+        ```json
+        {
+          "type": "update_filter",
+          "filter": { ... }
+        }
+        ```
+
+        **Pause**: Temporarily pause streaming
+        ```json
+        {
+          "type": "pause"
+        }
+        ```
+
+        **Resume**: Resume streaming
+        ```json
+        {
+          "type": "resume"
+        }
+        ```
+
+        ### Server -> Client
+
+        **Log Entry**: Single log entry
+        ```json
+        {
+          "type": "log",
+          "timestamp": "2026-01-11T14:30:00.000Z",
+          "entries": [{ ... }]
+        }
+        ```
+
+        **Buffer Flush**: Multiple buffered entries
+        ```json
+        {
+          "type": "buffer_flush",
+          "timestamp": "2026-01-11T14:30:00.000Z",
+          "entries": [{ ... }, { ... }]
+        }
+        ```
+
+        **Heartbeat**: Connection alive indicator
+        ```json
+        {
+          "type": "heartbeat",
+          "timestamp": "2026-01-11T14:30:00.000Z",
+          "heartbeat": {
+            "session_id": "sess_abc123",
+            "is_alive": true,
+            "current_operation": "tree_of_thoughts",
+            "current_component": "reasoning",
+            "tokens_used": 15400,
+            "budget_remaining": 240600,
+            "logs_since_last_heartbeat": 15,
+            "uptime_seconds": 35.5
+          }
+        }
+        ```
+
+        **Error**: Stream error
+        ```json
+        {
+          "type": "error",
+          "timestamp": "2026-01-11T14:30:00.000Z",
+          "error": "Connection limit exceeded"
+        }
+        ```
+
+        ## Buffering Behavior
+
+        Logs are buffered and flushed when:
+        1. Buffer reaches capacity (`buffer_size`)
+        2. Time since last flush exceeds `flush_interval_ms`
+        3. ERROR or CRITICAL log entry received (immediate flush)
+
+        ## Connection Limits
+
+        - Maximum 10 concurrent connections per client
+        - Idle connections closed after 5 minutes without activity
+        - Maximum message size: 1MB
+      tags:
+        - Logs
+      parameters:
+        - name: session_id
+          in: query
+          description: Filter to specific session
+          schema:
+            type: string
+        - name: components
+          in: query
+          description: Filter to specific components
+          schema:
+            type: array
+            items:
+              type: string
+        - name: levels
+          in: query
+          description: Filter to specific log levels
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '101':
+          description: WebSocket connection established
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          description: Too many concurrent connections
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /logs/sessions:
+    get:
+      operationId: listLogSessions
+      summary: List all logging sessions
+      description: |
+        Returns a list of all sessions with log entries.
+
+        Useful for discovering available sessions before querying logs.
+      tags:
+        - Logs
+      parameters:
+        - $ref: '#/components/parameters/StartTimeQuery'
+        - $ref: '#/components/parameters/EndTimeQuery'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/OffsetQuery'
+      responses:
+        '200':
+          description: Sessions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionsListResponse'
+              example:
+                sessions:
+                  - session_id: "sess_abc123"
+                    started_at: "2026-01-11T14:30:00.000Z"
+                    ended_at: "2026-01-11T14:35:30.000Z"
+                    log_count: 45
+                    total_tokens: 24380
+                    status: "completed"
+                  - session_id: "sess_def456"
+                    started_at: "2026-01-11T15:00:00.000Z"
+                    ended_at: null
+                    log_count: 12
+                    total_tokens: 8500
+                    status: "active"
+                pagination:
+                  total: 2
+                  limit: 100
+                  offset: 0
+                  has_more: false
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /logs/sessions/{session_id}:
+    parameters:
+      - $ref: '#/components/parameters/SessionIdPath'
+
+    get:
+      operationId: getSessionLogs
+      summary: Get all logs for a session
+      description: |
+        Retrieves all log entries for a specific session.
+
+        Returns logs in chronological order for full execution trace.
+      tags:
+        - Logs
+      parameters:
+        - $ref: '#/components/parameters/ComponentsQuery'
+        - $ref: '#/components/parameters/LevelsQuery'
+      responses:
+        '200':
+          description: Session logs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionLogsResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /logs/export:
+    post:
+      operationId: exportLogs
+      summary: Export logs to file
+      description: |
+        Exports logs matching the filter to a downloadable file.
+
+        Supported formats:
+        - JSON Lines (`.jsonl`) - One JSON object per line
+        - CSV (`.csv`) - Flattened log entries
+        - Parquet (`.parquet`) - Columnar format for analytics
+
+        Large exports are processed asynchronously. The response includes
+        a download URL that becomes available when processing completes.
+      tags:
+        - Logs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
+            example:
+              filter:
+                session_id: "sess_abc123"
+              format: "jsonl"
+              include_metadata: true
+      responses:
+        '202':
+          description: Export job created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportResponse'
+              example:
+                export_id: "export_xyz789"
+                status: "processing"
+                estimated_completion: "2026-01-11T14:35:00.000Z"
+                download_url: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /logs/export/{export_id}:
+    parameters:
+      - name: export_id
+        in: path
+        required: true
+        schema:
+          type: string
+
+    get:
+      operationId: getExportStatus
+      summary: Check export status
+      description: |
+        Checks the status of an export job and retrieves the download URL
+        when complete.
+      tags:
+        - Logs
+      responses:
+        '200':
+          description: Export status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportResponse'
+              examples:
+                processing:
+                  summary: Export in progress
+                  value:
+                    export_id: "export_xyz789"
+                    status: "processing"
+                    progress_percent: 45
+                    estimated_completion: "2026-01-11T14:35:00.000Z"
+                    download_url: null
+                completed:
+                  summary: Export completed
+                  value:
+                    export_id: "export_xyz789"
+                    status: "completed"
+                    progress_percent: 100
+                    completed_at: "2026-01-11T14:34:30.000Z"
+                    download_url: "https://storage.sigil.acti.ai/exports/export_xyz789.jsonl"
+                    file_size_bytes: 1048576
+                    log_count: 5000
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Metrics Endpoints
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  /metrics/tokens:
+    get:
+      operationId: getTokenMetrics
+      summary: Get current token usage metrics
+      description: |
+        Returns current token usage statistics.
+
+        Can be scoped to a specific session or aggregated across all sessions.
+      tags:
+        - Metrics
+      parameters:
+        - $ref: '#/components/parameters/SessionIdQuery'
+        - name: group_by
+          in: query
+          description: Group metrics by dimension
+          schema:
+            type: string
+            enum: [component, operation, model, hour, day]
+        - $ref: '#/components/parameters/StartTimeQuery'
+        - $ref: '#/components/parameters/EndTimeQuery'
+      responses:
+        '200':
+          description: Token metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenMetricsResponse'
+              examples:
+                current:
+                  summary: Current session metrics
+                  value:
+                    session_id: "sess_abc123"
+                    total_tokens: 24380
+                    input_tokens: 18050
+                    output_tokens: 6330
+                    call_count: 12
+                    by_component:
+                      orchestrator:
+                        total_tokens: 400
+                        call_count: 2
+                      router:
+                        total_tokens: 400
+                        call_count: 1
+                      planner:
+                        total_tokens: 3700
+                        call_count: 1
+                      reasoning:
+                        total_tokens: 17600
+                        call_count: 4
+                      memory:
+                        total_tokens: 1500
+                        call_count: 2
+                      contracts:
+                        total_tokens: 1180
+                        call_count: 2
+                    by_model:
+                      "anthropic:claude-opus-4-5-20251101":
+                        total_tokens: 24380
+                        call_count: 12
+                    averages:
+                      avg_input_tokens: 1504.17
+                      avg_output_tokens: 527.5
+                      avg_total_tokens: 2031.67
+                    time_range:
+                      first_call: "2026-01-11T14:30:00.000Z"
+                      last_call: "2026-01-11T14:35:30.000Z"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /metrics/budget:
+    get:
+      operationId: getBudgetStatus
+      summary: Get token budget status
+      description: |
+        Returns the current token budget status for a session.
+
+        Shows remaining budget, consumption by component, and warning thresholds.
+      tags:
+        - Metrics
+      parameters:
+        - name: session_id
+          in: query
+          required: true
+          description: Session to check budget for
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Budget status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetStatusResponse'
+              examples:
+                healthy:
+                  summary: Healthy budget status
+                  value:
+                    session_id: "sess_abc123"
+                    total_budget: 256000
+                    used: 24380
+                    remaining: 231620
+                    percentage_used: 9.52
+                    warning_threshold_reached: false
+                    critical_threshold_reached: false
+                    by_component:
+                      orchestrator: 400
+                      router: 400
+                      planner: 3700
+                      reasoning: 17600
+                      memory: 1500
+                      contracts: 1180
+                    projected_completion:
+                      can_complete: true
+                      estimated_additional_tokens: 45000
+                      confidence: 0.85
+                warning:
+                  summary: Warning threshold reached
+                  value:
+                    session_id: "sess_def456"
+                    total_budget: 256000
+                    used: 210000
+                    remaining: 46000
+                    percentage_used: 82.03
+                    warning_threshold_reached: true
+                    critical_threshold_reached: false
+                    by_component:
+                      reasoning: 180000
+                      memory: 20000
+                      planner: 8000
+                      contracts: 1500
+                      router: 300
+                      orchestrator: 200
+                    projected_completion:
+                      can_complete: false
+                      estimated_additional_tokens: 60000
+                      confidence: 0.70
+        '400':
+          description: Session ID required
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /metrics/budget/history:
+    get:
+      operationId: getBudgetHistory
+      summary: Get budget consumption history
+      description: |
+        Returns historical budget consumption for trend analysis.
+
+        Useful for visualizing budget burn rate over time.
+      tags:
+        - Metrics
+      parameters:
+        - name: session_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: granularity
+          in: query
+          description: Time granularity for data points
+          schema:
+            type: string
+            enum: [second, minute, operation]
+            default: minute
+      responses:
+        '200':
+          description: Budget history retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetHistoryResponse'
+              example:
+                session_id: "sess_abc123"
+                granularity: "minute"
+                data_points:
+                  - timestamp: "2026-01-11T14:30:00.000Z"
+                    used: 400
+                    remaining: 255600
+                    percentage_used: 0.16
+                  - timestamp: "2026-01-11T14:31:00.000Z"
+                    used: 4500
+                    remaining: 251500
+                    percentage_used: 1.76
+                  - timestamp: "2026-01-11T14:32:00.000Z"
+                    used: 15400
+                    remaining: 240600
+                    percentage_used: 6.02
+                  - timestamp: "2026-01-11T14:33:00.000Z"
+                    used: 17500
+                    remaining: 238500
+                    percentage_used: 6.84
+                  - timestamp: "2026-01-11T14:34:00.000Z"
+                    used: 23800
+                    remaining: 232200
+                    percentage_used: 9.30
+                  - timestamp: "2026-01-11T14:35:00.000Z"
+                    used: 24380
+                    remaining: 231620
+                    percentage_used: 9.52
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /metrics/performance:
+    get:
+      operationId: getPerformanceMetrics
+      summary: Get performance metrics
+      description: |
+        Returns performance metrics including latencies, throughput, and error rates.
+      tags:
+        - Metrics
+      parameters:
+        - $ref: '#/components/parameters/SessionIdQuery'
+        - $ref: '#/components/parameters/StartTimeQuery'
+        - $ref: '#/components/parameters/EndTimeQuery'
+      responses:
+        '200':
+          description: Performance metrics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerformanceMetricsResponse'
+              example:
+                session_id: "sess_abc123"
+                time_range:
+                  start: "2026-01-11T14:30:00.000Z"
+                  end: "2026-01-11T14:35:30.000Z"
+                latency:
+                  p50_ms: 850
+                  p90_ms: 2100
+                  p99_ms: 3500
+                  mean_ms: 1200
+                  max_ms: 3200
+                by_component:
+                  orchestrator:
+                    p50_ms: 50
+                    p90_ms: 80
+                    mean_ms: 60
+                  router:
+                    p50_ms: 120
+                    p90_ms: 150
+                    mean_ms: 125
+                  planner:
+                    p50_ms: 800
+                    p90_ms: 1000
+                    mean_ms: 850
+                  reasoning:
+                    p50_ms: 2500
+                    p90_ms: 3200
+                    mean_ms: 2700
+                  memory:
+                    p50_ms: 400
+                    p90_ms: 550
+                    mean_ms: 450
+                  contracts:
+                    p50_ms: 45
+                    p90_ms: 60
+                    mean_ms: 48
+                throughput:
+                  operations_per_minute: 2.18
+                  tokens_per_minute: 4442
+                error_rate:
+                  total_errors: 1
+                  error_percentage: 8.33
+                  by_type:
+                    ContractValidationError: 1
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Dashboard Endpoints
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  /dashboard/current:
+    get:
+      operationId: getDashboardCurrent
+      summary: Get current dashboard data
+      description: |
+        Returns a comprehensive snapshot of current system state for
+        dashboard rendering.
+
+        Designed for polling at 1-5 second intervals.
+      tags:
+        - Dashboard
+      parameters:
+        - name: session_id
+          in: query
+          description: Scope to specific session (optional)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dashboard data retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardData'
+              example:
+                timestamp: "2026-01-11T14:35:30.000Z"
+                active_sessions: 1
+                current_session:
+                  session_id: "sess_abc123"
+                  status: "active"
+                  current_operation: "validate_output"
+                  current_component: "contracts"
+                  started_at: "2026-01-11T14:30:00.000Z"
+                  duration_seconds: 330
+                budget:
+                  total_budget: 256000
+                  used: 24380
+                  remaining: 231620
+                  percentage_used: 9.52
+                  burn_rate_per_minute: 4442
+                  estimated_completion_tokens: 45000
+                  projected_final_usage: 69380
+                  within_budget: true
+                operations:
+                  total: 12
+                  completed: 10
+                  in_progress: 1
+                  failed: 1
+                  retried: 1
+                component_status:
+                  orchestrator: "idle"
+                  router: "completed"
+                  planner: "completed"
+                  reasoning: "completed"
+                  memory: "completed"
+                  contracts: "active"
+                  tools: "completed"
+                recent_logs:
+                  - id: "log_009"
+                    timestamp: "2026-01-11T14:35:28.000Z"
+                    level: "info"
+                    component: "contracts"
+                    operation: "validate_output"
+                    message: "Contract validation passed"
+                errors:
+                  - id: "log_007"
+                    timestamp: "2026-01-11T14:34:15.000Z"
+                    level: "warning"
+                    component: "contracts"
+                    operation: "validate_output"
+                    message: "Contract validation failed, will retry"
+                    error_type: "ContractValidationError"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /dashboard/stream:
+    get:
+      operationId: streamDashboard
+      summary: Stream dashboard updates (WebSocket)
+      description: |
+        Establishes a WebSocket connection for real-time dashboard updates.
+
+        Pushes incremental updates whenever significant state changes occur.
+
+        ## Update Types
+
+        - `budget_update`: Budget consumption changed
+        - `operation_update`: Operation started/completed/failed
+        - `status_update`: Component status changed
+        - `log_entry`: New log entry (errors only by default)
+        - `heartbeat`: Connection alive with full state snapshot
+      tags:
+        - Dashboard
+      responses:
+        '101':
+          description: WebSocket connection established
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # System Endpoints
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  /system/health:
+    get:
+      operationId: getSystemHealth
+      summary: Check system health
+      description: |
+        Returns the health status of the monitoring system and its dependencies.
+      tags:
+        - System
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: "healthy"
+                timestamp: "2026-01-11T14:35:30.000Z"
+                components:
+                  log_store: "healthy"
+                  metrics_store: "healthy"
+                  websocket_server: "healthy"
+                  export_processor: "healthy"
+                version: "1.0.0"
+                uptime_seconds: 86400
+        '503':
+          description: System is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: "unhealthy"
+                timestamp: "2026-01-11T14:35:30.000Z"
+                components:
+                  log_store: "healthy"
+                  metrics_store: "unhealthy"
+                  websocket_server: "healthy"
+                  export_processor: "degraded"
+                errors:
+                  - component: "metrics_store"
+                    error: "Connection timeout"
+
+  /system/config:
+    get:
+      operationId: getSystemConfig
+      summary: Get monitoring configuration
+      description: |
+        Returns the current monitoring system configuration.
+
+        Useful for understanding rate limits, retention policies, and available features.
+      tags:
+        - System
+      responses:
+        '200':
+          description: Configuration retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigResponse'
+              example:
+                log_retention_days: 30
+                max_export_size_mb: 100
+                rate_limits:
+                  standard: 100
+                  streaming: 10
+                  metrics: 300
+                features:
+                  real_time_streaming: true
+                  advanced_filtering: true
+                  export_to_parquet: true
+                budget:
+                  default_total: 256000
+                  warning_threshold: 0.80
+                  critical_threshold: 0.95
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Components
+# ─────────────────────────────────────────────────────────────────────────────
+
+components:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Security Schemes
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from authentication service
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Parameters
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  parameters:
+    LogIdPath:
+      name: log_id
+      in: path
+      required: true
+      description: Unique log entry identifier
+      schema:
+        type: string
+        format: uuid
+
+    SessionIdPath:
+      name: session_id
+      in: path
+      required: true
+      description: Session identifier
+      schema:
+        type: string
+
+    SessionIdQuery:
+      name: session_id
+      in: query
+      description: Filter by session identifier
+      schema:
+        type: string
+
+    CorrelationIdQuery:
+      name: correlation_id
+      in: query
+      description: Filter by correlation chain
+      schema:
+        type: string
+
+    ComponentsQuery:
+      name: components
+      in: query
+      description: Filter by component(s)
+      style: form
+      explode: false
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - orchestrator
+            - router
+            - planner
+            - reasoning
+            - memory
+            - contracts
+            - evolution
+            - context
+            - tools
+            - cli
+            - api
+            - system
+
+    LevelsQuery:
+      name: levels
+      in: query
+      description: Filter by log level(s)
+      style: form
+      explode: false
+      schema:
+        type: array
+        items:
+          type: string
+          enum: [trace, debug, info, warning, error, critical]
+
+    StartTimeQuery:
+      name: start_time
+      in: query
+      description: Filter logs after this time (ISO 8601)
+      schema:
+        type: string
+        format: date-time
+
+    EndTimeQuery:
+      name: end_time
+      in: query
+      description: Filter logs before this time (ISO 8601)
+      schema:
+        type: string
+        format: date-time
+
+    MinTokensQuery:
+      name: min_tokens
+      in: query
+      description: Filter logs with token usage >= this value
+      schema:
+        type: integer
+        minimum: 0
+
+    MaxTokensQuery:
+      name: max_tokens
+      in: query
+      description: Filter logs with token usage <= this value
+      schema:
+        type: integer
+        minimum: 0
+
+    HasErrorQuery:
+      name: has_error
+      in: query
+      description: Filter logs with/without errors
+      schema:
+        type: boolean
+
+    SearchTextQuery:
+      name: search
+      in: query
+      description: Full-text search in message field
+      schema:
+        type: string
+        maxLength: 256
+
+    SortByQuery:
+      name: sort_by
+      in: query
+      description: Field to sort by
+      schema:
+        type: string
+        enum: [timestamp, level, component, operation, tokens_used, duration_ms]
+        default: timestamp
+
+    SortOrderQuery:
+      name: sort_order
+      in: query
+      description: Sort direction
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: desc
+
+    LimitQuery:
+      name: limit
+      in: query
+      description: Maximum number of results
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 10000
+        default: 100
+
+    OffsetQuery:
+      name: offset
+      in: query
+      description: Number of results to skip
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Schemas
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  schemas:
+    # ─────────────────────────────────────────────────────────────────────────────
+    # Core Log Schemas
+    # ─────────────────────────────────────────────────────────────────────────────
+
+    ExecutionLogEntry:
+      type: object
+      description: A single log entry in the Sigil v2 logging system
+      required:
+        - id
+        - timestamp
+        - level
+        - component
+        - operation
+        - message
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for this log entry
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the event occurred (UTC)
+        level:
+          type: string
+          enum: [trace, debug, info, warning, error, critical]
+          description: Severity level of the log entry
+        component:
+          type: string
+          enum:
+            - orchestrator
+            - router
+            - planner
+            - reasoning
+            - memory
+            - contracts
+            - evolution
+            - context
+            - tools
+            - cli
+            - api
+            - system
+          description: Which component produced this log
+        operation:
+          type: string
+          minLength: 1
+          maxLength: 128
+          description: Name of the operation being performed
+        message:
+          type: string
+          minLength: 1
+          maxLength: 2048
+          description: Human-readable description of the event
+        session_id:
+          type: string
+          description: Session identifier for grouping related logs
+        correlation_id:
+          type: string
+          description: Links related events across components
+        operation_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the current operation
+        parent_operation_id:
+          type: string
+          format: uuid
+          description: Links to parent operation for nesting
+        duration_ms:
+          type: number
+          minimum: 0
+          description: Operation duration in milliseconds
+        tokens_used:
+          $ref: '#/components/schemas/TokenUsage'
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Component-specific structured data
+        error_info:
+          $ref: '#/components/schemas/ErrorInfo'
+        budget_snapshot:
+          $ref: '#/components/schemas/BudgetStatus'
+
+    TokenUsage:
+      type: object
+      description: Token consumption for a single operation
+      required:
+        - input_tokens
+        - output_tokens
+        - total_tokens
+      properties:
+        input_tokens:
+          type: integer
+          minimum: 0
+          description: Tokens in the prompt/input
+        output_tokens:
+          type: integer
+          minimum: 0
+          description: Tokens in the response/output
+        total_tokens:
+          type: integer
+          minimum: 0
+          description: Sum of input and output tokens
+        model:
+          type: string
+          description: Model identifier (e.g., 'anthropic:claude-opus-4-5-20251101')
+        cache_read_tokens:
+          type: integer
+          minimum: 0
+          description: Tokens read from prompt cache
+        cache_write_tokens:
+          type: integer
+          minimum: 0
+          description: Tokens written to prompt cache
+        reasoning_tokens:
+          type: integer
+          minimum: 0
+          description: Tokens used for chain-of-thought
+
+    ErrorInfo:
+      type: object
+      description: Structured error information
+      required:
+        - error_type
+        - error_message
+      properties:
+        error_type:
+          type: string
+          description: Exception class name or error category
+        error_message:
+          type: string
+          description: Human-readable error description
+        error_code:
+          type: string
+          description: Machine-readable error code
+        stack_trace:
+          type: string
+          description: Full stack trace (optional)
+        recoverable:
+          type: boolean
+          description: Whether the error can be recovered from
+        retry_after_ms:
+          type: integer
+          minimum: 0
+          description: Suggested retry delay in milliseconds
+        context:
+          type: object
+          additionalProperties: true
+          description: Additional context about the error
+
+    BudgetStatus:
+      type: object
+      description: Token budget status snapshot
+      required:
+        - total_budget
+        - used
+        - remaining
+        - percentage_used
+      properties:
+        total_budget:
+          type: integer
+          minimum: 0
+          description: Maximum tokens available
+        used:
+          type: integer
+          minimum: 0
+          description: Tokens consumed so far
+        remaining:
+          type: integer
+          minimum: 0
+          description: Tokens still available
+        percentage_used:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Consumption as a percentage
+        by_component:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Breakdown by component
+        warning_threshold_reached:
+          type: boolean
+          description: True if > 80% consumed
+        critical_threshold_reached:
+          type: boolean
+          description: True if > 95% consumed
+
+    LogFilter:
+      type: object
+      description: Filter specification for querying logs
+      properties:
+        session_id:
+          type: string
+          description: Filter by specific session
+        correlation_id:
+          type: string
+          description: Filter by correlation chain
+        operation_id:
+          type: string
+          format: uuid
+          description: Filter by specific operation
+        components:
+          type: array
+          items:
+            type: string
+            enum:
+              - orchestrator
+              - router
+              - planner
+              - reasoning
+              - memory
+              - contracts
+              - evolution
+              - context
+              - tools
+              - cli
+              - api
+              - system
+          description: Filter by component(s)
+        levels:
+          type: array
+          items:
+            type: string
+            enum: [trace, debug, info, warning, error, critical]
+          description: Filter by log level(s)
+        operations:
+          type: array
+          items:
+            type: string
+          description: Filter by operation name(s)
+        start_time:
+          type: string
+          format: date-time
+          description: Filter logs after this time
+        end_time:
+          type: string
+          format: date-time
+          description: Filter logs before this time
+        min_tokens:
+          type: integer
+          minimum: 0
+          description: Filter logs with token usage >= this value
+        max_tokens:
+          type: integer
+          minimum: 0
+          description: Filter logs with token usage <= this value
+        has_error:
+          type: boolean
+          description: Filter logs with/without errors
+        error_types:
+          type: array
+          items:
+            type: string
+          description: Filter by specific error types
+        metadata_query:
+          type: object
+          additionalProperties: true
+          description: Filter by metadata fields with operators
+        search_text:
+          type: string
+          description: Full-text search in message field
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 100
+          description: Maximum number of results
+        offset:
+          type: integer
+          minimum: 0
+          default: 0
+          description: Number of results to skip
+        sort_by:
+          type: string
+          enum: [timestamp, level, component, operation, tokens_used, duration_ms]
+          default: timestamp
+          description: Field to sort by
+        sort_order:
+          type: string
+          enum: [asc, desc]
+          default: desc
+          description: Sort direction
+
+    # ─────────────────────────────────────────────────────────────────────────────
+    # Response Schemas
+    # ─────────────────────────────────────────────────────────────────────────────
+
+    LogsResponse:
+      type: object
+      required:
+        - logs
+        - pagination
+      properties:
+        logs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExecutionLogEntry'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    SessionsListResponse:
+      type: object
+      required:
+        - sessions
+        - pagination
+      properties:
+        sessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionSummary'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    SessionSummary:
+      type: object
+      required:
+        - session_id
+        - started_at
+        - log_count
+        - total_tokens
+        - status
+      properties:
+        session_id:
+          type: string
+        started_at:
+          type: string
+          format: date-time
+        ended_at:
+          type: string
+          format: date-time
+          nullable: true
+        log_count:
+          type: integer
+        total_tokens:
+          type: integer
+        status:
+          type: string
+          enum: [active, completed, failed, aborted]
+
+    SessionLogsResponse:
+      type: object
+      required:
+        - session_id
+        - logs
+        - summary
+      properties:
+        session_id:
+          type: string
+        logs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExecutionLogEntry'
+        summary:
+          $ref: '#/components/schemas/SessionSummary'
+
+    Pagination:
+      type: object
+      required:
+        - total
+        - limit
+        - offset
+        - has_more
+      properties:
+        total:
+          type: integer
+          description: Total number of matching items
+        limit:
+          type: integer
+          description: Items per page
+        offset:
+          type: integer
+          description: Items skipped
+        has_more:
+          type: boolean
+          description: Whether more items exist
+
+    ExportRequest:
+      type: object
+      required:
+        - filter
+        - format
+      properties:
+        filter:
+          $ref: '#/components/schemas/LogFilter'
+        format:
+          type: string
+          enum: [jsonl, csv, parquet]
+          description: Export file format
+        include_metadata:
+          type: boolean
+          default: true
+          description: Include metadata field in export
+        compress:
+          type: boolean
+          default: false
+          description: Compress output with gzip
+
+    ExportResponse:
+      type: object
+      required:
+        - export_id
+        - status
+      properties:
+        export_id:
+          type: string
+        status:
+          type: string
+          enum: [processing, completed, failed]
+        progress_percent:
+          type: integer
+          minimum: 0
+          maximum: 100
+        estimated_completion:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+        download_url:
+          type: string
+          format: uri
+          nullable: true
+        file_size_bytes:
+          type: integer
+        log_count:
+          type: integer
+        error:
+          type: string
+
+    # ─────────────────────────────────────────────────────────────────────────────
+    # Metrics Schemas
+    # ─────────────────────────────────────────────────────────────────────────────
+
+    TokenMetricsResponse:
+      type: object
+      required:
+        - total_tokens
+        - input_tokens
+        - output_tokens
+        - call_count
+      properties:
+        session_id:
+          type: string
+        total_tokens:
+          type: integer
+        input_tokens:
+          type: integer
+        output_tokens:
+          type: integer
+        call_count:
+          type: integer
+        by_component:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              total_tokens:
+                type: integer
+              call_count:
+                type: integer
+        by_model:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              total_tokens:
+                type: integer
+              call_count:
+                type: integer
+        averages:
+          type: object
+          properties:
+            avg_input_tokens:
+              type: number
+            avg_output_tokens:
+              type: number
+            avg_total_tokens:
+              type: number
+        time_range:
+          type: object
+          properties:
+            first_call:
+              type: string
+              format: date-time
+            last_call:
+              type: string
+              format: date-time
+
+    BudgetStatusResponse:
+      type: object
+      required:
+        - session_id
+        - total_budget
+        - used
+        - remaining
+        - percentage_used
+      properties:
+        session_id:
+          type: string
+        total_budget:
+          type: integer
+        used:
+          type: integer
+        remaining:
+          type: integer
+        percentage_used:
+          type: number
+        warning_threshold_reached:
+          type: boolean
+        critical_threshold_reached:
+          type: boolean
+        by_component:
+          type: object
+          additionalProperties:
+            type: integer
+        projected_completion:
+          type: object
+          properties:
+            can_complete:
+              type: boolean
+            estimated_additional_tokens:
+              type: integer
+            confidence:
+              type: number
+
+    BudgetHistoryResponse:
+      type: object
+      required:
+        - session_id
+        - granularity
+        - data_points
+      properties:
+        session_id:
+          type: string
+        granularity:
+          type: string
+          enum: [second, minute, operation]
+        data_points:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              used:
+                type: integer
+              remaining:
+                type: integer
+              percentage_used:
+                type: number
+
+    PerformanceMetricsResponse:
+      type: object
+      required:
+        - time_range
+        - latency
+      properties:
+        session_id:
+          type: string
+        time_range:
+          type: object
+          properties:
+            start:
+              type: string
+              format: date-time
+            end:
+              type: string
+              format: date-time
+        latency:
+          type: object
+          properties:
+            p50_ms:
+              type: number
+            p90_ms:
+              type: number
+            p99_ms:
+              type: number
+            mean_ms:
+              type: number
+            max_ms:
+              type: number
+        by_component:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              p50_ms:
+                type: number
+              p90_ms:
+                type: number
+              mean_ms:
+                type: number
+        throughput:
+          type: object
+          properties:
+            operations_per_minute:
+              type: number
+            tokens_per_minute:
+              type: number
+        error_rate:
+          type: object
+          properties:
+            total_errors:
+              type: integer
+            error_percentage:
+              type: number
+            by_type:
+              type: object
+              additionalProperties:
+                type: integer
+
+    # ─────────────────────────────────────────────────────────────────────────────
+    # Dashboard Schemas
+    # ─────────────────────────────────────────────────────────────────────────────
+
+    DashboardData:
+      type: object
+      required:
+        - timestamp
+        - active_sessions
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        active_sessions:
+          type: integer
+        current_session:
+          type: object
+          properties:
+            session_id:
+              type: string
+            status:
+              type: string
+              enum: [active, completed, failed, aborted]
+            current_operation:
+              type: string
+            current_component:
+              type: string
+            started_at:
+              type: string
+              format: date-time
+            duration_seconds:
+              type: number
+        budget:
+          type: object
+          properties:
+            total_budget:
+              type: integer
+            used:
+              type: integer
+            remaining:
+              type: integer
+            percentage_used:
+              type: number
+            burn_rate_per_minute:
+              type: number
+            estimated_completion_tokens:
+              type: integer
+            projected_final_usage:
+              type: integer
+            within_budget:
+              type: boolean
+        operations:
+          type: object
+          properties:
+            total:
+              type: integer
+            completed:
+              type: integer
+            in_progress:
+              type: integer
+            failed:
+              type: integer
+            retried:
+              type: integer
+        component_status:
+          type: object
+          additionalProperties:
+            type: string
+            enum: [idle, active, completed, failed]
+        recent_logs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExecutionLogEntry'
+          maxItems: 10
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              timestamp:
+                type: string
+                format: date-time
+              level:
+                type: string
+              component:
+                type: string
+              operation:
+                type: string
+              message:
+                type: string
+              error_type:
+                type: string
+
+    # ─────────────────────────────────────────────────────────────────────────────
+    # System Schemas
+    # ─────────────────────────────────────────────────────────────────────────────
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        components:
+          type: object
+          additionalProperties:
+            type: string
+            enum: [healthy, degraded, unhealthy]
+        version:
+          type: string
+        uptime_seconds:
+          type: number
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              component:
+                type: string
+              error:
+                type: string
+
+    ConfigResponse:
+      type: object
+      properties:
+        log_retention_days:
+          type: integer
+        max_export_size_mb:
+          type: integer
+        rate_limits:
+          type: object
+          properties:
+            standard:
+              type: integer
+            streaming:
+              type: integer
+            metrics:
+              type: integer
+        features:
+          type: object
+          additionalProperties:
+            type: boolean
+        budget:
+          type: object
+          properties:
+            default_total:
+              type: integer
+            warning_threshold:
+              type: number
+            critical_threshold:
+              type: number
+
+    # ─────────────────────────────────────────────────────────────────────────────
+    # Error Schemas
+    # ─────────────────────────────────────────────────────────────────────────────
+
+    ProblemDetail:
+      type: object
+      description: RFC 9457 Problem Details for HTTP APIs
+      required:
+        - type
+        - title
+        - status
+      properties:
+        type:
+          type: string
+          format: uri
+          description: A URI reference identifying the problem type
+        title:
+          type: string
+          description: A short, human-readable summary of the problem
+        status:
+          type: integer
+          description: The HTTP status code
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence
+        instance:
+          type: string
+          format: uri
+          description: A URI reference identifying the specific occurrence
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+              code:
+                type: string
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Responses
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  responses:
+    ValidationError:
+      description: Invalid request parameters
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "https://sigil.acti.ai/problems/validation-error"
+            title: "Validation Error"
+            status: 400
+            detail: "Request validation failed"
+            errors:
+              - field: "limit"
+                message: "must be between 1 and 10000"
+                code: "RANGE_ERROR"
+
+    UnauthorizedError:
+      description: Authentication required
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "https://sigil.acti.ai/problems/unauthorized"
+            title: "Unauthorized"
+            status: 401
+            detail: "Invalid or missing authentication token"
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "https://sigil.acti.ai/problems/not-found"
+            title: "Not Found"
+            status: 404
+            detail: "The requested resource was not found"
+
+    RateLimitError:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds until rate limit resets
+          schema:
+            type: integer
+        X-RateLimit-Limit:
+          description: Request limit per window
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          description: Remaining requests in window
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          description: Unix timestamp when limit resets
+          schema:
+            type: integer
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "https://sigil.acti.ai/problems/rate-limit-exceeded"
+            title: "Rate Limit Exceeded"
+            status: 429
+            detail: "Too many requests. Please retry after 60 seconds."
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "https://sigil.acti.ai/problems/internal-error"
+            title: "Internal Server Error"
+            status: 500
+            detail: "An unexpected error occurred. Please try again later."
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Security
+# ─────────────────────────────────────────────────────────────────────────────
+
+security:
+  - bearerAuth: []

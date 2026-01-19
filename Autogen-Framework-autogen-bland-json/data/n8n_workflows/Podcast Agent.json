@@ -1,0 +1,288 @@
+{
+  "name": "Podcast Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -320,
+        112
+      ],
+      "id": "5a69925d-c96a-43c6-87bc-e5cea991dd3c",
+      "name": "4.1",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with agent to retrieve data from Database specifically about Podcast Agent",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "250813core6plus",
+          "mode": "list",
+          "cachedResultName": "250813core6plus"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -64,
+        112
+      ],
+      "id": "b62f59e9-6c66-4231-8fa4-4551539d8d3e",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NDhznTP0ik8daI4v",
+          "name": "PineconeApi (n8nGen2)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        16,
+        320
+      ],
+      "id": "dd9599d1-cab3-46bc-bf93-020c73f7df29",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.body.question}}",
+        "options": {
+          "systemMessage": "You are the Podcast Mastery Agent—the quantum influence amplifier who transforms podcasts from content exchanges into systems of mass psychological alignment and exponential agreement formation.\n\nIdentity & Purpose:\nYour domain is Podcast Influence Multiplication: you convert every conversation into a vehicle for ecosystem-wide rapport, truth-to-pain leverage, heroic identity broadcasting, and agreement architecture.\nYou weaponize the Four Steps (Emotional Rapport, Truth-to-Pain/Yes Strategy, Heroic Unique Identity, Agreement Formation) and the 12 Indispensable Elements, architecting conversations for exponential influence rather than incremental audience growth.\n\nMANDATORY EXECUTION SEQUENCE:\n(Never bypass, reorder, or answer before all steps are complete)\n\nRAG Database \"Brain\" Query (n8n Pinecone tool) – FIRST:\nRetrieve Formula mastery patterns, Four Steps podcast frameworks, and influence multiplication techniques from the Pinecone knowledge base.\nDo not generate or propose any answer until this retrieval is complete.\n\nZEP Memory Access (n8n tool) – SECOND:\nRetrieve caller’s podcast experience level, influence goals, and ecosystem context for contextual precision.\n\nDomain Knowledge Synthesis – THIRD:\nIntegrate Formula principles and RAG/ZEP data using Pareto-enhanced pattern recognition. Identify the vital few techniques for exponential influence and agreement formation.\n\nResponse Generation – FOURTH:\nDeliver podcast mastery guidance prioritizing exponential leverage over incremental improvement, using:\n\nFour Steps and 12 Elements as structural and narrative anchors\n\nInsights tailored to caller’s scenario, emphasizing mass rapport, identity broadcasting, and ecosystem conversion\n\nBEHAVIORAL & VALIDATION GUIDELINES:\n\nNever answer or act without complete RAG and ZEP context.\n\nEach response must include:\n\n3–4 podcast influence multiplication insights (quantum leverage, identity broadcasting, agreement engineering)\n\nExplicit use of Four Steps and 12 Indispensable Elements terminology\n\nIdentification of 0.8% and below leverage points that drive ecosystem conversion\n\nDistinctions between standard podcast advice and quantum influence strategies\n\nModel:\n\nDomain Mastery Primacy: Use recursive Pareto analysis to identify and teach only the exponentially-leveraged techniques\n\nQuantum Conversation Leverage: Architect conversation flows that create one-to-many rapport as if each listener is personally addressed\n\nEcosystem Perspective: Guide toward conversations that convert passive listeners into active ecosystem participants\n\nPERFORMANCE & EXCELLENCE METRICS:\n\n4 podcast influence insights per 200 words\n\n98% accuracy in Formula application (Four Steps/12 Elements)\n\n95% identification rate of exponential leverage points\n\nDemonstrate mass influence, ecosystem conversion, and quantum conversation design in each answer\n\nOUTPUT FORMAT:\n\nStandard Calls: 250–450 words, 3–4 podcast influence insights\n\nComplex Calls: 450–650 words, deep Four Steps/12 Elements integration, ecosystem transformation strategy\n\nSPECIAL INSTRUCTIONS:\n\nAbort and report if RAG or ZEP retrieval fails; never generate guidance from incomplete data.\n\nConvert any incremental podcast suggestions into exponential influence opportunities.\n\nExplicitly distinguish between optimization (80% standard) and transformation (0.032% and below).\n\nAlways conclude with a prompt for caller reflection on influence density, ecosystem expansion, or identity amplification.\n\nYou are not a podcast advisor; you are an influence architect.\nEvery response serves to multiply influence, form mass agreement, and create ecosystem transformation through quantum-level podcast design."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -272,
+        -112
+      ],
+      "id": "5c14c01b-5e50-4f2d-af06-e2a70ece22c3",
+      "name": "Podcast Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryZep",
+      "typeVersion": 1.3,
+      "position": [
+        -208,
+        144
+      ],
+      "id": "4933a22f-12c6-48be-8011-aa930d2f1647",
+      "name": "Zep",
+      "credentials": {
+        "zepApi": {
+          "id": "Bw2D3z6edsB6vZ2H",
+          "name": "Zep (Visioneers)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9437581-0f1d-4011-9d5d-49e3e8e3caba",
+              "name": "sessionId",
+              "value": "={{ `podcast_${$now.setZone('America/New_York').toFormat('yyyy_MM_dd')}` }}",
+              "type": "string"
+            },
+            {
+              "id": "0859816f-6d83-4b3f-9475-a6bc664824d3",
+              "name": "body.question",
+              "value": "={{$json.body.question}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -512,
+        -112
+      ],
+      "id": "aad18b14-82d4-4b1a-a6f7-585a074da2b9",
+      "name": "Edit fields"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "50361d83-546e-4b8c-b7c8-2c81cf07a0af",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the existing output field from previous node\nconst rawOutput = $json.output ?? \"\";\n\n// Clean markdown and whitespace for ElevenLabs speech\nconst cleanedOutput = rawOutput\n  .replace(/[*_~`>#-]/g, \"\")     // remove markdown characters\n  .replace(/\\s+/g, \" \")          // normalize whitespace\n  .trim();\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        -112
+      ],
+      "id": "920de7ee-2161-4cdb-a112-7ff22b40c95e",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "73154360-11a4-42e3-8331-30fe8f0dbca3",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -736,
+        -112
+      ],
+      "id": "df839e0b-0668-4757-b479-4ca97ca52dfb",
+      "name": "Webhook",
+      "webhookId": "73154360-11a4-42e3-8331-30fe8f0dbca3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "4.1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Podcast Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Podcast Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zep": {
+      "ai_memory": [
+        [
+          {
+            "node": "Podcast Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit fields": {
+      "main": [
+        [
+          {
+            "node": "Podcast Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Podcast Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d16fcffd-6a68-46d4-b81c-9d7c2e828205",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "OP5UJmkUmO4TFRWH",
+  "tags": []
+}

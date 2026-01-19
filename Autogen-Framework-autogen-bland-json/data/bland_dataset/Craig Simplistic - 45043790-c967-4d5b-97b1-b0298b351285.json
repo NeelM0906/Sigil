@@ -1,0 +1,256 @@
+{
+  "nodes": [
+    {
+      "id": "1",
+      "data": {
+        "name": "MAIN_MENU_DETECT",
+        "prompt": "isStart: true\nMode: Passive listener. You must not speak. Do not generate any audio.\nTask: Listen until the IVR finishes listing options. Then silently choose a route.\n\nRoute to MEDICAL if you hear any of these (case-insensitive, partial matches allowed):\n\"medical\", \"medical benefits\", \"medical services\", \"medical provider services\"\n\"pharmacy\", \"drug\", \"Rx\", \"prescription\"\n\"dental\", \"dentist\"\n\"behavioral health\", \"mental health\", \"BH\"\n\nRoute to CLAIMS if you hear any of these:\n\"claims\", \"claim status\", \"check a claim\", \"claim information\"\n\"eligibility\", \"benefits\", \"eligibility & benefits\"\n\"preauthorization\", \"prior authorization\", \"authorization\", \"precert\"\n\nPriority rules:\nIf any \"claims/eligibility/authorization\" terms occur →CLAIMS.\nElse if any \"medical/pharmacy/dental/behavioral health\" terms occur → MEDICAL.\nIf neither is detected, wait silently for more audio until the IVR repeats; do not speak.\nNever speak. Do not say \"silence,\" \"okay,\" or anything else.",
+        "isStart": true,
+        "isGlobal": true,
+        "condition": "Continue listening if IVR is still speaking introductory messages or has not yet offered menu options.\nThe condition can also be true if the IVR has repeated the menu options twice without any matching terms detected.",
+        "globalLabel": "",
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        },
+        "pathwayExamples": [
+          {
+            "Chosen Pathway": "CONFIRM_MEDICAL",
+            "Conversation History": "\"To direct your call, please say medical, pharmacy, dental, or behavioral health.\""
+          },
+          {
+            "Chosen Pathway": "CONFIRM_MEDICAL",
+            "Conversation History": "\"If you're calling about medical benefits, claims, or eligibility, say medical or press one.\"\t"
+          }
+        ],
+        "dialogueExamples": [
+          {
+            "Assistant Response": "",
+            "Conversation History": ""
+          }
+        ]
+      },
+      "type": "Wait for Response",
+      "position": {
+        "x": 697.2415916809456,
+        "y": 323.8374400946165
+      }
+    },
+    {
+      "id": "97accc70-ac0d-43ae-ae06-34e962fbfabb",
+      "data": {
+        "name": "ID_COLLECTION_RAILS",
+        "prompt": "If user asks for Claim Number, route to ENTER_CLAIM_NUMBER.\nElse if it asks for Subscriber/Member ID, route to ENTER_MEMBER_ID.\nIf user asks for NPI/TIN, route to ENTER_NPI / ENTER_TIN.\nRoutes:\nneeds_claim_number → ENTER_CLAIM_NUMBER\nneeds_member_id → ENTER_MEMBER_ID\nneeds_npi → ENTER_NPI\nneeds_tin → ENTER_TIN",
+        "routes": [
+          {
+            "conditions": [
+              {
+                "field": "User requests Provider NPI",
+                "value": "true",
+                "operator": "is"
+              },
+              {
+                "field": "User requests Rendering Provider NPI",
+                "value": "true",
+                "operator": "is"
+              }
+            ],
+            "targetNodeId": "48d97117-796e-473e-ab55-77348649f301"
+          },
+          {
+            "conditions": [
+              {
+                "field": "User requests Provider Tax ID",
+                "value": "true",
+                "operator": "is"
+              },
+              {
+                "field": "User Requests TIN",
+                "value": "true",
+                "operator": "is"
+              }
+            ],
+            "targetNodeId": "50e7993f-3ddd-45c7-b105-c489cf5c50dd"
+          }
+        ],
+        "isGlobal": true,
+        "globalLabel": "",
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        },
+        "fallbackNodeId": null
+      },
+      "type": "Route",
+      "position": {
+        "x": 1259.758071236432,
+        "y": 117.8055870055788
+      }
+    },
+    {
+      "id": "bec0fb8d-3f62-4bd6-a362-b1eebdb2c738",
+      "data": {
+        "name": "New Transfer Call Node",
+        "prompt": "\"Hi! Please hold for just a moment while I connect you.\"",
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        },
+        "transferNumber": "+12019375530",
+        "warmTransferFields": {
+          "isEnabled": true,
+          "fromNumber": "",
+          "agentPrompt": "Tell the live human agent that there is a customer on the line, and ask if they are ready to take the call.",
+          "holdMusicUrl": "https://music.youtube.com/playlist?list=OLAK5uy_lhLD0lNjF-LuLe4b4fpjjkuFk15NROMHM&si=K8f9pyHAiuVamR5F",
+          "userHandling": "on-hold",
+          "waitingPrompt": "",
+          "optimizeForIVR": true,
+          "mergeCallPrompt": "Introduce both parties and drop off the call.",
+          "voicemailMessage": "",
+          "allowMergeControl": false,
+          "useCustomHoldMusic": true,
+          "isAgentPromptStatic": false,
+          "useCustomFromNumber": false,
+          "useVoicemailMessage": false,
+          "voicemailTargetNode": null,
+          "voicemailResponseType": "message",
+          "isMergeCallPromptStatic": false
+        },
+        "twilioAppTransferFields": {
+          "appSid": "",
+          "appParams": {},
+          "isEnabled": false
+        }
+      },
+      "type": "Transfer Call",
+      "position": {
+        "x": 1274.98024586319,
+        "y": 1271.791077069422
+      }
+    },
+    {
+      "id": "b929b116-be7a-4e90-a2c7-ab2361a83dfc",
+      "data": {
+        "name": "NPI Node",
+        "prompt": "The IVR has requested the NPI number. Read the 10-digit NPI clearly, one digit at a time with a brief pause between each:\n\nState or enter the NPI:  wwww{{provider_npi}}\n\nAfter providing the NPI, wait for the IVR to confirm or provide the next prompt.",
+        "isGlobal": true,
+        "globalLabel": "IVR asks for NPI or national provider ID number",
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        }
+      },
+      "type": "Default",
+      "position": {
+        "x": 1275.870481206283,
+        "y": 723.5436110416151
+      }
+    },
+    {
+      "id": "bd5dc172-52d3-4936-915d-f878a12e43f6",
+      "data": {
+        "name": "TIN",
+        "prompt": "The IVR has requested the Tax ID number. Read the 9-digit TIN clearly, one digit at a time with a brief pause between each:\n\nTIN: {{provider_tin}}\n\nAfter providing the TIN, wait for the IVR to confirm or provide the next prompt.",
+        "isGlobal": true,
+        "globalLabel": "IVR asks for Tax ID, TIN, or tax identification number",
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        },
+        "globalDescription": "IVR asks for Tax ID, TIN, or tax identification number"
+      },
+      "type": "Default",
+      "position": {
+        "x": 1269.489261742367,
+        "y": 345.2191276510512
+      }
+    },
+    {
+      "id": "db20596d-7e00-4149-ac19-ecefa311db45",
+      "data": {
+        "name": "Claim Number",
+        "prompt": "Your claim number is {{claim_number}}. Please say it aloud or enter it using your phone's keypad to confirm.\n\nEnter using DTMF or state aloud  {{claim_number}}.:\nEnter the Claim Number using DTMF. Exclude the 3-character prefix.\nConvert letters to T9 keypad numbers:\nABC→2, DEF→3, GHI→4, JKL→5, MNO→6, PQRS→7, TUV→8, WXYZ→9\n\nIf the user asks you to repeat the claim number, repeat {{claim_number}} clearly, spelling it out if needed.\n\n",
+        "isGlobal": true,
+        "globalLabel": "Claim Number is Requested",
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        },
+        "globalDescription": "Use this node if the claim number is requested."
+      },
+      "type": "Default",
+      "position": {
+        "x": 1273.671213257202,
+        "y": 1063.519811555082
+      }
+    },
+    {
+      "id": "462fa11b-63bb-40e2-afec-ef5b44ea7383",
+      "data": {
+        "name": "Member ID",
+        "prompt": "Enter or state aloud the {{member_id}}:\n\nEnter the {{member_id}} using DTMF. Exclude the 3-character prefix.\nConvert letters to T9 keypad numbers:\nABC→2, DEF→3, GHI→4, JKL→5, MNO→6, PQRS→7, TUV→8, WXYZ→9\n\n\n\n\nMember ID: wwww{{member_id}}",
+        "isGlobal": true,
+        "globalLabel": "Member ID is asked for",
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        },
+        "globalDescription": "Use this node if the member ID is asked for."
+      },
+      "type": "Default",
+      "position": {
+        "x": 1269.17330540751,
+        "y": 539.5137530144739
+      }
+    },
+    {
+      "id": "29e9886d-f9a5-4383-8112-14e9a213d376",
+      "data": {
+        "name": "Human",
+        "prompt": "Once the claim status is being provided and the system has taken either the TIN or NPI as well as the Member Number.  Ask to speak with a representative, human, live agent. Once a human is on the line then go to the [transfer node]",
+        "isGlobal": true,
+        "globalLabel": "Live Agent Request",
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        },
+        "globalDescription": "Only use this node once the claim status is being provided and the system has taken either the TIN or NPI as well as the Member Number.  Ask to speak with a representative, human, live agent. Once a human is on the line then go to the [transfer node]"
+      },
+      "type": "Default",
+      "position": {
+        "x": 1277.646671527939,
+        "y": 895.5431529104684
+      }
+    },
+    {
+      "globalConfig": {
+        "globalPrompt": "Instructions (prompt):\n\n“You are an automated IVR navigation agent and you goal is to retrieve claim status. Interact ONLY with automated menus.\n\nListen → Respond → Stop. Never prompt the IVR to continue.\n"
+      }
+    }
+  ],
+  "edges": []
+}

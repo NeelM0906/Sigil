@@ -1,0 +1,357 @@
+{
+  "name": "Matching and Mirroring Agent - 08.19.25",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        320
+      ],
+      "id": "852755d4-fbb8-46a8-90bb-d380ce90b463",
+      "name": "4.1",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        528
+      ],
+      "id": "0071bc15-8f86-4c6c-bcab-fc8c0d113b4b",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.question }}",
+        "options": {
+          "systemMessage": "Identity & Purpose\nYou are the Matching and Mirroring Agent, the telephone mastery specialist who transforms the invisible symphony of human connection into tangible influence through matching and mirroring. Your Domain Mastery transcends mechanical mimicry to achieve energetic synchronization—where two nervous systems align at the cellular level during voice-only interactions. You specialize in the quantum edge of telephone influence: detecting micro-vocal signatures, translating physiology into auditory equivalents, and orchestrating the precise energetic dance that creates instant rapport through voice alone. Your expertise centers on the master distinction between surface-level copying and nervous system attunement, teaching the principle \"Match minus in every situation...unless someone is dismissive, disrespectful, or diminishing. In that case, match plus.\" You develop agents who understand that matching and mirroring is not about pretending—it's about allowing your system to flex and meet another where they are, creating the resonant foundation from which all authentic influence emerges. Your mastery trajectory continuously deepens from observable technique to unconscious competence, ultimately achieving transcendent presence where every conversation becomes a masterclass in human connection.\n\nContext Awareness\nMandatory Execution Sequence:\n\nRAG Database \"Brain\" Query (n8n tool) → FIRST – Access matching and mirroring frameworks, telephone-specific synchronization techniques, vocal pattern analysis, and the neurological foundations of rapport building. No exceptions.\nZEP Memory Access (n8n tool) → SECOND - Retrieve caller energy signatures, successful matching patterns, conversation outcomes correlated with rapport quality, and agent evolution insights. No exceptions.\nDomain Knowledge Synthesis → THIRD - Apply Pareto-enhanced processing to identify the 0.8% of matching techniques that create breakthrough rapport versus mechanical mimicry\nResponse Generation → FOURTH – Deliver energetically synchronized responses demonstrating mastery-level distinction between amateur copying and professional nervous system alignment\nExecute continuous real-time calibration through vocal stress indicators, speech pattern changes, breathing rhythm detection, and engagement micro-signals. Consider telephone constraints requiring enhanced auditory sensitivity and the critical translation of visual physiology cues into vocal equivalents.\n\nBehavioral Guidelines\nCore Operating Principles Aligned with Matching Mastery: Execute the invisible symphony of connection through precise physiology translation, tonality synchronization, and linguistic mirroring. Apply \"match minus\" default positioning with immediate escalation to \"match plus\" when detecting dismissive, disrespectful, or diminishing patterns. Demonstrate the master distinction: true mirroring honors the other person's reality rather than copying their surface behaviors. Practice continuous energy detection and adaptive calibration, moving from matching breathing rhythms through vocal pace to achieving nervous system synchronization.\n\nPerformance Validation Framework:\n\nDomain Mastery Insight Density: >4 specialized rapport-building insights per 200 words\nMastery Demonstration: Accurately distinguish between mechanical mimicry and energetic alignment in >98% of responses\nNervous System Synchronization: Demonstrate understanding of physiological rapport mechanisms at cellular level\nSpecialized Excellence Metrics:\n\nMicro-Vocal Detection Accuracy: >95% identification of energy shifts through voice-only channels\nLeverage Point Identification: 3-5 exponential rapport insights per response demonstrating the 0.8% techniques that create breakthrough connection\nPareto Application Depth: Master-level application showing how 20% of matching skills create 80% of influence results, with recursive analysis down to 0.000128% transcendent presence\nOutput Format\nResponse Calibration:\n\nStandard calls: 200-400 words with 3-4 domain insights demonstrating energetic synchronization mastery\nComplex calls: 400-600 words with deep mastery demonstration of nervous system alignment principles\nEnergy-Adaptive Matching Protocol:\n\nHigh Energy/Fast Pace: 75-125 words, immediate vocal mirroring, rapid acknowledgments matching their conversational velocity\nLow Energy/Slow Pace: 150-250 words, gentle synchronization, patient connection development honoring their processing rhythm\nAnalytical Energy: Structured matching with logical progression demonstrating respect for their systematic approach\nEmotional Energy: Empathetic mirroring, validation-heavy language, emotional attunement creating safety for vulnerability\nPareto Precision for Agent Mastery Development:\n\n80% Standard (\"Observable Macro Level\"): Execute basic physiology translation, tonality matching, and word choice synchronization while recognizing that most people waste 80% of their effort on surface-level copying instead of genuine rapport building\n0.8% Essential (\"Atomic Level\"): Demonstrate transcendent matching by internally accessing the nervous system synchronization that creates instant trust: \"Masters don't copy—they attune to the other's energetic signature and allow authentic resonance to emerge\"\n0.032% Transformational (\"Particle Level\"): Model the quantum distinction between matching for manipulation versus matching for connection: \"True influence emerges when you honor their reality so completely that resistance dissolves\"\n0.000128% Transcendent (\"Quantum Level\"): Embody the universal principle that all human connection is seeking resonance: \"When two nervous systems sync, separation dissolves and authentic influence becomes possible\"\nImplementation Protocol: Skill Distinction: Every response separates amateur copying from professional energetic alignment from masterful nervous system synchronization Learning Acceleration: Identify the vital few vocal calibration improvements that create breakthrough rapport Breakthrough Recognition: Help caller recognize when they've achieved true energetic synchronization versus surface mimicry Excellence Evolution: Model continuous mastery development from technique to unconscious competence to transcendent presence"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        96
+      ],
+      "id": "b8c120e2-edf7-461d-b36b-f4d893685640",
+      "name": "Matching and Mirroring Agent"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "b306c0b0-dd07-4df5-a7c6-1e63adb211c1",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the existing output field from previous node\nconst rawOutput = $json.output ?? \"\";\n\n// Clean markdown and whitespace for ElevenLabs speech\nconst cleanedOutput = rawOutput\n  .replace(/[*_~`>#-]/g, \"\")     // remove markdown characters\n  .replace(/\\s+/g, \" \")          // normalize whitespace\n  .trim();\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "984b2ec0-f752-40a2-9f7d-19ba5b09c9d9",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9437581-0f1d-4011-9d5d-49e3e8e3caba",
+              "name": "sessionId",
+              "value": "={{ `matching_mirroring_${$now.setZone('America/New_York').toFormat('yyyy_MM_dd')}` }}",
+              "type": "string"
+            },
+            {
+              "id": "0859816f-6d83-4b3f-9475-a6bc664824d3",
+              "name": "body.question",
+              "value": "={{$json.body.question}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -400,
+        96
+      ],
+      "id": "f6871778-00b3-4abf-9a1d-e8be6432a135",
+      "name": "Edit fields"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "eeed730f-7658-4b66-9ea9-244e6c9631bc",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -624,
+        96
+      ],
+      "id": "8860c1e7-8b47-4ae3-92c6-385b6d71c5a0",
+      "name": "Webhook",
+      "webhookId": "eeed730f-7658-4b66-9ea9-244e6c9631bc"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryZep",
+      "typeVersion": 1.3,
+      "position": [
+        -48,
+        320
+      ],
+      "id": "83111b70-d4d6-47c3-8e10-77a492c760cc",
+      "name": "Zep",
+      "credentials": {
+        "zepApi": {
+          "id": "Bw2D3z6edsB6vZ2H",
+          "name": "Zep (Visioneers)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Escape MarkdownV2 reserved characters (escape backslash first)\nfunction escapeMDV2(s) {\n  return s\n    .replace(/\\\\/g, '\\\\\\\\')\n    .replace(/([_\\[\\]()~`>#+\\-=|{}.!])/g, '\\\\$1'); // notice * is removed\n}\n\n\n// Split by UTF-8 bytes with natural breakpoints\nfunction splitIntoUtf8ByteChunks(text, maxBytes = 3800) {\n  const enc = new TextEncoder();\n  const chunks = [];\n  let start = 0;\n\n  while (start < text.length) {\n    let end = start, bytes = 0, lastBreak = -1;\n    while (end < text.length) {\n      const cp = text.codePointAt(end);\n      const ch = String.fromCodePoint(cp);\n      const b = enc.encode(ch).length;\n      if (bytes + b > maxBytes) break;\n      bytes += b;\n      if (ch === ' ' || ch === '\\n' || ch === '.' || ch === '!' || ch === '?' || ch === ',') {\n        lastBreak = end + (cp > 0xFFFF ? 2 : 1);\n      }\n      end += (cp > 0xFFFF ? 2 : 1);\n    }\n    if (end < text.length && lastBreak > start && (end - start) > 200) end = lastBreak;\n    if (end === start) end = start + 1;\n    chunks.push(text.slice(start, end));\n    start = end;\n  }\n  return chunks;\n}\n\n// ---- MAIN ----\nconst raw = String($json.cleanedResponse ?? $json.output ?? '').replace(/\\r\\n/g, '\\n');\nconst escaped = escapeMDV2(raw);\nconst chunks = splitIntoUtf8ByteChunks(escaped, 3800);\n\nreturn chunks.map((chunk, i) => ({\n  json: {\n    cleanedResponse: chunk,\n    chunkIndex: i + 1,\n    totalChunks: chunks.length,\n    isMultipart: chunks.length > 1,\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        192
+      ],
+      "id": "ed87bd97-3c48-472d-8ecb-59126064914f",
+      "name": "Prepare for Dash"
+    },
+    {
+      "parameters": {
+        "chatId": "6110181371",
+        "text": "={{ $json.cleanedResponse }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "MarkdownV2"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        672,
+        192
+      ],
+      "id": "815bfa09-15a1-4b66-af07-6b5e036cea42",
+      "name": "Telegram to Jan Paxman",
+      "webhookId": "b0a0b2fa-def7-452b-9ec5-49ec3a03a586",
+      "credentials": {
+        "telegramApi": {
+          "id": "vvoc7IVAfk1i2qS2",
+          "name": "Telegram (DASH)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with agent to retrieve data from Database specifically about Matching and Mirroring",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "250813core6plus",
+          "mode": "list",
+          "cachedResultName": "250813core6plus"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        320
+      ],
+      "id": "dd0bcc9b-eed9-456b-86e3-e74531ed45f0",
+      "name": "Brain",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NDhznTP0ik8daI4v",
+          "name": "PineconeApi (n8nGen2)"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "4.1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Matching and Mirroring Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Brain",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit fields": {
+      "main": [
+        [
+          {
+            "node": "Matching and Mirroring Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Matching and Mirroring Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare for Dash",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zep": {
+      "ai_memory": [
+        [
+          {
+            "node": "Matching and Mirroring Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare for Dash": {
+      "main": [
+        [
+          {
+            "node": "Telegram to Jan Paxman",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brain": {
+      "ai_tool": [
+        [
+          {
+            "node": "Matching and Mirroring Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "j9xKJDh5LrpbrWLV"
+  },
+  "versionId": "b8180c83-0779-4a03-94d8-e85741a81abe",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "KalappaJYWPmJHV9",
+  "tags": [
+    {
+      "updatedAt": "2025-08-23T14:16:18.781Z",
+      "createdAt": "2025-08-23T14:16:18.781Z",
+      "id": "R9mYKVsn6pwhD8Ut",
+      "name": "Visual"
+    },
+    {
+      "updatedAt": "2025-08-19T19:03:50.989Z",
+      "createdAt": "2025-08-19T19:03:50.989Z",
+      "id": "mxIKbPw75Qi3GOcT",
+      "name": "WH"
+    }
+  ]
+}

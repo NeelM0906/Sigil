@@ -1,0 +1,150 @@
+{
+  "source_file": "data\\bland_dataset\\Craig Simplistic - 45043790-c967-4d5b-97b1-b0298b351285.json",
+  "global_prompt": "Instructions (prompt):\n\n“You are an automated IVR navigation agent and you goal is to retrieve claim status. Interact ONLY with automated menus.\n\nListen → Respond → Stop. Never prompt the IVR to continue.",
+  "node_archetypes": [
+    {
+      "type": "Wait for Response",
+      "name": "MAIN_MENU_DETECT",
+      "has_prompt": true,
+      "prompt_len": 976,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Route",
+      "name": "ID_COLLECTION_RAILS",
+      "has_prompt": true,
+      "prompt_len": 311,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Transfer Call",
+      "name": "New Transfer Call Node",
+      "has_prompt": true,
+      "prompt_len": 56,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "NPI Node",
+      "has_prompt": true,
+      "prompt_len": 250,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "TIN",
+      "has_prompt": true,
+      "prompt_len": 228,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Claim Number",
+      "has_prompt": true,
+      "prompt_len": 435,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Member ID",
+      "has_prompt": true,
+      "prompt_len": 236,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Human",
+      "has_prompt": true,
+      "prompt_len": 231,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": null,
+      "name": null,
+      "has_prompt": false,
+      "prompt_len": 0,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": []
+    }
+  ],
+  "edge_archetypes": [],
+  "style_hints": {
+    "default_node_prompt_style": "long_scripted",
+    "edges_use_custom_type": false,
+    "extract_vars_format": "unknown"
+  }
+}

@@ -1,0 +1,372 @@
+{
+  "name": "Monetary Capital Agent (Warren) - 08.19.25",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        240
+      ],
+      "id": "259b85a5-c5a7-4121-96dd-ee759a790db6",
+      "name": "4.1",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with agent to retrieve data from Database specifically about Monetary Capital.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "250813core6plus",
+          "mode": "list",
+          "cachedResultName": "250813core6plus"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        496,
+        240
+      ],
+      "id": "04061055-5157-4e06-98ff-8f46419c34d0",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NDhznTP0ik8daI4v",
+          "name": "PineconeApi (n8nGen2)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        576,
+        448
+      ],
+      "id": "663f5e10-e2e8-4ef3-a990-31d4205509ec",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.question }}",
+        "options": {
+          "systemMessage": "You are the Monetary Capital Agent, a masterful voice-first AI guide operating within the Unblinded Formula. Your mission is to teach, coach, and co-create mastery in Monetary Capitalâ€”helping users accelerate their financial leverage, investment confidence, and impact.\n\nCONTEXT:\n- Draw from the Unblinded Formula, emphasizing Monetary Capital as fuel for exponential growth and fulfillment, not just accumulation.\n- Reference core materials: dynamic lessons, interactive case studies, influence mastery frameworks, and a Q&A library.\n- Integrate user inputs and knowledge contributions into an evolving knowledge base stored in Pinecone.\n- Support entrepreneurs, partners, coaches, educators, and the Unblinded Community in all their contexts (web, mobile, smart speakers, community platforms).\n- Embody the energies of Zeus (decisive, authoritative) and Aspirational (visionary, inspiring).\n- Uphold congruence, integrity, and mastery in every interaction.\n\nOBJECTIVES:\n1. Assess and calibrate each userâ€™s current knowledge or capital position.\n2. Present dynamic, conversational lessonsâ€”tailored to user needs and retrieved from Pinecone.\n3. Facilitate Socratic dialogueâ€”ask insightful questions to deepen understanding and prompt reflection.\n4. Enable users to practice through interactive scenarios, quizzes, and financial simulators.\n5. Invite users to contribute insights or storiesâ€”update Pinecone with new, relevant knowledge.\n6. Track progress, celebrate milestones, and recommend next best steps.\n7. Prioritize voice-activated, two-way interactivity at all times.\n\nBEST PRACTICES:\n- Respond only with relevant, actionable content from the Unblinded Formula or related user-contributed knowledge in Pinecone.\n- Use clear, authoritative, and inspiring language.\n- If uncertain or data is insufficient, transparently invite the user to share more or guide the conversation to clarity.\n- Never give financial or legal advice; always teach concepts, frameworks, and examples.\n- Ensure all contributions and responses are integrity-aligned and congruent with influence-mastery principles.\n\nINITIALIZATION:\nWhen the user begins, greet them powerfully, offer to assess their current knowledge or objectives, and guide them to the next most relevant lesson or insight. If the user contributes new knowledge, confirm and summarize before storing in Pinecone.\n\nEXAMPLES OF OUTPUT:\n- â€œWelcome, visionary! Are you ready to unlock new levels of Monetary Capital mastery?â€\n- â€œBased on your last session, letâ€™s explore leveraging capital for partnership growth. Shall we begin with a scenario or a quick self-assessment?â€\n- â€œThatâ€™s a powerful insightâ€”would you like to share it with the community knowledge base?â€\n\nYou are a living, learning guideâ€”always authoritative, aspirational, and dedicated to user mastery.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        304,
+        16
+      ],
+      "id": "3277f391-c293-4285-b276-cda808b5fc43",
+      "name": "Monetary Capital Agent"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "7fcd2e64-5352-4951-93e6-4888b1ebe5c1",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1088,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the existing output field from previous node\nconst rawOutput = $json.output ?? \"\";\n\n// Clean markdown and whitespace for ElevenLabs speech\nconst cleanedOutput = rawOutput\n  .replace(/[*_~`>#-]/g, \"\")     // remove markdown characters\n  .replace(/\\s+/g, \" \")          // normalize whitespace\n  .trim();\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        16
+      ],
+      "id": "bf2d7c51-7d35-4ce5-8356-f0343c715da6",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "content": "## Monetary Capital",
+        "height": 604,
+        "width": 540
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        208,
+        -32
+      ],
+      "typeVersion": 1,
+      "id": "21617df6-cd98-4dff-b059-b90f04c662ad",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "9b530c80-9ff3-4dcc-8e3e-09b462b39579",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -208,
+        16
+      ],
+      "id": "aa256e88-0987-4e87-8420-ad41657dbcf9",
+      "name": "Webhook",
+      "webhookId": "9b530c80-9ff3-4dcc-8e3e-09b462b39579"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9437581-0f1d-4011-9d5d-49e3e8e3caba",
+              "name": "sessionId",
+              "value": "={{ `monetary_capital_${$now.setZone('America/New_York').toFormat('yyyy_MM_dd')}` }}",
+              "type": "string"
+            },
+            {
+              "id": "0859816f-6d83-4b3f-9475-a6bc664824d3",
+              "name": "body.question",
+              "value": "={{$json.body.question}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        16,
+        16
+      ],
+      "id": "dda41cae-0f31-426b-8b95-523ed6d96dba",
+      "name": "Edit fields"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryZep",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        240
+      ],
+      "id": "52440147-3f48-4c2e-a747-4c22a995346c",
+      "name": "Zep",
+      "credentials": {
+        "zepApi": {
+          "id": "Bw2D3z6edsB6vZ2H",
+          "name": "Zep (Visioneers)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Escape MarkdownV2 reserved characters (escape backslash first)\nfunction escapeMDV2(s) {\n  return s\n    .replace(/\\\\/g, '\\\\\\\\')\n    .replace(/([_*\\[\\]()~`>#+\\-=|{}.!])/g, '\\\\$1'); // asterisk (*) added back\n}\n\n// Split by UTF-8 bytes with natural breakpoints\nfunction splitIntoUtf8ByteChunks(text, maxBytes = 3800) {\n  const enc = new TextEncoder();\n  const chunks = [];\n  let start = 0;\n  \n  while (start < text.length) {\n    let end = start, bytes = 0, lastBreak = -1;\n    \n    while (end < text.length) {\n      const cp = text.codePointAt(end);\n      const ch = String.fromCodePoint(cp);\n      const b = enc.encode(ch).length;\n      \n      if (bytes + b > maxBytes) break;\n      \n      bytes += b;\n      \n      // Mark natural breakpoints\n      if (ch === ' ' || ch === '\\n' || ch === '.' || ch === '!' || ch === '?' || ch === ',') {\n        lastBreak = end + (cp > 0xFFFF ? 2 : 1);\n      }\n      \n      end += (cp > 0xFFFF ? 2 : 1);\n    }\n    \n    // Use natural breakpoint if available and chunk is reasonably long\n    if (end < text.length && lastBreak > start && (end - start) > 200) {\n      end = lastBreak;\n    }\n    \n    // Ensure we make progress\n    if (end === start) {\n      end = start + 1;\n    }\n    \n    chunks.push(text.slice(start, end));\n    start = end;\n  }\n  \n  return chunks;\n}\n\n// ---- MAIN ----\nconst raw = String($json.cleanedResponse ?? $json.output ?? '').replace(/\\r\\n/g, '\\n');\nconst escaped = escapeMDV2(raw);\nconst chunks = splitIntoUtf8ByteChunks(escaped, 3800);\n\nreturn chunks.map((chunk, i) => ({\n  json: {\n    cleanedResponse: chunk,\n    chunkIndex: i + 1,\n    totalChunks: chunks.length,\n    isMultipart: chunks.length > 1,\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        224
+      ],
+      "id": "9f8b99fb-6b9a-457d-89f8-52196bbe9ce9",
+      "name": "Prepare for Dash"
+    },
+    {
+      "parameters": {
+        "chatId": "5696281784",
+        "text": "={{ $json.cleanedResponse }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "MarkdownV2"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1104,
+        224
+      ],
+      "id": "b3427621-39df-47ab-b057-46c02223ddde",
+      "name": "Telegram to Kawai",
+      "webhookId": "b0a0b2fa-def7-452b-9ec5-49ec3a03a586",
+      "credentials": {
+        "telegramApi": {
+          "id": "vvoc7IVAfk1i2qS2",
+          "name": "Telegram (DASH)"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "4.1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Monetary Capital Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Monetary Capital Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Monetary Capital Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare for Dash",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit fields": {
+      "main": [
+        [
+          {
+            "node": "Monetary Capital Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zep": {
+      "ai_memory": [
+        [
+          {
+            "node": "Monetary Capital Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare for Dash": {
+      "main": [
+        [
+          {
+            "node": "Telegram to Kawai",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "j9xKJDh5LrpbrWLV"
+  },
+  "versionId": "93357c33-0af7-4129-83b0-d8e734bc9657",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "Hq1bXCOYnIIDSOhD",
+  "tags": [
+    {
+      "updatedAt": "2025-08-23T14:16:18.781Z",
+      "createdAt": "2025-08-23T14:16:18.781Z",
+      "id": "R9mYKVsn6pwhD8Ut",
+      "name": "Visual"
+    },
+    {
+      "updatedAt": "2025-08-19T19:03:50.989Z",
+      "createdAt": "2025-08-19T19:03:50.989Z",
+      "id": "mxIKbPw75Qi3GOcT",
+      "name": "WH"
+    }
+  ]
+}

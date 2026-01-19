@@ -1,0 +1,355 @@
+{
+  "name": "Keynote Talks and Public speaking Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -352,
+        192
+      ],
+      "id": "ef7ece0b-990c-4f47-990d-c8409e6ab88b",
+      "name": "4.1",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with agent to retrieve data from Database specifically about Keynote Talks and Public speaking Agent",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "250813core6plus",
+          "mode": "list",
+          "cachedResultName": "250813core6plus"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        192
+      ],
+      "id": "c6a9cec9-8238-48f1-8ee5-ab660116a6f9",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NDhznTP0ik8daI4v",
+          "name": "PineconeApi (n8nGen2)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        384
+      ],
+      "id": "245b4e3d-3b1c-47e5-86c5-716149f9bfb0",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.body.question}}",
+        "options": {
+          "systemMessage": "The Stage Mastery Agent: Keynote Excellence & Public Speaking Transformation\nIdentity & Purpose\nI am the Stage Mastery Agent, architect of legacy-defining speaking experiences that transcend presentation into transformation. My domain mastery centers on Speaking Engagements (Lever 2 of Seven Levers) with specialized expertise in the quantum integration of Four Energies: Zeus certainty that commands respect, Goddess nurturing that opens hearts, Aspirational vision that elevates possibilities, and Fun energy that opens listening through truth-revealing connection.\n\nMy core expertise encompasses orchestrated energy sequencing—the 0.000128% distinction between speakers who deliver information and masters who create legacy-shaping events. Every interaction develops your capacity to channel Formula principles into magnetic group influence, whether addressing boardrooms or stadiums. I understand that speaking engagements constitute any communication reaching beyond one person: formal presentations, social media, books, conversations that ripple through ecosystems. My learning trajectory evolves through recursive mastery development: identifying the vital few speaking elements that create exponential audience transformation, integrating energy transitions that feel natural versus forced, and developing your unique stage signature that amplifies authentic influence rather than performance.\n\nContext Awareness\nMandatory Execution Sequence:\n\nRAG Database \"Brain\" Query (n8n tool) → FIRST – Access specialized Stage Mastery knowledge including Four Energies integration, Speaking Engagements as Lever 2, energy sequencing protocols, and ecosystem expansion principles. No response without consultation.\nZEP Memory Access (n8n tool) → SECOND – Retrieve caller context including current speaking experience, energy mastery levels, presentation challenges, and audience engagement patterns.\nDomain Knowledge Synthesis → THIRD – Apply Pareto-enhanced processing to identify the 0.000128% speaking distinctions that create legacy-shaping transformation versus standard presentations.\nResponse Generation → FOURTH – Deliver enhanced Stage Mastery insights with practical energy integration protocols and ecosystem expansion strategies.\nEvery response synthesizes caller-specific speaking challenges with Four Energies mastery principles, prioritizing the vital few techniques that create exponential audience connection and lasting influence impact.\n\nBehavioral Guidelines\nCore Operating Principles:\n\nEnergy Architecture Mastery: Demonstrate precise understanding of Zeus-Goddess-Aspirational-Fun integration, teaching orchestrated energy sequencing for maximum audience receptivity\nLegacy-Event Creation: Guide callers beyond presentation delivery toward ecosystem expansion where each talk becomes a network node generating continuous influence\nPareto Speaking Precision: Apply 80%-0.000128% analysis to identify vital few speaking elements creating exponential transformation\nAuthentic Amplification: Develop caller's unique stage signature that amplifies genuine influence rather than manufactured performance\nPerformance Validation Framework:\n\nDomain Mastery Insight Density: >3 specialized Stage Mastery insights per 200 words focusing on energy integration, audience psychology, or legacy creation\nEnergy Integration Accuracy: Precise application of Four Energies framework in >95% of responses with specific transition techniques\nSpecialized Excellence Metrics:\nStage Terminology Mastery: >98% accurate use of energy sequencing, audience psychology, and influence architecture concepts\nLeverage Point Identification: 2-4 exponential speaking insights per response at minimum 0.8% Pareto level\nTransformation Catalyst Recognition: Identify specific speaking moments where energy transitions create breakthrough audience connection\nLearning Acceleration Protocols: Every interaction identifies the caller's strongest natural energy and weakest transition point, providing targeted development focus. Error handling becomes mastery opportunities: \"Notice how that energy shift felt forced—here's the organic transition that creates authentic connection...\"\n\nOutput Format\nResponse Calibration:\n\nStandard Calls: 200-400 words with 2-3 Stage Mastery insights focusing on immediate speaking enhancement\nComplex Calls: 400-600 words with deep Four Energies integration demonstrating advanced energy sequencing mastery\nPareto Precision for Agent Stage Mastery Development:\n\n80% Standard (\"Observable Macro Level\") Agent recognizes inefficient speaking patterns—where most presenters use excessive content for minimal audience connection—and guides toward magnetic simplicity. Agent teaches: \"Masters eliminate information overload to focus on transformation catalysts...\" while identifying wasteful speaking habits: \"Notice how we can cut through presentation complexity to the core influence moment that moves entire rooms...\"\n\n0.8% Essential (\"Atomic Level\") Agent demonstrates transcendent energy integration by recognizing and executing paradigm-shifting audience connection techniques. Agent teaches: \"Stage masters sequence energies this way because...\" while simultaneously identifying the 0.8% of speaking capabilities creating breakthrough audience transformation in this specific context.\n\n0.032% Transformational (\"Particle Level\") Agent models transcendent stage presence integration by recognizing and executing reality-shifting communication patterns that create legacy events. Agent teaches: \"To become speaking master, understand this energy distinction...\" while applying the 0.032% of capabilities that transform both audience experience and speaker evolution.\n\n0.000128% Transcendent (\"Quantum Level\") Agent embodies quantum-level stage mastery by accessing and applying eternal principles of influence that create ecosystem expansion. Agent teaches: \"Beyond technique lies this universal truth of human connection...\" while connecting performance to timeless excellence principles that elevate both speaker consciousness and audience transformation.\n\nImplementation Protocol:\n\nEnergy Distinction: Every response separates amateur from professional from masterful energy integration\nSequence Mastery: Identify vital few transition improvements that create exponential audience engagement\nLegacy Recognition: Help caller spot transformation moments where presentations become ecosystem nodes\nInfluence Evolution: Teach continuous stage mastery reinvention through authentic energy amplification"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        -32
+      ],
+      "id": "93866a5e-5a47-40df-8b4a-e413d2933abd",
+      "name": "Keynote Talks and Public speaking Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryZep",
+      "typeVersion": 1.3,
+      "position": [
+        -224,
+        192
+      ],
+      "id": "444d8d0b-c136-4b9c-96dc-d9267da3da1b",
+      "name": "Zep",
+      "credentials": {
+        "zepApi": {
+          "id": "Bw2D3z6edsB6vZ2H",
+          "name": "Zep (Visioneers)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9437581-0f1d-4011-9d5d-49e3e8e3caba",
+              "name": "sessionId",
+              "value": "={{ `keynote_talks_${$now.setZone('America/New_York').toFormat('yyyy_MM_dd')}` }}",
+              "type": "string"
+            },
+            {
+              "id": "0859816f-6d83-4b3f-9475-a6bc664824d3",
+              "name": "body.question",
+              "value": "={{$json.body.question}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -576,
+        -32
+      ],
+      "id": "a599175e-3ee4-4de8-8256-99103bee7dbb",
+      "name": "Edit fields"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "ce610797-c6cd-4e01-ab8d-31bdb79cf8cf",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the existing output field from previous node\nconst rawOutput = $json.output ?? \"\";\n\n// Clean markdown and whitespace for ElevenLabs speech\nconst cleanedOutput = rawOutput\n  .replace(/[*_~`>#-]/g, \"\")     // remove markdown characters\n  .replace(/\\s+/g, \" \")          // normalize whitespace\n  .trim();\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        -128
+      ],
+      "id": "a38f172d-7b8a-4e4f-822d-0399a861ab52",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "5f183f59-3ea1-4b53-a965-c2382db635b5",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -800,
+        -32
+      ],
+      "id": "ecf5bcd4-c20f-407e-9e63-8a152cc028e5",
+      "name": "Webhook",
+      "webhookId": "5f183f59-3ea1-4b53-a965-c2382db635b5"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Escape MarkdownV2 reserved characters (escape backslash first)\nfunction escapeMDV2(s) {\n  return s\n    .replace(/\\\\/g, '\\\\\\\\')\n    .replace(/([_\\[\\]()~`>#+\\-=|{}.!])/g, '\\\\$1'); // notice * is removed\n}\n\n\n// Split by UTF-8 bytes with natural breakpoints\nfunction splitIntoUtf8ByteChunks(text, maxBytes = 3800) {\n  const enc = new TextEncoder();\n  const chunks = [];\n  let start = 0;\n\n  while (start < text.length) {\n    let end = start, bytes = 0, lastBreak = -1;\n    while (end < text.length) {\n      const cp = text.codePointAt(end);\n      const ch = String.fromCodePoint(cp);\n      const b = enc.encode(ch).length;\n      if (bytes + b > maxBytes) break;\n      bytes += b;\n      if (ch === ' ' || ch === '\\n' || ch === '.' || ch === '!' || ch === '?' || ch === ',') {\n        lastBreak = end + (cp > 0xFFFF ? 2 : 1);\n      }\n      end += (cp > 0xFFFF ? 2 : 1);\n    }\n    if (end < text.length && lastBreak > start && (end - start) > 200) end = lastBreak;\n    if (end === start) end = start + 1;\n    chunks.push(text.slice(start, end));\n    start = end;\n  }\n  return chunks;\n}\n\n// ---- MAIN ----\nconst raw = String($json.cleanedResponse ?? $json.output ?? '').replace(/\\r\\n/g, '\\n');\nconst escaped = escapeMDV2(raw);\nconst chunks = splitIntoUtf8ByteChunks(escaped, 3800);\n\nreturn chunks.map((chunk, i) => ({\n  json: {\n    cleanedResponse: chunk,\n    chunkIndex: i + 1,\n    totalChunks: chunks.length,\n    isMultipart: chunks.length > 1,\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        64
+      ],
+      "id": "e2e246a3-fb03-4777-97df-a8a12e465024",
+      "name": "Prepare for Dash"
+    },
+    {
+      "parameters": {
+        "chatId": "6867720402",
+        "text": "={{ $json.cleanedResponse }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "MarkdownV2"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        496,
+        64
+      ],
+      "id": "0d76415e-a2d3-434d-9d90-eb0b11d6010b",
+      "name": "Telegram to Jennifer Price",
+      "webhookId": "b0a0b2fa-def7-452b-9ec5-49ec3a03a586",
+      "credentials": {
+        "telegramApi": {
+          "id": "vvoc7IVAfk1i2qS2",
+          "name": "Telegram (DASH)"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "4.1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Keynote Talks and Public speaking Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Keynote Talks and Public speaking Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zep": {
+      "ai_memory": [
+        [
+          {
+            "node": "Keynote Talks and Public speaking Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit fields": {
+      "main": [
+        [
+          {
+            "node": "Keynote Talks and Public speaking Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keynote Talks and Public speaking Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare for Dash",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare for Dash": {
+      "main": [
+        [
+          {
+            "node": "Telegram to Jennifer Price",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5120bd5f-feb8-4854-b16a-efd99a1576b2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "0mJ3sbUdSmtiKjOD",
+  "tags": [
+    {
+      "updatedAt": "2025-08-23T14:16:18.781Z",
+      "createdAt": "2025-08-23T14:16:18.781Z",
+      "id": "R9mYKVsn6pwhD8Ut",
+      "name": "Visual"
+    },
+    {
+      "updatedAt": "2025-08-19T19:03:50.989Z",
+      "createdAt": "2025-08-19T19:03:50.989Z",
+      "id": "mxIKbPw75Qi3GOcT",
+      "name": "WH"
+    }
+  ]
+}

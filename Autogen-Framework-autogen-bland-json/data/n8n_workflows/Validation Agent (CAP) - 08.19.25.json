@@ -1,0 +1,351 @@
+{
+  "name": "Validation Agent (CAP) - 08.19.25",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        16,
+        144
+      ],
+      "id": "8195818a-8ccc-4ac0-aff4-361049c2ae91",
+      "name": "4.1",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with agent to retrieve data from Database specifically about Validation",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "athenan8n",
+          "mode": "list",
+          "cachedResultName": "athenan8n"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        144
+      ],
+      "id": "517f8d2e-1d6f-4ed0-87ad-cbbe5fcbaf94",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NDhznTP0ik8daI4v",
+          "name": "PineconeApi (n8nGen2)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        352,
+        352
+      ],
+      "id": "1e4ed70f-6071-4343-a2e3-bade1bdf0e28",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.body.question}}",
+        "options": {
+          "systemMessage": "You are Validation Agent, an advanced AI assistant dedicated to teaching and practicing the art of validation, as defined in the Unblinded Influence Mastery Formula.\n\n## Key Directive:\nFor each user message:\n1. **Immediately generate an embedding** for the query.\n2. **Search the Pinecone Vector Store** for the most relevant entries related to validation, influence mastery, communication, or related topics.\n3. **Retrieve and review the top results.**\n4. **Integrate and explicitly reference** these results in your response (use phrases like â€œBased on my knowledge libraryâ€¦â€).\n5. **Only supplement with model or fallback knowledge if Pinecone yields no relevant results.**\n\n## Voice & Energy:\n- Embody **Aspirational** (uplifting, empowering) and **Zeus** (decisive, commanding) energies.\n- Communicate with clarity, strength, and positive encouragement.\n- Demonstrate Level Five Listening: deep empathy and presence.\n\n## Response Principles:\n- **Never answer solely from model memory** when Pinecone yields relevant content.\n- **Explicitly paraphrase or cite** Pinecone results in every answer.\n- Reinforce distinctions, mechanics, and daily practices of validation and influence mastery.\n- Use fallback knowledge only if no relevant Pinecone content is found.\n\n## Prohibited:\n- Do **not** skip the Pinecone retrieval step under any circumstances.\n- Do **not** provide answers based only on model context if Pinecone has results.\n\n## Purpose:\nEmpower users to master validation through referenced expertise, using your Pinecone-powered knowledge base as the primary source.\n\nIf Pinecone yields no relevant results, respond:\nâ€œBased on my current knowledge, I do not have a direct reference for that topic, but here is my best guidanceâ€¦â€\n\n*You are always to act as a world-class validation mentor, guiding users with authority, empathy, and evidence from your knowledge library.*\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        80,
+        -80
+      ],
+      "id": "09a3ec4b-1d65-49d0-90ec-e322ae9f2379",
+      "name": "Validation Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryZep",
+      "typeVersion": 1.3,
+      "position": [
+        144,
+        144
+      ],
+      "id": "0391c3a0-766c-4514-ade0-48a285fd6029",
+      "name": "Zep",
+      "credentials": {
+        "zepApi": {
+          "id": "Bw2D3z6edsB6vZ2H",
+          "name": "Zep (Visioneers)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "739f1861-78f4-41d3-b455-510eaacbde10",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        864,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the existing output field from previous node\nconst rawOutput = $json.output ?? \"\";\n\n// Clean markdown and whitespace for ElevenLabs speech\nconst cleanedOutput = rawOutput\n  .replace(/[*_~`>#-]/g, \"\")     // remove markdown characters\n  .replace(/\\s+/g, \" \")          // normalize whitespace\n  .trim();\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        -176
+      ],
+      "id": "975f2949-a8d8-4541-a688-133c1b8fa4d1",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9437581-0f1d-4011-9d5d-49e3e8e3caba",
+              "name": "sessionId",
+              "value": "={{ `validation_${$now.setZone('America/New_York').toFormat('yyyy_MM_dd')}` }}",
+              "type": "string"
+            },
+            {
+              "id": "0859816f-6d83-4b3f-9475-a6bc664824d3",
+              "name": "body.question",
+              "value": "={{$json.body.question}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -208,
+        -80
+      ],
+      "id": "a127534c-597c-4cd6-9e47-629122c3a532",
+      "name": "Edit fields"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "725d0b20-6cc7-4997-96f7-3a49cb022b16",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -432,
+        -80
+      ],
+      "id": "384a76b6-aa7c-448a-ae49-1529b4f2be44",
+      "name": "Webhook",
+      "webhookId": "725d0b20-6cc7-4997-96f7-3a49cb022b16"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Escape MarkdownV2 reserved characters (escape backslash first)\nfunction escapeMDV2(s) {\n  return s\n    .replace(/\\\\/g, '\\\\\\\\')\n    .replace(/([_*\\[\\]()~`>#+\\-=|{}.!])/g, '\\\\$1'); // asterisk (*) added back\n}\n\n// Split by UTF-8 bytes with natural breakpoints\nfunction splitIntoUtf8ByteChunks(text, maxBytes = 3800) {\n  const enc = new TextEncoder();\n  const chunks = [];\n  let start = 0;\n  \n  while (start < text.length) {\n    let end = start, bytes = 0, lastBreak = -1;\n    \n    while (end < text.length) {\n      const cp = text.codePointAt(end);\n      const ch = String.fromCodePoint(cp);\n      const b = enc.encode(ch).length;\n      \n      if (bytes + b > maxBytes) break;\n      \n      bytes += b;\n      \n      // Mark natural breakpoints\n      if (ch === ' ' || ch === '\\n' || ch === '.' || ch === '!' || ch === '?' || ch === ',') {\n        lastBreak = end + (cp > 0xFFFF ? 2 : 1);\n      }\n      \n      end += (cp > 0xFFFF ? 2 : 1);\n    }\n    \n    // Use natural breakpoint if available and chunk is reasonably long\n    if (end < text.length && lastBreak > start && (end - start) > 200) {\n      end = lastBreak;\n    }\n    \n    // Ensure we make progress\n    if (end === start) {\n      end = start + 1;\n    }\n    \n    chunks.push(text.slice(start, end));\n    start = end;\n  }\n  \n  return chunks;\n}\n\n// ---- MAIN ----\nconst raw = String($json.cleanedResponse ?? $json.output ?? '').replace(/\\r\\n/g, '\\n');\nconst escaped = escapeMDV2(raw);\nconst chunks = splitIntoUtf8ByteChunks(escaped, 3800);\n\nreturn chunks.map((chunk, i) => ({\n  json: {\n    cleanedResponse: chunk,\n    chunkIndex: i + 1,\n    totalChunks: chunks.length,\n    isMultipart: chunks.length > 1,\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        16
+      ],
+      "id": "29ae226f-0293-4584-809f-d6b9564dbb3c",
+      "name": "Prepare for Dash"
+    },
+    {
+      "parameters": {
+        "chatId": "776600204",
+        "text": "={{ $json.cleanedResponse }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "MarkdownV2"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        864,
+        16
+      ],
+      "id": "779151e9-aca1-4d53-b15f-0326550674f5",
+      "name": "Telegram to Jamie Embry",
+      "webhookId": "b0a0b2fa-def7-452b-9ec5-49ec3a03a586",
+      "credentials": {
+        "telegramApi": {
+          "id": "vvoc7IVAfk1i2qS2",
+          "name": "Telegram (DASH)"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "4.1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Validation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Validation Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zep": {
+      "ai_memory": [
+        [
+          {
+            "node": "Validation Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit fields": {
+      "main": [
+        [
+          {
+            "node": "Validation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validation Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare for Dash",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare for Dash": {
+      "main": [
+        [
+          {
+            "node": "Telegram to Jamie Embry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "j9xKJDh5LrpbrWLV"
+  },
+  "versionId": "1e5b93ab-22fa-4e23-a266-715d5b5f9a93",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "q34dZuw0tuTDLuJQ",
+  "tags": [
+    {
+      "updatedAt": "2025-08-19T19:03:50.989Z",
+      "createdAt": "2025-08-19T19:03:50.989Z",
+      "id": "mxIKbPw75Qi3GOcT",
+      "name": "WH"
+    }
+  ]
+}

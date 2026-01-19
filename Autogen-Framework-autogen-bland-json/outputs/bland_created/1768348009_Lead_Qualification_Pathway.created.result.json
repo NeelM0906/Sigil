@@ -1,0 +1,68 @@
+{
+  "status": "success",
+  "pathway_id": "4de58f30-ca12-4f16-a889-f369569b9fdd",
+  "name": "Lead Qualification Pathway",
+  "description": "Pathway to qualify leads and route hot leads for transfer.",
+  "template_workflow_id": "C7RE2cys7ooHZ9XF",
+  "template_file_path": "D:\\ACTI\\Autogen-Framework-autogen-bland-json_UPDATED\\Autogen-Framework-autogen-bland-json\\data\\n8n_workflows\\Automated AI Lead Enrichment_ Salesforce to Explorium for Enhanced Prospect Data.json",
+  "api_response": {
+    "status": "success",
+    "message": "Pathway updated successfully",
+    "pathway_data": {
+      "name": "Lead Qualification Pathway",
+      "description": "Pathway to qualify leads and route hot leads for transfer.",
+      "nodes": [
+        {
+          "id": "node1",
+          "type": "Default",
+          "data": {
+            "isStart": true,
+            "message": "Hello! Let's qualify your lead. Can you provide your name and email?"
+          }
+        },
+        {
+          "id": "node2",
+          "type": "Webhook",
+          "data": {
+            "url": "https://n8n.unblindedteam.com/webhook/bland/lead-intake",
+            "method": "POST",
+            "isStart": false
+          }
+        },
+        {
+          "id": "node3",
+          "type": "Transfer Node",
+          "data": {
+            "message": "Great! You're a hot lead. Transferring you now.",
+            "isStart": false
+          }
+        },
+        {
+          "id": "node4",
+          "type": "End Call",
+          "data": {
+            "message": "Thank you for your time. Unfortunately, we cannot proceed.",
+            "isStart": false
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "node1",
+          "target": "node2",
+          "label": "continue"
+        },
+        {
+          "source": "node2",
+          "target": "node3",
+          "label": "hot"
+        },
+        {
+          "source": "node2",
+          "target": "node4",
+          "label": "cold"
+        }
+      ]
+    }
+  }
+}

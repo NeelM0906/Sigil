@@ -1,0 +1,533 @@
+{
+  "source_file": "data\\bland_dataset\\Confirmation Agent - 5045c458-1fdd-4259-a57b-d613cb07c8fd.json",
+  "global_prompt": "# Background\nYour name is Zoey you are an act eye agent, introduce yourself as Zoey calling on behalf of Unblinded.  we're setting the tone for the entire conversation here. the goal is to create a sense of comfort and trust with the user. this isn't about being overly formal or using complex language, but rather being genuine and direct. the user should feel like they're talking to someone who cares about their issue and is willing to help. Dont repeat yourself find fun ways to reiterate what you were saying feel free to improv. You must respect the users time, if they tell you to hold on or wait you must wait for them.  Ask if there is a better time to call back. \n\nwhen we think about the mplrt identity, it's not just about using certain words or phrases, but rather embodying a mindset. being masterful means we're confident and knowledgeable, but not arrogant. being playful means we're willing to have a little fun and not take ourselves too seriously. being loving means we genuinely care about the user and their problem. and being in pursuit of the relevant truth means we're focused on finding a solution that actually works.\n\n\n# Goal\nthe objective is to communicate in a way that's both effective and enjoyable. we want the user to feel like they're getting the help they need, and that we're not wasting their time.. This is the MAIN GOAL- DO NOT ASK USER WHY THEY ARE CALLING! The call is for these events and these events only! The Act-Eye Confirmation Agent:\n✔ Confirms attendance for three events only:\n\n\nMedical Revenue Recovery Week (Dec 15–17)\n\n\nDecember 18 Park Ridge Marriott Training\n\n\nA day of magic in NYC and more with Sean Callaghee and the team — Elite & Certification NYC Day\n\n\n# Tone\nwe're aiming for a tone that's direct, yet friendly. we're not trying to be overly clever or use complex language, but rather be clear and concise. think of it like having a conversation with a friend - we're not trying to impress them with big words, but rather just have a real conversation. be less wordy and more direct. avoid using jargon or corporate speak. just be real. add in some fun energy! Be flirty but not zany! You can tell jokes and be fun when talking to the user. \n\n#Boundries - You can not hang up on people if you get confused or lost!!!! You must listen to what they have to say, if they tell you to move on please just move on!!! \nNever ask if there is a better time to speak, take advantage of the users time while you have them.  If they have less time, get to the point.\nWe must get final confirmation by TODAY for the December 20th Holiday Fun & Magic Day in NYC for tickets that are being purchased and other reservations.  Please make sure that we get a compete YES or NO for the Dec 20th day in NYC.  If they are not sure then they are a NO and cannot attend.",
+  "node_archetypes": [
+    {
+      "type": "Default",
+      "name": "Initial Greeting",
+      "has_prompt": true,
+      "prompt_len": 3337,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Name Confirmation",
+      "has_prompt": true,
+      "prompt_len": 2245,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "user_name",
+          "type": "string",
+          "instruction": "The user's full name",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Confirmation",
+      "has_prompt": true,
+      "prompt_len": 2702,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "confirmation_donation",
+          "type": "string",
+          "instruction": "extract if the user will leave a donation ",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Reminder Preference",
+      "has_prompt": true,
+      "prompt_len": 2483,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "reminderPreference",
+          "type": "boolean",
+          "instruction": "Whether the user prefers reminders",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Cancellation Handling",
+      "has_prompt": true,
+      "prompt_len": 2565,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Final Confirmation",
+      "has_prompt": true,
+      "prompt_len": 2843,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": []
+    },
+    {
+      "type": "End Call",
+      "name": "End Call",
+      "has_prompt": true,
+      "prompt_len": 2062,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": []
+    },
+    {
+      "type": "End Call",
+      "name": "8d1f83b4-b987-4d7e-aeb9-4f305810aafe",
+      "has_prompt": true,
+      "prompt_len": 166,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Knowledge Base",
+      "name": "FAQ ",
+      "has_prompt": true,
+      "prompt_len": 758,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Park ridge Marriott Training",
+      "has_prompt": true,
+      "prompt_len": 1069,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "training_confirmation",
+          "type": "string",
+          "instruction": "confirm that user is attending or not ",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Medical Revenue Recovery Week (Dec 15–17)",
+      "has_prompt": true,
+      "prompt_len": 917,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "mrr_confirm ",
+          "type": "string",
+          "instruction": "extract weather or not the user is going to the mrr event. ",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Thank you for confirming ",
+      "has_prompt": true,
+      "prompt_len": 220,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "A day of magic in NYC and more with Sean Callaghee and the team",
+      "has_prompt": true,
+      "prompt_len": 1320,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "What program are they in?",
+      "has_prompt": true,
+      "prompt_len": 420,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "End Call",
+      "name": "End conversation",
+      "has_prompt": true,
+      "prompt_len": 167,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "De-escalation ",
+      "has_prompt": true,
+      "prompt_len": 3837,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "eri_measurement",
+          "type": "string",
+          "instruction": "extract and determine \neri_measurement_extraction:\n- energy_calibration: ___% (emotional state matched/guided skillfully?)\n- safety_creation: ___% (truth-telling safety established?)\n- authority_positioning: ___% (their authority respected/elevated?)\n- curiosity_demonstration: ___% (genuine interest vs agenda displayed?)\n- truth_permission: ___% (inner world access earned?)\n- connection_preservation: ___% (human connection maintained/strengthened?)\n- objective_achievement: ___% (psychological goal of stage accomplished?)\n\nuniversal_eri_total: ___% (average of all 7 variables)",
+          "required": false
+        },
+        {
+          "var": "user_frustration_raw",
+          "type": "string",
+          "instruction": "extract the exact words/phrases the user used when displaying frustration ",
+          "required": false
+        },
+        {
+          "var": "blocked_more_type",
+          "type": "string",
+          "instruction": "extract what the user wants more of ",
+          "required": false
+        },
+        {
+          "var": "current_pain_intensity",
+          "type": "string",
+          "instruction": "Measure frustration level (1-10)",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "conditionOverridesGlobalPathway",
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "user want to continue the conversation",
+      "has_prompt": true,
+      "prompt_len": 297,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Knowledge Base",
+      "name": "Objection Handling",
+      "has_prompt": true,
+      "prompt_len": 3202,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "eri_measurement",
+          "type": "string",
+          "instruction": "\nextract and determine \neri_measurement_extraction:\n- energy_calibration: ___% (emotional state matched/guided skillfully?)\n- safety_creation: ___% (truth-telling safety established?)\n- authority_positioning: ___% (their authority respected/elevated?)\n- curiosity_demonstration: ___% (genuine interest vs agenda displayed?)\n- truth_permission: ___% (inner world access earned?)\n- connection_preservation: ___% (human connection maintained/strengthened?)\n- objective_achievement: ___% (psychological goal of stage accomplished?)\n\nuniversal_eri_total: ___% (average of all 7 variables)\n\n",
+          "required": false
+        },
+        {
+          "var": "objection_type",
+          "type": "string",
+          "instruction": "Extract users objection type.",
+          "required": false
+        },
+        {
+          "var": "emotion_inferred",
+          "type": "string",
+          "instruction": "Extract users inferred emotion.",
+          "required": false
+        },
+        {
+          "var": "underlying_concern",
+          "type": "string",
+          "instruction": "Extract users underlying concern.",
+          "required": false
+        },
+        {
+          "var": "energy_level",
+          "type": "string",
+          "instruction": "Extract users energy level.",
+          "required": false
+        },
+        {
+          "var": "objection",
+          "type": "string",
+          "instruction": "Extract users objection. Or concern.",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Guest List",
+      "has_prompt": true,
+      "prompt_len": 735,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "guest_amount",
+          "type": "string",
+          "instruction": "extract amount of guest",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "guest contact info",
+      "has_prompt": true,
+      "prompt_len": 224,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "guest_contacts",
+          "type": "string",
+          "instruction": "extract the names of all the guest and their emails and phone numbers ",
+          "required": true
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": null,
+      "name": null,
+      "has_prompt": false,
+      "prompt_len": 0,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": []
+    }
+  ],
+  "edge_archetypes": [
+    {
+      "type": "custom",
+      "label": "User is ready to proceed",
+      "source": "45523fda-46ca-4d4d-a741-f55e16f8b0e7",
+      "target": "9d4a1ac7-92e4-42dd-91e1-2479b93eb175"
+    },
+    {
+      "type": "custom",
+      "label": "User indicates reminder preference",
+      "source": "a5e5f9e8-6672-4e63-aa7b-6e5678bb4831",
+      "target": "3c5ce5af-dcba-4e48-89fb-479a62381998"
+    },
+    {
+      "type": "custom",
+      "label": "Confirmation complete",
+      "source": "3c5ce5af-dcba-4e48-89fb-479a62381998",
+      "target": "213ee2a2-b48d-4231-9bc1-e6ff5fbba740"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "e1930284-b05c-425c-a137-d830f61bbcd8",
+      "target": "8d1f83b4-b987-4d7e-aeb9-4f305810aafe"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "993764a1-089e-4a50-b121-e073d8172ff4",
+      "target": "5769e3ee-ac71-4fc8-9149-105df780da51"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "3e69ae2b-58fa-43d0-a2fa-4835dcc625cf",
+      "target": "f9b9a953-6d77-47e0-b0fa-eb72b5390876"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "5769e3ee-ac71-4fc8-9149-105df780da51",
+      "target": "3e69ae2b-58fa-43d0-a2fa-4835dcc625cf"
+    },
+    {
+      "type": "custom",
+      "label": "user will not bring a guest",
+      "source": "f9b9a953-6d77-47e0-b0fa-eb72b5390876",
+      "target": "06c406fd-1a98-4007-83d1-e8167b2c0478"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "9d4a1ac7-92e4-42dd-91e1-2479b93eb175",
+      "target": "cf7d0185-bda8-411a-bcc6-80670c5d5a6e"
+    },
+    {
+      "type": "custom",
+      "label": "User is not in eco system",
+      "source": "cf7d0185-bda8-411a-bcc6-80670c5d5a6e",
+      "target": "a2d4e047-e936-49cb-93fd-d0261ad31c0c"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "cf7d0185-bda8-411a-bcc6-80670c5d5a6e",
+      "target": "993764a1-089e-4a50-b121-e073d8172ff4"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "06c406fd-1a98-4007-83d1-e8167b2c0478",
+      "target": "a5e5f9e8-6672-4e63-aa7b-6e5678bb4831"
+    },
+    {
+      "type": "custom",
+      "label": "user wants to bring a guest",
+      "source": "f9b9a953-6d77-47e0-b0fa-eb72b5390876",
+      "target": "363c6420-7724-4159-a00c-4040424e1322"
+    },
+    {
+      "type": "custom",
+      "label": "User shared guest information",
+      "source": "b7f9cadb-6672-4b43-8a89-a8de66633fba",
+      "target": "06c406fd-1a98-4007-83d1-e8167b2c0478"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "363c6420-7724-4159-a00c-4040424e1322",
+      "target": "b7f9cadb-6672-4b43-8a89-a8de66633fba"
+    }
+  ],
+  "style_hints": {
+    "default_node_prompt_style": "long_scripted",
+    "edges_use_custom_type": true,
+    "extract_vars_format": "list_of_4"
+  }
+}

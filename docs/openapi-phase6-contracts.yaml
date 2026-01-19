@@ -1,0 +1,1025 @@
+openapi: 3.1.0
+info:
+  title: Sigil v2 Contracts API
+  description: |
+    Phase 6 Contracts System API for Sigil v2.
+
+    The Contracts API provides formal specifications for agent outputs, ensuring
+    deliverables meet requirements through validation, retry logic, and graceful
+    degradation.
+
+    ## Key Features
+    - Contract Definition and Management
+    - Output Validation against Contracts
+    - Contract-Enforced Execution with Auto-Retry
+    - Template Library for Common Workflows
+    - Fallback Strategies for Graceful Degradation
+
+    ## Authentication
+    Bearer token authentication via JWT. Include token in Authorization header.
+  version: 1.0.0
+  contact:
+    name: Sigil API Team
+    email: api@sigil.io
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development server
+  - url: https://api.sigil.io/v1
+    description: Production server
+
+tags:
+  - name: Contracts
+    description: Contract definition and management
+  - name: Validation
+    description: Output validation against contracts
+  - name: Execution
+    description: Contract-enforced execution
+  - name: Templates
+    description: Contract template management
+
+paths:
+  /contracts:
+    get:
+      operationId: listContracts
+      tags:
+        - Contracts
+      summary: List all contracts
+      description: Retrieve a list of all registered contracts including templates and custom contracts.
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of contracts to return
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+        - name: offset
+          in: query
+          description: Number of contracts to skip
+          schema:
+            type: integer
+            default: 0
+        - name: type
+          in: query
+          description: Filter by contract type
+          schema:
+            type: string
+            enum: [template, custom, all]
+            default: all
+      responses:
+        '200':
+          description: List of contracts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  contracts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ContractSummary'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+              example:
+                contracts:
+                  - name: lead_qualification
+                    description: Qualify a sales lead using BANT methodology
+                    deliverable_count: 4
+                    version: "1.0.0"
+                    type: template
+                  - name: custom_email
+                    description: Email drafting contract
+                    deliverable_count: 3
+                    version: "1.0.0"
+                    type: custom
+                total: 7
+                limit: 50
+                offset: 0
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      operationId: createContract
+      tags:
+        - Contracts
+      summary: Create a custom contract
+      description: Register a new custom contract specification.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateContractRequest'
+            example:
+              name: email_draft
+              description: Structured email draft with subject and body
+              deliverables:
+                - name: subject
+                  type: str
+                  description: Email subject line
+                  required: true
+                  validation_rules:
+                    - "len(value) > 0"
+                    - "len(value) < 100"
+                - name: body
+                  type: str
+                  description: Email body content
+                  required: true
+                  validation_rules:
+                    - "len(value) >= 50"
+              constraints:
+                max_total_tokens: 2000
+              failure_strategy: fallback
+              max_retries: 1
+      responses:
+        '201':
+          description: Contract created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contract'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Contract with this name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /contracts/{contract_name}:
+    parameters:
+      - name: contract_name
+        in: path
+        required: true
+        description: Unique contract name
+        schema:
+          type: string
+        example: lead_qualification
+
+    get:
+      operationId: getContract
+      tags:
+        - Contracts
+      summary: Get contract details
+      description: Retrieve full specification for a contract.
+      responses:
+        '200':
+          description: Contract details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contract'
+              example:
+                name: lead_qualification
+                description: Qualify a sales lead using BANT methodology
+                deliverables:
+                  - name: qualification_score
+                    type: int
+                    description: Overall qualification score from 0-100
+                    required: true
+                    validation_rules:
+                      - "value >= 0"
+                      - "value <= 100"
+                    example: 75
+                  - name: bant_assessment
+                    type: dict
+                    description: BANT breakdown
+                    required: true
+                  - name: recommended_action
+                    type: str
+                    description: Recommended next step
+                    required: true
+                  - name: confidence
+                    type: float
+                    description: Confidence in assessment
+                    required: false
+                    validation_rules:
+                      - "value >= 0.0"
+                      - "value <= 1.0"
+                constraints:
+                  max_total_tokens: 5000
+                  max_tool_calls: 5
+                  timeout_seconds: 60
+                  warn_threshold: 0.8
+                failure_strategy: retry
+                max_retries: 2
+                version: "1.0.0"
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      operationId: updateContract
+      tags:
+        - Contracts
+      summary: Update a custom contract
+      description: |
+        Update an existing custom contract. Template contracts cannot be modified.
+        Creates a new version of the contract.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateContractRequest'
+      responses:
+        '200':
+          description: Contract updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contract'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Cannot modify template contracts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      operationId: deleteContract
+      tags:
+        - Contracts
+      summary: Delete a custom contract
+      description: |
+        Delete a custom contract. Template contracts cannot be deleted.
+      responses:
+        '204':
+          description: Contract deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Cannot delete template contracts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /contracts/validate:
+    post:
+      operationId: validateOutput
+      tags:
+        - Validation
+      summary: Validate output against contract
+      description: |
+        Validate an output dictionary against a contract specification.
+        Returns detailed validation results including any errors and suggestions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidationRequest'
+            example:
+              output:
+                qualification_score: 75
+                bant_assessment:
+                  budget:
+                    score: 80
+                    notes: "Budget approved"
+                  authority:
+                    score: 70
+                  need:
+                    score: 90
+                  timeline:
+                    score: 60
+                recommended_action: "Schedule product demo"
+              contract_name: lead_qualification
+              strict: true
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+              examples:
+                valid:
+                  summary: Valid output
+                  value:
+                    is_valid: true
+                    errors: []
+                    warnings: []
+                    suggestion: null
+                    validation_time_ms: 12
+                    contract_name: lead_qualification
+                    contract_version: "1.0.0"
+                invalid:
+                  summary: Invalid output with errors
+                  value:
+                    is_valid: false
+                    errors:
+                      - field: qualification_score
+                        error_type: type
+                        reason: "Expected type 'int', got 'str'"
+                        expected: int
+                        actual: str
+                        severity: error
+                      - field: recommended_action
+                        error_type: missing
+                        reason: "Required field 'recommended_action' is missing"
+                        expected: "Field of type str"
+                        actual: "<missing>"
+                        severity: error
+                    warnings:
+                      - "Token usage at 4500/5000 (90%)"
+                    suggestion: "Convert 'qualification_score' to type 'int'; Add missing fields: recommended_action"
+                    validation_time_ms: 15
+                    contract_name: lead_qualification
+                    contract_version: "1.0.0"
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Contract not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /contracts/execute:
+    post:
+      operationId: executeWithContract
+      tags:
+        - Execution
+      summary: Execute task with contract enforcement
+      description: |
+        Execute an agent task with automatic contract validation, retry logic,
+        and fallback strategies. Returns the validated output or best-effort
+        fallback result.
+
+        ## Execution Flow
+        1. Execute agent with task
+        2. Validate output against contract
+        3. If invalid and strategy is RETRY:
+           - Refine prompt with error context
+           - Re-execute and re-validate (up to max_retries)
+        4. If still invalid, apply fallback strategy
+        5. Return result with full metadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecutionRequest'
+            example:
+              agent_id: lead_qualifier
+              task: "Qualify John Smith from Acme Corp for our enterprise SaaS"
+              contract_name: lead_qualification
+              context:
+                lead_info: "John is CTO, company has 200 employees"
+              session_id: sess_abc123
+      responses:
+        '200':
+          description: Execution result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionResult'
+              examples:
+                success:
+                  summary: Successful execution on first try
+                  value:
+                    output:
+                      qualification_score: 78
+                      bant_assessment:
+                        budget:
+                          score: 85
+                          notes: "Enterprise budget confirmed"
+                        authority:
+                          score: 90
+                          notes: "CTO is decision maker"
+                        need:
+                          score: 75
+                          notes: "Pain points identified"
+                        timeline:
+                          score: 65
+                          notes: "Q2 implementation planned"
+                      recommended_action: "Schedule technical deep-dive with engineering team"
+                      confidence: 0.87
+                    is_valid: true
+                    attempts: 1
+                    tokens_used: 3200
+                    applied_strategy: success
+                    validation_result:
+                      is_valid: true
+                      errors: []
+                      warnings: []
+                    metadata:
+                      execution_time_ms: 4500
+                      model_used: "anthropic:claude-sonnet-4-20250514"
+                retry_success:
+                  summary: Successful after retry
+                  value:
+                    output:
+                      qualification_score: 72
+                      bant_assessment: {}
+                      recommended_action: "Follow up call"
+                    is_valid: true
+                    attempts: 2
+                    tokens_used: 5800
+                    applied_strategy: retry
+                    validation_result:
+                      is_valid: true
+                      errors: []
+                      warnings: []
+                    metadata:
+                      execution_time_ms: 8200
+                      retries_performed: 1
+                fallback:
+                  summary: Fallback result after retry failures
+                  value:
+                    output:
+                      qualification_score: 50
+                      bant_assessment: {}
+                      recommended_action: "Needs manual review"
+                    is_valid: false
+                    attempts: 3
+                    tokens_used: 8500
+                    applied_strategy: fallback
+                    validation_result:
+                      is_valid: false
+                      errors:
+                        - field: bant_assessment
+                          error_type: rule
+                          reason: "BANT assessment incomplete"
+                    metadata:
+                      filled_from: partial
+                      missing_deliverables: []
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Contract or agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Contract violation with fail strategy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractViolationError'
+              example:
+                type: "https://sigil.io/errors/contract-violation"
+                title: Contract Violation
+                status: 422
+                detail: "Contract 'lead_qualification' violated after 3 attempts"
+                code: CV-008
+                contract_name: lead_qualification
+                attempts: 3
+                errors:
+                  - field: qualification_score
+                    reason: "Value out of range"
+                recovery_suggestions:
+                  - "Review agent output format"
+                  - "Consider using fallback strategy"
+
+  /templates:
+    get:
+      operationId: listTemplates
+      tags:
+        - Templates
+      summary: List available contract templates
+      description: Retrieve list of all built-in contract templates.
+      responses:
+        '200':
+          description: List of templates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  templates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TemplateSummary'
+              example:
+                templates:
+                  - name: lead_qualification
+                    description: Qualify a sales lead using BANT methodology
+                    category: sales
+                    deliverable_count: 4
+                  - name: research_report
+                    description: Structured research report with findings
+                    category: research
+                    deliverable_count: 5
+                  - name: appointment_booking
+                    description: Calendar appointment creation details
+                    category: scheduling
+                    deliverable_count: 6
+                  - name: market_analysis
+                    description: Competitive market analysis report
+                    category: research
+                    deliverable_count: 6
+                  - name: compliance_check
+                    description: Governance and compliance validation
+                    category: compliance
+                    deliverable_count: 5
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /templates/{template_name}:
+    get:
+      operationId: getTemplate
+      tags:
+        - Templates
+      summary: Get template details
+      description: Retrieve full specification for a contract template.
+      parameters:
+        - name: template_name
+          in: path
+          required: true
+          description: Template name
+          schema:
+            type: string
+          example: lead_qualification
+      responses:
+        '200':
+          description: Template details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contract'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /templates/{template_name}/prompt-context:
+    get:
+      operationId: getTemplatePromptContext
+      tags:
+        - Templates
+      summary: Get prompt context for template
+      description: |
+        Retrieve formatted prompt context describing expected output format.
+        Useful for including in agent system prompts.
+      parameters:
+        - name: template_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Prompt context
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |
+                ## Required Output Format
+
+                Your output must be a JSON object with the following fields:
+
+                - **qualification_score** (int, REQUIRED): Overall qualification score from 0-100
+                  - Validation: value >= 0, value <= 100
+                  - Example: 75
+                - **bant_assessment** (dict, REQUIRED): BANT breakdown
+                - **recommended_action** (str, REQUIRED): Recommended next step
+                - **confidence** (float, OPTIONAL): Confidence in assessment
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  schemas:
+    Deliverable:
+      type: object
+      required:
+        - name
+        - type
+        - description
+      properties:
+        name:
+          type: string
+          description: Field name in output dict
+          example: qualification_score
+        type:
+          type: string
+          enum: [str, int, float, bool, list, dict, any]
+          description: Expected data type
+          example: int
+        description:
+          type: string
+          description: Human-readable description
+          example: Overall qualification score from 0-100
+        required:
+          type: boolean
+          default: true
+          description: Whether this field must be present
+        validation_rules:
+          type: array
+          items:
+            type: string
+          description: List of validation expressions
+          example:
+            - "value >= 0"
+            - "value <= 100"
+        example:
+          description: Example value for documentation
+        default:
+          description: Default value if missing and not required
+
+    ContractConstraints:
+      type: object
+      properties:
+        max_input_tokens:
+          type: integer
+          nullable: true
+          description: Maximum input tokens per attempt
+        max_output_tokens:
+          type: integer
+          nullable: true
+          description: Maximum output tokens per attempt
+        max_total_tokens:
+          type: integer
+          nullable: true
+          description: Maximum total tokens across all attempts
+          example: 5000
+        max_tool_calls:
+          type: integer
+          nullable: true
+          description: Maximum tool calls allowed
+          example: 5
+        timeout_seconds:
+          type: integer
+          nullable: true
+          description: Maximum execution time
+          example: 60
+        warn_threshold:
+          type: number
+          format: float
+          default: 0.8
+          description: Percentage of limit to trigger warning
+          minimum: 0.0
+          maximum: 1.0
+
+    Contract:
+      type: object
+      required:
+        - name
+        - description
+        - deliverables
+      properties:
+        name:
+          type: string
+          description: Unique contract identifier
+          example: lead_qualification
+        description:
+          type: string
+          description: Human-readable description
+          example: Qualify a sales lead using BANT methodology
+        deliverables:
+          type: array
+          items:
+            $ref: '#/components/schemas/Deliverable'
+          minItems: 1
+        constraints:
+          $ref: '#/components/schemas/ContractConstraints'
+        failure_strategy:
+          type: string
+          enum: [retry, fallback, partial, template, escalate, fail]
+          default: retry
+          description: How to handle validation failures
+        max_retries:
+          type: integer
+          default: 2
+          description: Maximum retry attempts
+          minimum: 0
+          maximum: 5
+        version:
+          type: string
+          default: "1.0.0"
+          description: Contract version
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional metadata
+
+    ContractSummary:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        deliverable_count:
+          type: integer
+        version:
+          type: string
+        type:
+          type: string
+          enum: [template, custom]
+
+    TemplateSummary:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        deliverable_count:
+          type: integer
+
+    CreateContractRequest:
+      allOf:
+        - $ref: '#/components/schemas/Contract'
+      required:
+        - name
+        - description
+        - deliverables
+
+    UpdateContractRequest:
+      type: object
+      properties:
+        description:
+          type: string
+        deliverables:
+          type: array
+          items:
+            $ref: '#/components/schemas/Deliverable'
+        constraints:
+          $ref: '#/components/schemas/ContractConstraints'
+        failure_strategy:
+          type: string
+          enum: [retry, fallback, partial, template, escalate, fail]
+        max_retries:
+          type: integer
+          minimum: 0
+          maximum: 5
+        metadata:
+          type: object
+
+    ValidationRequest:
+      type: object
+      required:
+        - output
+      properties:
+        output:
+          type: object
+          additionalProperties: true
+          description: Output to validate
+        contract_name:
+          type: string
+          description: Contract template name
+        contract_spec:
+          $ref: '#/components/schemas/Contract'
+          description: Or inline contract specification
+        strict:
+          type: boolean
+          default: true
+          description: Fail on first error vs. collect all
+        context:
+          type: object
+          additionalProperties: true
+          description: Execution context for constraint checking
+
+    ValidationError:
+      type: object
+      properties:
+        field:
+          type: string
+          nullable: true
+          description: Field name that failed
+        error_type:
+          type: string
+          enum: [missing, type, rule, constraint]
+        reason:
+          type: string
+          description: Human-readable explanation
+        expected:
+          description: What was expected
+        actual:
+          description: What was received
+        severity:
+          type: string
+          enum: [error, warning]
+          default: error
+        rule:
+          type: string
+          nullable: true
+          description: Specific rule that failed
+
+    ValidationResult:
+      type: object
+      properties:
+        is_valid:
+          type: boolean
+          description: True if output satisfies contract
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+        warnings:
+          type: array
+          items:
+            type: string
+        suggestion:
+          type: string
+          nullable: true
+          description: Suggested fix for validation failures
+        validation_time_ms:
+          type: integer
+          description: Time taken to validate
+        contract_name:
+          type: string
+        contract_version:
+          type: string
+
+    ExecutionRequest:
+      type: object
+      required:
+        - agent_id
+        - task
+      properties:
+        agent_id:
+          type: string
+          description: ID of agent to execute
+        task:
+          type: string
+          description: Task description for the agent
+        contract_name:
+          type: string
+          description: Name of contract template to use
+        contract_spec:
+          $ref: '#/components/schemas/Contract'
+          description: Or inline contract specification
+        context:
+          type: object
+          additionalProperties: true
+          description: Optional execution context
+        force_strategy:
+          type: string
+          enum: [retry, fallback, partial, template, escalate, fail]
+          description: Override contract's failure strategy
+        session_id:
+          type: string
+          description: Session ID for tracking
+
+    ExecutionResult:
+      type: object
+      properties:
+        output:
+          type: object
+          additionalProperties: true
+          description: Validated or fallback output
+        is_valid:
+          type: boolean
+          description: True if output passed validation
+        attempts:
+          type: integer
+          description: Number of execution attempts
+          minimum: 1
+        tokens_used:
+          type: integer
+          description: Total tokens consumed
+        applied_strategy:
+          type: string
+          enum: [success, retry, fallback, fail]
+          description: Strategy that produced final result
+        validation_result:
+          $ref: '#/components/schemas/ValidationResult'
+        metadata:
+          type: object
+          properties:
+            execution_time_ms:
+              type: integer
+            model_used:
+              type: string
+            retries_performed:
+              type: integer
+            filled_from:
+              type: string
+              enum: [partial, template]
+            missing_deliverables:
+              type: array
+              items:
+                type: string
+
+    Error:
+      type: object
+      required:
+        - type
+        - title
+        - status
+        - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          description: URI identifying the error type
+          example: "https://sigil.io/errors/contract-not-found"
+        title:
+          type: string
+          description: Short human-readable title
+          example: Contract Not Found
+        status:
+          type: integer
+          description: HTTP status code
+          example: 404
+        detail:
+          type: string
+          description: Human-readable explanation
+          example: "Contract 'unknown_contract' not found"
+        code:
+          type: string
+          description: Application-specific error code
+          example: CV-009
+        instance:
+          type: string
+          format: uri
+          description: URI identifying the specific occurrence
+        recovery_suggestions:
+          type: array
+          items:
+            type: string
+          description: Suggested recovery actions
+
+    ContractViolationError:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          properties:
+            contract_name:
+              type: string
+            attempts:
+              type: integer
+            errors:
+              type: array
+              items:
+                $ref: '#/components/schemas/ValidationError'
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            type: "https://sigil.io/errors/unauthorized"
+            title: Unauthorized
+            status: 401
+            detail: "Valid authentication credentials required"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            type: "https://sigil.io/errors/not-found"
+            title: Not Found
+            status: 404
+            detail: "The requested resource was not found"
+
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            type: "https://sigil.io/errors/validation-error"
+            title: Validation Error
+            status: 400
+            detail: "Request body failed validation"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT Bearer token authentication
+
+security:
+  - BearerAuth: []

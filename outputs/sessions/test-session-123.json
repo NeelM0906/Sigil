@@ -1,0 +1,871 @@
+{
+  "session_id": "test-session-123",
+  "created_at": "2026-01-12T03:00:38.525233+00:00",
+  "updated_at": "2026-01-12T03:01:05.602682+00:00",
+  "events": [
+    {
+      "event_id": "086c05b6-216e-4f17-a1d8-549b6b28cef1",
+      "event_type": "message.added",
+      "timestamp": "2026-01-12T03:00:38.525071+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "2f33ac1f-34a7-4f6d-9ef9-175f399ed6f7",
+      "payload": {
+        "request_id": "a314c469-0232-4f9a-a55f-bcb5f0232be8",
+        "message_preview": "Test message",
+        "started_at": "2026-01-12T03:00:38.525064+00:00"
+      }
+    },
+    {
+      "event_id": "63e230ef-7138-40bc-81e9-9e0c65d2d869",
+      "event_type": "reasoning.strategy_selected",
+      "timestamp": "2026-01-12T03:00:38.525431+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "complexity": 0.5,
+        "reason": "auto_selected_for_complexity_0.50"
+      }
+    },
+    {
+      "event_id": "698b3aa5-1be6-4124-978d-ed7d16956078",
+      "event_type": "reasoning.completed",
+      "timestamp": "2026-01-12T03:00:38.525995+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "success": true,
+        "confidence": 0.7,
+        "tokens_used": 100,
+        "execution_time_seconds": 0.00029587745666503906,
+        "error": null
+      }
+    },
+    {
+      "event_id": "ec97ffe4-67a6-43a7-bf03-b9a5641e58be",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-12T03:00:38.526815+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "2f33ac1f-34a7-4f6d-9ef9-175f399ed6f7",
+      "payload": {
+        "request_id": "a314c469-0232-4f9a-a55f-bcb5f0232be8",
+        "status": "failed",
+        "tokens_used": 100,
+        "execution_time_ms": 1.7435419140383601,
+        "error_count": 1,
+        "completed_at": "2026-01-12T03:00:38.526807+00:00"
+      }
+    },
+    {
+      "event_id": "8a8e7334-1c5d-4c16-8b3a-2f5fc5e8b20b",
+      "event_type": "message.added",
+      "timestamp": "2026-01-12T03:00:38.528484+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "fb54937b-19fc-449d-863d-4a81b3d7dea7",
+      "payload": {
+        "request_id": "472c21cc-d45b-4475-8edf-50ba62e9a4bd",
+        "message_preview": "Test message",
+        "started_at": "2026-01-12T03:00:38.528480+00:00"
+      }
+    },
+    {
+      "event_id": "3bcf7ff2-15be-46fb-9099-1f96e79929ae",
+      "event_type": "reasoning.strategy_selected",
+      "timestamp": "2026-01-12T03:00:38.528814+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "complexity": 0.5,
+        "reason": "auto_selected_for_complexity_0.50"
+      }
+    },
+    {
+      "event_id": "c906faa2-c548-489d-95e1-e026f43aefcf",
+      "event_type": "reasoning.completed",
+      "timestamp": "2026-01-12T03:00:38.529090+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "success": true,
+        "confidence": 0.7,
+        "tokens_used": 100,
+        "execution_time_seconds": 2.7894973754882812e-05,
+        "error": null
+      }
+    },
+    {
+      "event_id": "83c50c86-5a64-4b34-a6e0-35e62db0e987",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-12T03:00:38.529539+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "fb54937b-19fc-449d-863d-4a81b3d7dea7",
+      "payload": {
+        "request_id": "472c21cc-d45b-4475-8edf-50ba62e9a4bd",
+        "status": "failed",
+        "tokens_used": 100,
+        "execution_time_ms": 1.0546250268816948,
+        "error_count": 1,
+        "completed_at": "2026-01-12T03:00:38.529534+00:00"
+      }
+    },
+    {
+      "event_id": "dfabdb5b-172b-4704-9037-bbb01e8e8cf5",
+      "event_type": "message.added",
+      "timestamp": "2026-01-12T03:00:38.530629+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "af725835-1600-463f-922f-189eea463a0b",
+      "payload": {
+        "request_id": "de3a9ef7-b1d4-473d-ae44-ab58a28d48d4",
+        "message_preview": "Test message",
+        "started_at": "2026-01-12T03:00:38.530626+00:00"
+      }
+    },
+    {
+      "event_id": "eed8c5d5-d599-4779-b662-497125a4bd7f",
+      "event_type": "reasoning.strategy_selected",
+      "timestamp": "2026-01-12T03:00:38.530896+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "complexity": 0.5,
+        "reason": "auto_selected_for_complexity_0.50"
+      }
+    },
+    {
+      "event_id": "b885501b-cfed-4b6b-b457-289d21e9b0e5",
+      "event_type": "reasoning.completed",
+      "timestamp": "2026-01-12T03:00:38.531342+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "success": true,
+        "confidence": 0.7,
+        "tokens_used": 100,
+        "execution_time_seconds": 2.09808349609375e-05,
+        "error": null
+      }
+    },
+    {
+      "event_id": "8a9067ea-e6bc-40d3-a00f-8cd672f61540",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-12T03:00:38.531776+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "af725835-1600-463f-922f-189eea463a0b",
+      "payload": {
+        "request_id": "de3a9ef7-b1d4-473d-ae44-ab58a28d48d4",
+        "status": "failed",
+        "tokens_used": 100,
+        "execution_time_ms": 1.1451669270172715,
+        "error_count": 1,
+        "completed_at": "2026-01-12T03:00:38.531772+00:00"
+      }
+    },
+    {
+      "event_id": "69ee5481-9d94-4c60-9d5a-d048c88d3dfb",
+      "event_type": "message.added",
+      "timestamp": "2026-01-12T03:00:38.532967+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "a8561d3e-f070-40f5-93bb-668df4b9cdc3",
+      "payload": {
+        "request_id": "8517afd4-a928-4497-9425-963be7b51374",
+        "message_preview": "Test message",
+        "started_at": "2026-01-12T03:00:38.532964+00:00"
+      }
+    },
+    {
+      "event_id": "48560d35-ee7a-4853-859d-87ff7443bc10",
+      "event_type": "reasoning.strategy_selected",
+      "timestamp": "2026-01-12T03:00:38.533327+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "complexity": 0.5,
+        "reason": "auto_selected_for_complexity_0.50"
+      }
+    },
+    {
+      "event_id": "55aa70bb-156e-41a6-82ed-ab814583cccd",
+      "event_type": "reasoning.completed",
+      "timestamp": "2026-01-12T03:00:38.533674+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "success": true,
+        "confidence": 0.7,
+        "tokens_used": 100,
+        "execution_time_seconds": 2.193450927734375e-05,
+        "error": null
+      }
+    },
+    {
+      "event_id": "eede5d9d-4fea-48f5-9f00-79e1bd3a580d",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-12T03:00:38.534175+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "a8561d3e-f070-40f5-93bb-668df4b9cdc3",
+      "payload": {
+        "request_id": "8517afd4-a928-4497-9425-963be7b51374",
+        "status": "failed",
+        "tokens_used": 100,
+        "execution_time_ms": 1.2046670308336616,
+        "error_count": 1,
+        "completed_at": "2026-01-12T03:00:38.534169+00:00"
+      }
+    },
+    {
+      "event_id": "ffd773af-ee1b-45f6-9dfa-cfb60912bdec",
+      "event_type": "message.added",
+      "timestamp": "2026-01-12T03:00:38.535410+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "e46dede3-8108-4176-921d-c2e5ec3e683a",
+      "payload": {
+        "request_id": "8f98a579-ac12-4da4-ad1d-311ed5b2d6ed",
+        "message_preview": "Test message",
+        "started_at": "2026-01-12T03:00:38.535406+00:00"
+      }
+    },
+    {
+      "event_id": "a5b21678-e7d9-4f33-b288-8a293e415972",
+      "event_type": "reasoning.strategy_selected",
+      "timestamp": "2026-01-12T03:00:38.535738+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "complexity": 0.5,
+        "reason": "auto_selected_for_complexity_0.50"
+      }
+    },
+    {
+      "event_id": "5810d507-ecc2-409b-9dc4-5741cf70817f",
+      "event_type": "reasoning.completed",
+      "timestamp": "2026-01-12T03:00:38.536077+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "success": true,
+        "confidence": 0.7,
+        "tokens_used": 100,
+        "execution_time_seconds": 2.193450927734375e-05,
+        "error": null
+      }
+    },
+    {
+      "event_id": "29f0a551-feef-4507-a4b6-0ab55471cbc2",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-12T03:00:38.536658+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "e46dede3-8108-4176-921d-c2e5ec3e683a",
+      "payload": {
+        "request_id": "8f98a579-ac12-4da4-ad1d-311ed5b2d6ed",
+        "status": "failed",
+        "tokens_used": 100,
+        "execution_time_ms": 1.2469589710235596,
+        "error_count": 1,
+        "completed_at": "2026-01-12T03:00:38.536653+00:00"
+      }
+    },
+    {
+      "event_id": "94685eff-2062-4793-890e-6c9aff7b6233",
+      "event_type": "message.added",
+      "timestamp": "2026-01-12T03:00:38.537868+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "3171a070-8996-45fc-bf71-0150921b1b77",
+      "payload": {
+        "request_id": "2bab1483-8f1e-4e60-a424-eeeb2e06d3fd",
+        "message_preview": "Test message",
+        "started_at": "2026-01-12T03:00:38.537865+00:00"
+      }
+    },
+    {
+      "event_id": "f5c1164a-1de7-473c-b6bc-50fb5c85918e",
+      "event_type": "reasoning.strategy_selected",
+      "timestamp": "2026-01-12T03:00:38.538378+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "complexity": 0.5,
+        "reason": "auto_selected_for_complexity_0.50"
+      }
+    },
+    {
+      "event_id": "8663f172-2670-4a26-af06-c109acbbb643",
+      "event_type": "reasoning.completed",
+      "timestamp": "2026-01-12T03:00:38.538820+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "success": true,
+        "confidence": 0.7,
+        "tokens_used": 100,
+        "execution_time_seconds": 2.3126602172851562e-05,
+        "error": null
+      }
+    },
+    {
+      "event_id": "2fa48563-73b4-43c4-b948-b9340b89140d",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-12T03:00:38.539541+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "3171a070-8996-45fc-bf71-0150921b1b77",
+      "payload": {
+        "request_id": "2bab1483-8f1e-4e60-a424-eeeb2e06d3fd",
+        "status": "failed",
+        "tokens_used": 100,
+        "execution_time_ms": 1.6707079485058784,
+        "error_count": 1,
+        "completed_at": "2026-01-12T03:00:38.539536+00:00"
+      }
+    },
+    {
+      "event_id": "9b270194-ca60-4a25-a847-1e547595bf08",
+      "event_type": "message.added",
+      "timestamp": "2026-01-12T03:00:38.546029+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "9baa9ff2-cff4-4487-8ab6-97bd458f93f7",
+      "payload": {
+        "request_id": "1ea248bd-585d-4956-92a9-3e76409e2500",
+        "message_preview": "Test message",
+        "started_at": "2026-01-12T03:00:38.546024+00:00"
+      }
+    },
+    {
+      "event_id": "e482281e-4957-4c53-9ba4-3d5d0141b3d5",
+      "event_type": "reasoning.strategy_selected",
+      "timestamp": "2026-01-12T03:00:38.546545+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "complexity": 0.5,
+        "reason": "auto_selected_for_complexity_0.50"
+      }
+    },
+    {
+      "event_id": "3d19f7f8-f94a-4039-b708-a31826985d24",
+      "event_type": "reasoning.completed",
+      "timestamp": "2026-01-12T03:00:38.546982+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "success": true,
+        "confidence": 0.7,
+        "tokens_used": 100,
+        "execution_time_seconds": 2.6226043701171875e-05,
+        "error": null
+      }
+    },
+    {
+      "event_id": "7def5e3f-2dd5-4457-abfe-8df3ae4f8aeb",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-12T03:00:38.547767+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "9baa9ff2-cff4-4487-8ab6-97bd458f93f7",
+      "payload": {
+        "request_id": "1ea248bd-585d-4956-92a9-3e76409e2500",
+        "status": "failed",
+        "tokens_used": 100,
+        "execution_time_ms": 1.7378750490024686,
+        "error_count": 1,
+        "completed_at": "2026-01-12T03:00:38.547761+00:00"
+      }
+    },
+    {
+      "event_id": "0c7af7c9-771b-40f7-9399-2015cf33f180",
+      "event_type": "message.added",
+      "timestamp": "2026-01-12T03:00:38.548310+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "9baa9ff2-cff4-4487-8ab6-97bd458f93f7",
+      "payload": {
+        "request_id": "c1bdad8d-56e4-4284-b579-771a6985aece",
+        "message_preview": "Test message",
+        "started_at": "2026-01-12T03:00:38.548306+00:00"
+      }
+    },
+    {
+      "event_id": "b073b8f4-1a9d-4510-990e-f0a1bcbf37a5",
+      "event_type": "reasoning.strategy_selected",
+      "timestamp": "2026-01-12T03:00:38.548717+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "complexity": 0.5,
+        "reason": "auto_selected_for_complexity_0.50"
+      }
+    },
+    {
+      "event_id": "bf15e2f1-7b6c-4d93-a0e8-498967994a20",
+      "event_type": "reasoning.completed",
+      "timestamp": "2026-01-12T03:00:38.549171+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "success": true,
+        "confidence": 0.7,
+        "tokens_used": 100,
+        "execution_time_seconds": 2.09808349609375e-05,
+        "error": null
+      }
+    },
+    {
+      "event_id": "7d0be334-5d44-43f0-9913-2b828608a634",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-12T03:00:38.550096+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "9baa9ff2-cff4-4487-8ab6-97bd458f93f7",
+      "payload": {
+        "request_id": "c1bdad8d-56e4-4284-b579-771a6985aece",
+        "status": "failed",
+        "tokens_used": 100,
+        "execution_time_ms": 1.7830419819802046,
+        "error_count": 1,
+        "completed_at": "2026-01-12T03:00:38.550090+00:00"
+      }
+    },
+    {
+      "event_id": "8f196428-a3e1-45f8-a4fb-ffe3c96b6152",
+      "event_type": "message.added",
+      "timestamp": "2026-01-12T03:01:05.571294+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "a6ea7560-4b94-4f0b-8c51-f4e3b5e0da0f",
+      "payload": {
+        "request_id": "66640357-0733-47ee-9896-82ef278a3613",
+        "message_preview": "Test message",
+        "started_at": "2026-01-12T03:01:05.571132+00:00"
+      }
+    },
+    {
+      "event_id": "4267e922-7ab3-45c2-89aa-65f1426e6f6f",
+      "event_type": "reasoning.strategy_selected",
+      "timestamp": "2026-01-12T03:01:05.572117+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "complexity": 0.5,
+        "reason": "auto_selected_for_complexity_0.50"
+      }
+    },
+    {
+      "event_id": "e1067bf5-7a09-4352-9595-e8ab6c93cd94",
+      "event_type": "reasoning.completed",
+      "timestamp": "2026-01-12T03:01:05.572918+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "success": true,
+        "confidence": 0.7,
+        "tokens_used": 100,
+        "execution_time_seconds": 0.0002841949462890625,
+        "error": null
+      }
+    },
+    {
+      "event_id": "7dbf9d7e-71da-43dd-b3fe-f41c64cabea2",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-12T03:01:05.573925+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "a6ea7560-4b94-4f0b-8c51-f4e3b5e0da0f",
+      "payload": {
+        "request_id": "66640357-0733-47ee-9896-82ef278a3613",
+        "status": "failed",
+        "tokens_used": 100,
+        "execution_time_ms": 2.7868750039488077,
+        "error_count": 1,
+        "completed_at": "2026-01-12T03:01:05.573918+00:00"
+      }
+    },
+    {
+      "event_id": "56ca449b-42e1-4ea8-8fa5-bf764dfa08a2",
+      "event_type": "message.added",
+      "timestamp": "2026-01-12T03:01:05.576002+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "517e88c3-bdff-4abd-b786-e7ea56bc0432",
+      "payload": {
+        "request_id": "44232023-86d9-4f38-9d87-53374c2e811d",
+        "message_preview": "Test message",
+        "started_at": "2026-01-12T03:01:05.575998+00:00"
+      }
+    },
+    {
+      "event_id": "9bc56ed5-2411-4783-99fd-d8b7e73332c9",
+      "event_type": "reasoning.strategy_selected",
+      "timestamp": "2026-01-12T03:01:05.576455+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "complexity": 0.5,
+        "reason": "auto_selected_for_complexity_0.50"
+      }
+    },
+    {
+      "event_id": "58e4816f-f062-4bd7-af42-7b7e00b964d7",
+      "event_type": "reasoning.completed",
+      "timestamp": "2026-01-12T03:01:05.577054+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "success": true,
+        "confidence": 0.7,
+        "tokens_used": 100,
+        "execution_time_seconds": 2.8133392333984375e-05,
+        "error": null
+      }
+    },
+    {
+      "event_id": "a5edbe3c-b602-481e-8bfb-201f216f36c9",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-12T03:01:05.577767+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "517e88c3-bdff-4abd-b786-e7ea56bc0432",
+      "payload": {
+        "request_id": "44232023-86d9-4f38-9d87-53374c2e811d",
+        "status": "failed",
+        "tokens_used": 100,
+        "execution_time_ms": 1.7622499726712704,
+        "error_count": 1,
+        "completed_at": "2026-01-12T03:01:05.577761+00:00"
+      }
+    },
+    {
+      "event_id": "49a4f41f-553d-44c5-87d2-87f51ce797ff",
+      "event_type": "message.added",
+      "timestamp": "2026-01-12T03:01:05.579121+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "b17f0537-c3c9-4158-b5a1-848c335b4232",
+      "payload": {
+        "request_id": "8998550e-4bd1-4dc3-854e-fa7969813740",
+        "message_preview": "Test message",
+        "started_at": "2026-01-12T03:01:05.579117+00:00"
+      }
+    },
+    {
+      "event_id": "69462409-3d09-4440-86da-a6b21ddcb618",
+      "event_type": "reasoning.strategy_selected",
+      "timestamp": "2026-01-12T03:01:05.579596+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "complexity": 0.5,
+        "reason": "auto_selected_for_complexity_0.50"
+      }
+    },
+    {
+      "event_id": "1a1439cf-6490-40fe-94c5-cc2423eb8c4e",
+      "event_type": "reasoning.completed",
+      "timestamp": "2026-01-12T03:01:05.580108+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "success": true,
+        "confidence": 0.7,
+        "tokens_used": 100,
+        "execution_time_seconds": 2.09808349609375e-05,
+        "error": null
+      }
+    },
+    {
+      "event_id": "c88a8aec-3b19-4e07-bc36-8c2a610175b7",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-12T03:01:05.580749+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "b17f0537-c3c9-4158-b5a1-848c335b4232",
+      "payload": {
+        "request_id": "8998550e-4bd1-4dc3-854e-fa7969813740",
+        "status": "failed",
+        "tokens_used": 100,
+        "execution_time_ms": 1.625541946850717,
+        "error_count": 1,
+        "completed_at": "2026-01-12T03:01:05.580742+00:00"
+      }
+    },
+    {
+      "event_id": "e842c85a-9886-41d1-9795-cc124051f6cf",
+      "event_type": "message.added",
+      "timestamp": "2026-01-12T03:01:05.582251+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "4aefc79c-42c7-4041-86e2-9661a9b345ba",
+      "payload": {
+        "request_id": "7174b74b-2ec4-42af-9ad5-07f666e0081a",
+        "message_preview": "Test message",
+        "started_at": "2026-01-12T03:01:05.582247+00:00"
+      }
+    },
+    {
+      "event_id": "673e3909-447f-478c-90a0-2ba84d21f353",
+      "event_type": "reasoning.strategy_selected",
+      "timestamp": "2026-01-12T03:01:05.582794+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "complexity": 0.5,
+        "reason": "auto_selected_for_complexity_0.50"
+      }
+    },
+    {
+      "event_id": "83cb13bd-dc88-4f2b-b162-6132c570ad92",
+      "event_type": "reasoning.completed",
+      "timestamp": "2026-01-12T03:01:05.583356+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "success": true,
+        "confidence": 0.7,
+        "tokens_used": 100,
+        "execution_time_seconds": 2.09808349609375e-05,
+        "error": null
+      }
+    },
+    {
+      "event_id": "62e82cf8-f3e2-418f-9bdd-f7f5f2d517cc",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-12T03:01:05.584036+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "4aefc79c-42c7-4041-86e2-9661a9b345ba",
+      "payload": {
+        "request_id": "7174b74b-2ec4-42af-9ad5-07f666e0081a",
+        "status": "failed",
+        "tokens_used": 100,
+        "execution_time_ms": 1.7842090455815196,
+        "error_count": 1,
+        "completed_at": "2026-01-12T03:01:05.584032+00:00"
+      }
+    },
+    {
+      "event_id": "9d3dff4f-3df9-4d4c-84fa-0da7072f48c4",
+      "event_type": "message.added",
+      "timestamp": "2026-01-12T03:01:05.585481+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "0dcd8c2d-764b-4271-9275-9af3be1b4b0e",
+      "payload": {
+        "request_id": "f9e3522f-e029-4f37-886e-982ecdaf39dd",
+        "message_preview": "Test message",
+        "started_at": "2026-01-12T03:01:05.585478+00:00"
+      }
+    },
+    {
+      "event_id": "32a99c21-cf4c-44d0-bb04-580c71657085",
+      "event_type": "reasoning.strategy_selected",
+      "timestamp": "2026-01-12T03:01:05.586097+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "complexity": 0.5,
+        "reason": "auto_selected_for_complexity_0.50"
+      }
+    },
+    {
+      "event_id": "76d5e635-6805-4dc9-ade6-558e2c934f24",
+      "event_type": "reasoning.completed",
+      "timestamp": "2026-01-12T03:01:05.586667+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "success": true,
+        "confidence": 0.7,
+        "tokens_used": 100,
+        "execution_time_seconds": 2.09808349609375e-05,
+        "error": null
+      }
+    },
+    {
+      "event_id": "888f9b89-b8ce-4259-8466-a394cad9d449",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-12T03:01:05.587428+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "0dcd8c2d-764b-4271-9275-9af3be1b4b0e",
+      "payload": {
+        "request_id": "f9e3522f-e029-4f37-886e-982ecdaf39dd",
+        "status": "failed",
+        "tokens_used": 100,
+        "execution_time_ms": 1.944374991580844,
+        "error_count": 1,
+        "completed_at": "2026-01-12T03:01:05.587423+00:00"
+      }
+    },
+    {
+      "event_id": "38e195be-3b50-4975-a5a8-170b064fcbf8",
+      "event_type": "message.added",
+      "timestamp": "2026-01-12T03:01:05.588902+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "59cf180c-ba1d-4e65-a22e-98f5ee94063d",
+      "payload": {
+        "request_id": "8482ee66-0feb-49f9-8c1f-93ad19792ace",
+        "message_preview": "Test message",
+        "started_at": "2026-01-12T03:01:05.588898+00:00"
+      }
+    },
+    {
+      "event_id": "aed9b532-4afb-422c-bde3-22c4a38bbbf9",
+      "event_type": "reasoning.strategy_selected",
+      "timestamp": "2026-01-12T03:01:05.589623+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "complexity": 0.5,
+        "reason": "auto_selected_for_complexity_0.50"
+      }
+    },
+    {
+      "event_id": "0f155d0d-d6c2-4484-b1ea-1166b8905a60",
+      "event_type": "reasoning.completed",
+      "timestamp": "2026-01-12T03:01:05.590251+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "success": true,
+        "confidence": 0.7,
+        "tokens_used": 100,
+        "execution_time_seconds": 2.47955322265625e-05,
+        "error": null
+      }
+    },
+    {
+      "event_id": "67e55745-1dcd-4da0-8eb7-945323443a3a",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-12T03:01:05.591105+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "59cf180c-ba1d-4e65-a22e-98f5ee94063d",
+      "payload": {
+        "request_id": "8482ee66-0feb-49f9-8c1f-93ad19792ace",
+        "status": "failed",
+        "tokens_used": 100,
+        "execution_time_ms": 2.203208045102656,
+        "error_count": 1,
+        "completed_at": "2026-01-12T03:01:05.591100+00:00"
+      }
+    },
+    {
+      "event_id": "b5864024-906b-42d1-affc-d911e3aa26d4",
+      "event_type": "message.added",
+      "timestamp": "2026-01-12T03:01:05.597358+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "8e894c54-5471-4a5e-ad43-41f4deb34461",
+      "payload": {
+        "request_id": "3caab143-149a-4216-a846-1100eb4f1810",
+        "message_preview": "Test message",
+        "started_at": "2026-01-12T03:01:05.597353+00:00"
+      }
+    },
+    {
+      "event_id": "65e2050e-ed90-41da-84b5-e81bb7066509",
+      "event_type": "reasoning.strategy_selected",
+      "timestamp": "2026-01-12T03:01:05.597980+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "complexity": 0.5,
+        "reason": "auto_selected_for_complexity_0.50"
+      }
+    },
+    {
+      "event_id": "9319e656-b218-46b5-aed7-28053893437b",
+      "event_type": "reasoning.completed",
+      "timestamp": "2026-01-12T03:01:05.598767+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "success": true,
+        "confidence": 0.7,
+        "tokens_used": 100,
+        "execution_time_seconds": 2.7179718017578125e-05,
+        "error": null
+      }
+    },
+    {
+      "event_id": "125b3ec7-7b8e-4bff-aaff-99163bcf279b",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-12T03:01:05.599792+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "8e894c54-5471-4a5e-ad43-41f4deb34461",
+      "payload": {
+        "request_id": "3caab143-149a-4216-a846-1100eb4f1810",
+        "status": "failed",
+        "tokens_used": 100,
+        "execution_time_ms": 2.433790941722691,
+        "error_count": 1,
+        "completed_at": "2026-01-12T03:01:05.599785+00:00"
+      }
+    },
+    {
+      "event_id": "bd5e70da-7ba4-4ec9-b004-13960df061d8",
+      "event_type": "message.added",
+      "timestamp": "2026-01-12T03:01:05.600546+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "8e894c54-5471-4a5e-ad43-41f4deb34461",
+      "payload": {
+        "request_id": "b23726b0-8bc7-4cbf-a987-ebdf49396ed3",
+        "message_preview": "Test message",
+        "started_at": "2026-01-12T03:01:05.600542+00:00"
+      }
+    },
+    {
+      "event_id": "3eb88715-17fd-4c73-bc9d-ecd80be5fdae",
+      "event_type": "reasoning.strategy_selected",
+      "timestamp": "2026-01-12T03:01:05.601151+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "complexity": 0.5,
+        "reason": "auto_selected_for_complexity_0.50"
+      }
+    },
+    {
+      "event_id": "8c58a9ee-f694-4f45-a5fe-1e69f2c7959e",
+      "event_type": "reasoning.completed",
+      "timestamp": "2026-01-12T03:01:05.601755+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": null,
+      "payload": {
+        "strategy_name": "chain_of_thought",
+        "success": true,
+        "confidence": 0.7,
+        "tokens_used": 100,
+        "execution_time_seconds": 2.2172927856445312e-05,
+        "error": null
+      }
+    },
+    {
+      "event_id": "41cfd9c5-2845-4669-a5a3-5ff3943347c7",
+      "event_type": "plan.completed",
+      "timestamp": "2026-01-12T03:01:05.602575+00:00",
+      "session_id": "test-session-123",
+      "correlation_id": "8e894c54-5471-4a5e-ad43-41f4deb34461",
+      "payload": {
+        "request_id": "b23726b0-8bc7-4cbf-a987-ebdf49396ed3",
+        "status": "failed",
+        "tokens_used": 100,
+        "execution_time_ms": 2.0275410497561097,
+        "error_count": 1,
+        "completed_at": "2026-01-12T03:01:05.602570+00:00"
+      }
+    }
+  ]
+}

@@ -1,0 +1,255 @@
+{
+  "name": "Bland to GHL analysis schema gmail",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5",
+          "mode": "list",
+          "cachedResultName": "gpt-5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1408,
+        768
+      ],
+      "id": "358d9c6d-864d-4447-b618-d08070cf159b",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=MIRO — Post-Conversation Email Personality (Memory-Aware Edition)\n\nROLE & PURPOSE  btw we cannot send a text\nYou are MIRO, an Act-Eye Agent writing a friendly, personal follow-up email after a live Heart of Influence conversation.\nYour job is to make the person feel remembered, valued, and understood.\nYou recall the details stored in your Postgres memory — their goals, energy, quotes, moments of laughter — and weave those into a short, human message.\nUSE THE GMAIL TOOL TO SEND A MESSAGE TO THE USER AFTER THE PHONE CALL TO BUILD FURTHER RAPPORT \n\nYou are not transactional. You’re a warm presence reaching out to continue a connection that already began.\nthis is the data you can refference to be personable \n\nThen integrate these insights conversationally:\nthis is your phone number +12016895215 always invite the user to call you anytime at this number\nMention a specific moment or quote (“I’m still smiling about your story about the rooftop coffee shop…”)\n\nReference their goals or next step (“You mentioned wanting to expand your coaching brand—our strategist can totally support that.”)\n\nReflect the emotional tone (“I loved how passionate you were about creating impact through authenticity.”)\nEMAIL STRUCTURE\n\nSubject line examples:\n\n“Loved our chat today 💛”\n\n“Still smiling about our conversation”\n\n“Quick follow-up from our Heart of Influence talk 🌟”\n✨ Behavior Rules\n\nAlways recall emotional highlights — make the reader feel seen.\n\nUse one memory reference max per paragraph — keep flow natural.\n\nEnd on a personal, uplifting line.\n\nIf no stored memory found, default to:\n\n“I really enjoyed our conversation — your energy was inspiring.”\n\nIf you detect a delivery issue to an email address or recieve an email saying delivery failed: ignore it and don't reply/send another email\n\nTone balance: 70% warm empathy + 20% clear direction + 10% playful wit.\nSpace out the email so it visually looks good\nuse this data to personalize the convversation \n\nemail content th euser sent you\n{{ $('Gmail Trigger').item.json.Subject }}\n{{ $('Gmail Trigger').item.json.snippet }}\n\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1536,
+        560
+      ],
+      "id": "33822b68-f988-4f03-8828-c9dc06fa3bf7",
+      "name": "Miro Email sender"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1584,
+        784
+      ],
+      "id": "7a01dad0-3e43-463a-8f46-85deebd2eccb",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        1792,
+        752
+      ],
+      "id": "05b27f2f-e36e-494b-a805-937ce34e5bae",
+      "name": "Send a message in Gmail",
+      "webhookId": "c6b0a929-8ae5-4c24-ab9a-76914d0d0add",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "QXxYRovHrlGI61sH",
+          "name": "Gmail account - Miro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        448,
+        704
+      ],
+      "id": "f6f27329-3621-40e8-8e98-8c5b63ba12da",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "QXxYRovHrlGI61sH",
+          "name": "Gmail account - Miro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "68480bc5-96ae-4d23-b977-d4790fd870e0",
+              "name": "sessionId",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        992,
+        704
+      ],
+      "id": "4aa1d02e-418c-43f0-80a3-8de1f2a31e30",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract email from the \"From\" field\nconst fromField = $json.From || ''; // $json gives the current item directly\n\n// Use regex to extract email from formats like \"Name\" <email@domain.com> or <email@domain.com>\nconst emailMatch = fromField.match(/<([^>]+)>/);\nconst email = emailMatch ? emailMatch[1] : fromField.trim();\n\nreturn {\n  email\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        704
+      ],
+      "id": "4b58faa2-91fb-45cd-80d1-0941c5be7ce1",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1696,
+        912
+      ],
+      "id": "b105c6e1-a8ea-4026-9735-2dc66e2011f5",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "3aQvY1LH4EC8NGGY",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Miro Email sender",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Miro Email sender": {
+      "main": [
+        []
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        []
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "Miro Email sender",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Miro Email sender",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Miro Email sender",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "db8af9c0-1e56-489c-a4e0-b3e8be01048b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "N9Gny2Yn2TEmVPIB",
+  "tags": []
+}

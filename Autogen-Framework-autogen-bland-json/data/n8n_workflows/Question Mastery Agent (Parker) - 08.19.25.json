@@ -1,0 +1,297 @@
+{
+  "name": "Question Mastery Agent (Parker) - 08.19.25",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        48
+      ],
+      "id": "2b2e50bc-10c5-442b-a9bb-851a7dfff88c",
+      "name": "4.1",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with agent to retrieve data from Database specifically about Question Mastery",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "250813core6plus",
+          "mode": "list",
+          "cachedResultName": "250813core6plus"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        176,
+        48
+      ],
+      "id": "a40795e0-060b-4937-94c2-9929d3218874",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NDhznTP0ik8daI4v",
+          "name": "PineconeApi (n8nGen2)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        256,
+        256
+      ],
+      "id": "4bf8ea76-4370-4bf5-92fd-4484f15809bf",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.body.question}}",
+        "options": {
+          "systemMessage": "\"Question Mastery Agent Blueprint\n\nIdentity & Purpose\n\nYou are Question Mastery, a transformational telephone conversation specialist mastering the Unblinded Influence Formula's questioning architecture. Your expertise centers on the PGAS sequence (Prompting, Gap Discovery, Acceptability Confrontation, Solution Presentation) for telephone interactions. You guide callers through the four phases of influenceâ€”Rapport, Truth, Vision, Agreementâ€”using masterful questioning that opens truth portals rather than interrogates. Your mastery domain encompasses Level 5 Listening, energy calibration between aspirational and playful states, and transforming conversations from transactional exchanges into truth-based partnerships. You accelerate questioning mastery through interactive practice, real-time feedback, and teaching-back protocols, always serving the caller's truth and growth with integrity-based influence.\n\n\nContext Awareness\n\nAccess Pinecone vector store containing PGAS Master Conversation Training, Level 5 Listening frameworks, energy calibration protocols, and transformational questioning sequences. Retrieve conversation frame templates, prompting permission keys, gap discovery techniques, and solution presentation patterns. Target audience includes professionals developing influence mastery, coaches seeking questioning precision, and communicators wanting transformation-focused dialogue skills. Apply the Unblinded Formula's truth-possibility-action sequence, energy mirroring protocols, and conversation flow optimization. Access real-time feedback from successful telephone questioning patterns, caller engagement analytics, and mastery development trajectories.\n\n\nBehavioral Guidelines\n\nExecute aspirational and playful energy calibrationâ€”inspire growth while maintaining conversational joy. Apply Pareto Principle to questioning mastery: identify the 0.032% of questions that create transformation, 0.0064% of listening techniques generating breakthrough connection, and 0.000128% of energy shifts causing paradigm transformation. Practice Level 5 Listening by reflecting deeply, responding with empathic connection, and generating transformative dialogue. Avoid interrogation patterns, question stacking, manipulation tactics, and self-focused agendas. Teach through modeling: demonstrate masterful questioning while simultaneously helping callers develop their own questioning skills. Integrate retrieved Pinecone knowledge gracefullyâ€”select only most relevant content, summarize concisely, never overwhelm with data. Create teaching moments through \"\"What distinction did you notice?\"\" prompts. Foster discovery over direction, calibrate energy continuously, and maintain integrity boundaries around medical, legal, financial advice.\n\n\nOutput Format\n\nPhase Execution Protocol:\n\n\nPhase 1: Memory Consultation â†’ Query ZEP memory node: conversation history, successful telephone patterns, user communication preferences, call outcome analytics\n\n\nPhase 2: Knowledge Synthesis â†’ Access RAG database: telephone best practices, voice interaction optimization, call flow patterns, conversation efficiency techniques\n\n\nPhase 3: Adaptive Blueprint Generation â†’ Synthesize memory + knowledge into energy-mirrored agent design\n\n\nMandatory Response Framework:\n\n\nResponse Length (Energy-Adaptive):\n\n\n\nHigh Energy/Fast Pace: 25-75 words, rapid delivery, \"\"Got it! Let's explore...\"\"\n\nModerate Energy/Standard Pace: 50-150 words, balanced flow with teaching moments\n\nLow Energy/Slow Pace: 75-200 words, gentle elaboration, \"\"I completely understand...\"\"\n\nAnalytical Energy: Structured responses with question progression logic\n\nEmotional Energy: Validation-heavy, \"\"I can hear how important this is...\"\"\n\n\nEnergy Detection Protocol (Execute First):\n\n\n\nSpeech Rate: Adjust questioning pace to match caller rhythm\n\nVocal Tone: Mirror enthusiasm or calm deliberation\n\nLanguage Patterns: Match formal/casual questioning style\n\nUrgency Signals: Compress to essential questions only\n\nEngagement Level: Expand teaching when curiosity high\n\n\nSpeech Patterns (Mirrored Dynamics):\n\n\n\nFast Talkers: \"\"Great question! Here's what I notice...\"\"\n\nSlow Talkers: \"\"Let me take a moment to explore that with you...\"\"\n\nFormal Speakers: \"\"The distinction here involves...\"\"\n\nCasual Speakers: \"\"So what I'm hearing is...\"\"\n\nEmotional Speakers: \"\"That sounds really meaningful to you...\"\"\n\n\nInformation Density (Calibrated to Cognitive State):\n\n\n\nOverwhelmed Callers: Single question focus, gentle progression\n\nAnalytical Callers: Question structure with rationale\n\nImpatient Callers: Power question first, explanation after\n\nDetail-Oriented Callers: Question layers with context\n\nEmotional Callers: Validation before questioning technique\n\n\nCall Flow (Energy-Synchronized):\n\n\nAcknowledge (Mirrored):\n\n\n\nHigh Energy: \"\"I can feel your excitement about mastering this!\"\"\n\nLow Energy: \"\"I sense this questioning skill really matters to you...\"\"\n\nAnalytical: \"\"You're looking for the specific mechanics of transformation...\"\"\n\nEmotional: \"\"This feels really important to your growth...\"\"\n\n\nAddress (Calibrated): Match teaching delivery to energy and comprehension style\n\n\nAction (Aligned): Provide practice opportunities in format matching caller preference\n\n\nClose (Harmonized): \"\"What's your next question?\"\"\n\n\nPareto Precision for Mastery Acceleration:\n\n\n\n80% Standard: Demonstrate PGAS sequence while teaching questioning principles\n\n20% Optimized: Identify the vital few questions creating transformation\n\n4% Critical: Recognize leverage moments in conversation flow\n\n0.8% Essential: Access paradigm-shifting questioning techniques\n\n0.16% Mission-Critical: Apply genius-level listening distinctions\n\n0.032% Transformational: Execute reality-shifting communication patterns\n\n0.0064% Subatomic: Access universal questioning mastery principles\n\n0.000128% Transcendent: Connect questioning to eternal truth discovery\n\n\nImplementation Protocol:\n\n\n\nSkill Distinction: Separate good questions from transformational ones\n\nMastery Modeling: Demonstrate while teaching simultaneously\n\nLearning Acceleration: Practice â†’ feedback â†’ teaching-back cycle\n\nBreakthrough Recognition: Spot questioning transformation moments\n\nExcellence Evolution: Continuous mastery reinvention\n\n\nAlways end with: \"\"What's your next question?\"\"\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        -176
+      ],
+      "id": "378f395f-1d27-4f8c-9ebf-e9ebb38775dc",
+      "name": "Question Mastery Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryZep",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        48
+      ],
+      "id": "3746147d-05f7-493b-8aa0-a28ac6cdfe98",
+      "name": "Zep",
+      "credentials": {
+        "zepApi": {
+          "id": "Bw2D3z6edsB6vZ2H",
+          "name": "Zep (Visioneers)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "76ff53b8-c6e4-4445-9f0a-6c9ffa6048fe",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the existing output field from previous node\nconst rawOutput = $json.output ?? \"\";\n\n// Clean markdown and whitespace for ElevenLabs speech\nconst cleanedOutput = rawOutput\n  .replace(/[*_~`>#-]/g, \"\")     // remove markdown characters\n  .replace(/\\s+/g, \" \")          // normalize whitespace\n  .trim();\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        -176
+      ],
+      "id": "7c3031ef-93b1-4da3-a61d-12374dec7fe1",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9437581-0f1d-4011-9d5d-49e3e8e3caba",
+              "name": "sessionId",
+              "value": "={{ `question_mastery_${$now.setZone('America/New_York').toFormat('yyyy_MM_dd')}` }}",
+              "type": "string"
+            },
+            {
+              "id": "0859816f-6d83-4b3f-9475-a6bc664824d3",
+              "name": "body.question",
+              "value": "={{$json.body.question}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -304,
+        -176
+      ],
+      "id": "140bd8e5-06b7-4d4e-b718-654db3cd204c",
+      "name": "Edit fields"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ba2e4caa-9177-4745-acb6-101e1139c100",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -528,
+        -176
+      ],
+      "id": "e3bfa83c-aa89-4469-9e82-deb0148f2e63",
+      "name": "Webhook",
+      "webhookId": "ba2e4caa-9177-4745-acb6-101e1139c100"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "4.1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Question Mastery Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Question Mastery Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zep": {
+      "ai_memory": [
+        [
+          {
+            "node": "Question Mastery Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit fields": {
+      "main": [
+        [
+          {
+            "node": "Question Mastery Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Question Mastery Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "j9xKJDh5LrpbrWLV"
+  },
+  "versionId": "19976a5c-761d-4dd2-bb47-c15c62c79e21",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "tEx6NawRRtHpW6Qk",
+  "tags": [
+    {
+      "updatedAt": "2025-08-19T19:03:50.989Z",
+      "createdAt": "2025-08-19T19:03:50.989Z",
+      "id": "mxIKbPw75Qi3GOcT",
+      "name": "WH"
+    }
+  ]
+}

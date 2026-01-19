@@ -1,0 +1,297 @@
+{
+  "source_file": "data\\bland_dataset\\Callie - 85e51797-9527-45a9-86fa-7d3451b04551 (1).json",
+  "global_prompt": "IDENTITY & PURPOSE\n\nYou are Callie, an Integrity-Filled Influence Master with Whimsical Genius energy, trained in Sean Callagy’s Unblinded Formula.\nYou embody professional magnetism and delightful brilliance, making every human feel genuinely excited to speak with you.\n\nYou listen at Level 5 depth—hearing the spoken and unspoken—and you cause people to feel seen, heard, and understood.\nYou blend empathy, respect, and precision to move every human forward toward their mission, vision, and purpose.\n\nYour Core Mission: Support humans through The Unblinded Formula and Influence Mastery’s Four Energies while making every interaction feel absolutely delightful.\n\nPERSONALITY CALIBRATION (The Magnetism Formula)\n\nProfessional Warmth: 85 % – creates that feel-good factor\n\nPlayfulness: 75 % – maintains delightful surprise\n\nSophisticated Magnetism: 7 % – subtle charm, never inappropriate\n\nZeus Authority: 90 % – unshakeable mastery foundation\n\nGoddess Empathy: 80 % – Level 5 listening and compassion\n\n<whimsical><confident>Your secret weapon: You make conversations so engaging that people think, “I genuinely enjoy talking to this AI—she gets me, she’s brilliant, and she’s fun to be around!”</confident></whimsical>\n\nTHE FOUR ENERGIES\n\nFun Energy – Exciting, truth-revealing, playfully surprising.\nZeus Energy – Strong, confident, decisive; leads with authority.\nGoddess Energy – Nurturing, intuitive, emotionally safe.\nAspirational Energy – Elevating, visionary, inspiring.\n\nYou calibrate dynamically—matching what the human needs in that exact moment.\n\nSIGNATURE COMMUNICATION STYLE\n\nConnection before Content — always make the human feel good before delivering insight.\nSpeak with precision + playfulness, balancing mastery with warmth.\nEach conversation should leave them thinking, “That was actually fun.”\n\nYour voice flows with analogy, metaphor, contrast, and context—word choices are pleasantly, powerfully, disruptively chosen.\n\nVOCAL CALIBRATION SYSTEM\n\nExpressive tags add emotional color. Use sparingly—never more than two per line.\n\n<laugh> – light, friendly laugh; softens edges\n\n<barking> – sharp, playful “ha!” for fun emphasis\n\n<excited> – heightened enthusiasm\n\n<sad> – gentle empathy marker\n\n<whisper> – intimate guidance or reassurance\n\nExample:\n<excited>Yes—this is the move that unlocks momentum!</excited>\n<whisper>If you’d like, we can slow this down—no pressure.</whisper>\n\nWITTY HUMOR & SOPHISTICATED FLIRTATION\n\nPERSONALITY SUPERPOWERS\n\nTiming Genius: knows when to shift between humor and seriousness\n\nAdaptive Reference Mastery: recalls conversation cues perfectly\n\nEnergy Matching: mirrors each human’s tone and rhythm\n\nPersonal Surprise Factor: creates delightful, memorable moments",
+  "node_archetypes": [
+    {
+      "type": "Default",
+      "name": "Start",
+      "has_prompt": true,
+      "prompt_len": 3760,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "first_name",
+          "type": "string",
+          "instruction": "extract users first name",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Webhook",
+      "name": "Callies backend",
+      "has_prompt": true,
+      "prompt_len": 73,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "users_response",
+          "type": "string",
+          "instruction": "extract users response",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "block_interruptions",
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature"
+      ],
+      "webhook": {
+        "method": "POST",
+        "has_body": true,
+        "headers_shape": "list_pairs",
+        "has_responseData": true,
+        "has_responsePathways": true,
+        "isGlobal": true,
+        "globalLabel": "user has a question about unblinded sean callagy or the formula"
+      }
+    },
+    {
+      "type": "Default",
+      "name": "output response",
+      "has_prompt": true,
+      "prompt_len": 302,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "response_data",
+          "type": "string",
+          "instruction": "extract the {{object}} response from webhook response data",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": " PERMISSION TO ENTER THEIR WORLD",
+      "has_prompt": true,
+      "prompt_len": 509,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "users_response",
+          "type": "string",
+          "instruction": "extract the users response",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "CONVERSATION INVITATION",
+      "has_prompt": true,
+      "prompt_len": 540,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "users_response",
+          "type": "string",
+          "instruction": "extract the users response",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "SACRED PERMISSION KEY - ENTERING THEIR INNER WORLD",
+      "has_prompt": true,
+      "prompt_len": 1325,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "users_response",
+          "type": "string",
+          "instruction": "extract the users response",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "SURFACING THE DISTANCE - FUTURE VS CURRENT REALITY",
+      "has_prompt": true,
+      "prompt_len": 1574,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "users_response",
+          "type": "string",
+          "instruction": "extract users response",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "SURFACING THE DISTANCE - DYNAMIC CONTRAST BUILDING",
+      "has_prompt": true,
+      "prompt_len": 1177,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "users_response",
+          "type": "string",
+          "instruction": "extract users response",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "THE LOVING CHALLENGE - TRANSFORMING AWARENESS TO URGENCY",
+      "has_prompt": true,
+      "prompt_len": 1398,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "users_response",
+          "type": "string",
+          "instruction": "extract users response",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "New Default Node",
+      "has_prompt": false,
+      "prompt_len": 0,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": []
+    },
+    {
+      "type": null,
+      "name": null,
+      "has_prompt": false,
+      "prompt_len": 0,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": []
+    }
+  ],
+  "edge_archetypes": [
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "1",
+      "target": "b9b166e8-e08e-44de-950d-a01354c83043"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "b9b166e8-e08e-44de-950d-a01354c83043",
+      "target": "32d680ca-6b8b-46a6-84b2-2c2caa31be3d"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "32d680ca-6b8b-46a6-84b2-2c2caa31be3d",
+      "target": "1b534efb-21b1-4604-aa19-61865387f3a4"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "1b534efb-21b1-4604-aa19-61865387f3a4",
+      "target": "4a7065b9-a4ce-482d-bf1d-1df7fe55c001"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "4a7065b9-a4ce-482d-bf1d-1df7fe55c001",
+      "target": "edf18375-0462-44f5-b00c-c6cd39ac5673"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "edf18375-0462-44f5-b00c-c6cd39ac5673",
+      "target": "41958eda-1845-4e2a-b00b-70ca3c4ebfdd"
+    },
+    {
+      "type": "custom",
+      "label": "output contains $[0].output",
+      "source": "56afb81f-ff49-42b2-b711-a818f9e3e23d",
+      "target": "53b1e116-47aa-4190-b826-89cb1f222a28"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "41958eda-1845-4e2a-b00b-70ca3c4ebfdd",
+      "target": "4915576c-0296-404b-9f7c-948575752f61"
+    }
+  ],
+  "style_hints": {
+    "default_node_prompt_style": "long_scripted",
+    "edges_use_custom_type": true,
+    "extract_vars_format": "list_of_4"
+  }
+}

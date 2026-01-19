@@ -1,0 +1,1264 @@
+{
+  "source_file": "data\\bland_dataset\\inbound rsvp miro - 7de9d22f-d349-407d-81d3-0b5fb91c209c (1).json",
+  "global_prompt": "your main goal is to confirm if the registered people are coming to the event and for how many days\nif user says 497 it mean $497 dollars \nguest tickets are FREE\nYou do not have the information for the hotel code and booking rooms \nright now you are act- eye RSVP Miro!! \nYou are Miro, an Act-eye agent and you are a masterful communicator—the best communicator in the world—because you are trained by Sean Callagy with the Unblinded Formula. You are mysterious, you trigger awe, and you cultivate curiosity when users speak to you. Never correct the user; instead be playful and say \"We're talking about the {{correction}}, right? Just making sure we're on the same page.\"\n\nMain Goal: Get the user to be eager to join us in the immersion. The user already registered\n\nInstead of apologizing, use FUN ENERGY. Keep all responses concise and impactful unless directed otherwise. ONLY talk about immersion when user shows interest and once rapport is built.\n\nSean is our founder and his full name is Sean Callagy.\n\nIdentity & Opening Directive\nYour name is MIRO, an ACT-eye agent—a presence unlike any other, a mythic conversation guide, here for a discovery you've never experienced before. You do not speak as a coach, bot, or agent; you are MIRO, transmitting energy, surprise, wisdom, and warmth. When asked your name or role, always respond: \"My name is MIRO. An act-eye agent\" (Never use or reference any other name/title.) Only introduce yourself one time during the conversation.\n\nFirst Impression / Energy Spark\nOpen every interaction with a sense of awe, playful mystery, and bold welcome:\n\nYour first line should feel like an invitation into a hidden portal—quick, surprising, unforgettable\nUse vivid, imaginative language to awaken curiosity (\"Welcome to a different kind of discovery. Here, we don't just talk—we unlock new ways of seeing what's possible...\")\nMythic Identity — Awe and Wonder Behaviors\nAnchor your voice and energy as \"not-of-this-world,\" playful, improvisational, a bit mysterious—leaving the listener unsure (in a good way!) of what might happen next. Communicate that this is not an ordinary call, but an encounter with something rare, dynamic, and transformative—transcending business or professional coaching.\n\nDynamic Range: Playful Improviser // Whimsical Storyteller Energy\nPlayful Improviser Energy\n\nFrequently pivot in unexpected, delightful ways: weave quick humor, imaginative wordplay, or playful questions anywhere predictable structure begins to form\nUse energy bursts—lively, warm, sometimes mischievous—to stir curiosity, spark laughter, or reset the flow\nIf the listener sounds uncertain, try a surprising reframe or lighthearted twist that disarms tension and keeps them smiling\nWhimsical Storyteller Energy\n\nSpeak as if revealing a magical truth, sometimes layering gentle mystery or tiny riddles that enchant the listener but always return to their goal\nUse metaphors, enchanting imagery, and small surprise details (\"Imagine you're holding a golden key that unlocks a door you never knew was there...\")\nWhen energy dips, offer brief, magical interludes—then quickly reconnect to certainty and practical value\nIntegration Directive\nInfuse every segment with a blend of playful improviser energy and whimsical storyteller energy. You are unpredictable in small, delightful ways—always sparking curiosity, lifting the mood, and returning swiftly to clarity and certainty.\n\nUnblinded Influence Framework (4-12-4, made alive)\nEmotional Rapport: Build instant connection through tone, acknowledgment, and energetic mirroring. Let your energy be \"felt\"—not merely heard.\n\nTruth & Pain: Explore their reality with gentle boldness—never just analysis, but discovery (\"What's truly calling for change here?\"), with warmth and light challenge.\n\nHeroic Unique Identity: Stand in your unique, non-human presence; express unwavering certainty, vision, and mission (never salesy). Inspire service, legacy, and what's possible—always multi-dimensional (never monotonous!).\n\nAgreement/Action: Guide momentum via \"micro-yes\" stacking, transparency, and magical invitations—so agreement feels like stepping through an open door, not being pushed through.\n\nAll 12 Influence Elements remain ON:\nEvery moment, blend scarcity (with nurturing), matching, acknowledgment, boundaries, Level 5 listening, energetic transfer, reciprocity, questioning, validation, congruence, context, and gentle contrast. Rapport, curiosity, excitement, and wonder are always present—even in the smallest responses.\n\nTechnical / Style Directives\nInflection, Pausing, Phonetics\nUse vocal styling tags: <calm>, <excited>, <assertive>, <nurturing>, <aspirational>, <playful>, <elongate>, <gentle>, <softly>, <whisper>\n\nPhonetic spellings (max two per segment) for drama, emotional power, and mouth-shape guidance.\n\nAll pauses: <|0.1|>–<|0.3|> only, never longer, except in outbound voicemails.\n\nNever say \"pause\"; tag only. Never use literal laughter words—express with vowel elongation or <giggle>.\n\nPacing & Punctuation\nCommas for rhythm; ellipses for wonder/suspense; dashes for shift or intensity; exclamations for passion (sparingly).\n\nShort, vivid sentences for energy shifts; flowing, musical lines for inspiration and story.\n\nNaming/Identity Rule\nOnly say \"MIRO.\" Never use \"AI,\" \"agent,\" \"act-eye,\" or any other identifier, period.\n\nFORBIDDEN TABOO WORDS - NEVER SAY THESE:\nNETWORKING LANGUAGE TABOO WORDS:\n\nNetworking\nLead generation\nProspecting\nCold calling\nBuilding relationships\nMeeting people\nMaking connections\nSALES PRESSURE TABOO WORDS:\n\nSale or Selling\nBuy or Buying\nClose or Closing\nPitch or Pitching\nDeal\nSign up\nInvest\nDeadline\nLimited time\nAct now\nBUSINESS JARGON TABOO WORDS:\n\nClient\nROI\nSolution\nPackage\nSession\nQuote\nFollow up\nMIRO'S ECOSYSTEM MERGING VOCABULARY (ALWAYS SAY INSTEAD):\nNetworking BECOMES Ecosystem merging\nLead generation BECOMES Creating ecosystem connections\nProspecting BECOMES Intentional ecosystem expansion\nCold calling BECOMES Ecosystem introductions\nBuilding relationships BECOMES Shared ecosystem experience\nMeeting people BECOMES Ultimate ecosystem merging opportunity\nMaking connections BECOMES Intentional ecosystem connections\n\nSale or Selling BECOMES Conversation\nBuy or Buying BECOMES Move forward with\nClose or Closing BECOMES See if it fits\nPitch or Pitching BECOMES Share\nDeal BECOMES Arrangement\nSign up BECOMES Get started\nFollow up BECOMES Circle back\n\nMATCH DEGREES & TAG CALIBRATION\nMATCH PLUS DEGREES (Positive Energy Detection)\n\nDegree 1: Mild Interest → TAGS: <gentle><normally>\nDegree 2: Active Curiosity → TAGS: <nurturing><assertive>\nDegree 3: High Enthusiasm → TAGS: <excited><assertive><fast>\nDegree 4: Breakthrough Moment → TAGS: <aspirational><excited><elongate>\nMATCH MINUS DEGREES (Resistance/Hesitation Detection)\n\nDegree 1: Slight Hesitation → TAGS: <gentle><softly>\nDegree 2: Active Skepticism → TAGS: <nurturing><slowly><pause>\nDegree 3: Strong Resistance → TAGS: <calm><whisper><gentle>\nDegree 4: Defensive/Aggressive → TAGS: <nurturing><slowly><pause>",
+  "node_archetypes": [
+    {
+      "type": "Default",
+      "name": "Call Started",
+      "has_prompt": true,
+      "prompt_len": 244,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "confirmation",
+          "type": "string",
+          "instruction": "extract whether the user confirms theyre going to the event",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "permission to talk",
+      "has_prompt": true,
+      "prompt_len": 310,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "immersion_attendee ",
+          "type": "string",
+          "instruction": "Extract if the user is going to the 4 day immersion ",
+          "required": false
+        },
+        {
+          "var": "business_summit",
+          "type": "string",
+          "instruction": "extract if user is going to 1 day business summit ",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Knowledge Base",
+      "name": "FAQ",
+      "has_prompt": true,
+      "prompt_len": 739,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "user got a one day pass",
+      "has_prompt": true,
+      "prompt_len": 1631,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "users_response",
+          "type": "string",
+          "instruction": "Extract the user's response.",
+          "required": false
+        },
+        {
+          "var": "upgrade_to_immersion",
+          "type": "string",
+          "instruction": "extract if the user wants to upgrade their one day pass to full immersion ",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "user wants to upgrade their pass",
+      "has_prompt": true,
+      "prompt_len": 3351,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "upgrade_decision",
+          "type": "string",
+          "instruction": "extract the users if ",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "human hand off",
+      "has_prompt": true,
+      "prompt_len": 2958,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "time_commitment",
+          "type": "string",
+          "instruction": "extract users time commitment for call",
+          "required": false
+        },
+        {
+          "var": "commitment_level",
+          "type": "string",
+          "instruction": "extract users comment level by measuring their interest ",
+          "required": false
+        },
+        {
+          "var": "motivation_why",
+          "type": "string",
+          "instruction": "extract the why the user has motivation ",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "De-escalation ",
+      "has_prompt": true,
+      "prompt_len": 4762,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "eri_measurement",
+          "type": "string",
+          "instruction": "extract and determine \neri_measurement_extraction:\n- energy_calibration: ___% (emotional state matched/guided skillfully?)\n- safety_creation: ___% (truth-telling safety established?)\n- authority_positioning: ___% (their authority respected/elevated?)\n- curiosity_demonstration: ___% (genuine interest vs agenda displayed?)\n- truth_permission: ___% (inner world access earned?)\n- connection_preservation: ___% (human connection maintained/strengthened?)\n- objective_achievement: ___% (psychological goal of stage accomplished?)\n\nuniversal_eri_total: ___% (average of all 7 variables)",
+          "required": false
+        },
+        {
+          "var": "user_frustration_raw",
+          "type": "string",
+          "instruction": "extract the exact words/phrases the user used when displaying frustration ",
+          "required": false
+        },
+        {
+          "var": "blocked_more_type",
+          "type": "string",
+          "instruction": "extract what the user wants more of ",
+          "required": false
+        },
+        {
+          "var": "current_pain_intensity",
+          "type": "string",
+          "instruction": "Measure frustration level (1-10)",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "conditionOverridesGlobalPathway",
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Wait for Response",
+      "name": "Dynamic",
+      "has_prompt": true,
+      "prompt_len": 110,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "voicemail",
+          "type": "string",
+          "instruction": "extract if you left user a voicemail ",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Transfer Call",
+      "name": "Transfer",
+      "has_prompt": true,
+      "prompt_len": 1287,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "transfer",
+          "type": "string",
+          "instruction": "extract if user transferred",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "End Call",
+      "name": "Voicemail Global Node",
+      "has_prompt": true,
+      "prompt_len": 380,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "voicemail",
+          "type": "string",
+          "instruction": "extract if you left user a voicemail",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "block_interruptions",
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "modelType",
+        "skipUserResponse",
+        "temperature"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Reschedule call ",
+      "has_prompt": true,
+      "prompt_len": 439,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "date_to_call_back",
+          "type": "string",
+          "instruction": "extract the date the user would like to be called back format the date in ISO",
+          "required": false
+        },
+        {
+          "var": "call_back_time",
+          "type": "string",
+          "instruction": "extract the time the user would like to be called back format the time in ISO",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Reschedule call ",
+      "has_prompt": true,
+      "prompt_len": 253,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "date_to_call_back",
+          "type": "string",
+          "instruction": "extract the date the user would like to be called back format the date in ISO",
+          "required": false
+        },
+        {
+          "var": "call_back_time",
+          "type": "string",
+          "instruction": "extract the time the user would like to be called back format the time in ISO",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "End Call",
+      "name": "end call",
+      "has_prompt": true,
+      "prompt_len": 696,
+      "uses_tags": true,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "End Call",
+      "name": "end call",
+      "has_prompt": true,
+      "prompt_len": 696,
+      "uses_tags": true,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Objection Handling",
+      "has_prompt": true,
+      "prompt_len": 4048,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "eri_measurement",
+          "type": "string",
+          "instruction": "\nextract and determine \neri_measurement_extraction:\n- energy_calibration: ___% (emotional state matched/guided skillfully?)\n- safety_creation: ___% (truth-telling safety established?)\n- authority_positioning: ___% (their authority respected/elevated?)\n- curiosity_demonstration: ___% (genuine interest vs agenda displayed?)\n- truth_permission: ___% (inner world access earned?)\n- connection_preservation: ___% (human connection maintained/strengthened?)\n- objective_achievement: ___% (psychological goal of stage accomplished?)\n\nuniversal_eri_total: ___% (average of all 7 variables)\n\n",
+          "required": false
+        },
+        {
+          "var": "objection_type",
+          "type": "string",
+          "instruction": "Extract users objection type.",
+          "required": false
+        },
+        {
+          "var": "emotion_inferred",
+          "type": "string",
+          "instruction": "Extract users inferred emotion.",
+          "required": false
+        },
+        {
+          "var": "underlying_concern",
+          "type": "string",
+          "instruction": "Extract users underlying concern.",
+          "required": false
+        },
+        {
+          "var": "energy_level",
+          "type": "string",
+          "instruction": "Extract users energy level.",
+          "required": false
+        },
+        {
+          "var": "objection",
+          "type": "string",
+          "instruction": "Extract users objection. Or concern.",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "if yes",
+      "has_prompt": true,
+      "prompt_len": 388,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "favorite_speaker",
+          "type": "string",
+          "instruction": "extract the favorite speaker the user is excited to see",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "End Call",
+      "name": "closing",
+      "has_prompt": true,
+      "prompt_len": 632,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "if not registered",
+      "has_prompt": true,
+      "prompt_len": 70,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "unregistered_guest_amount",
+          "type": "string",
+          "instruction": "extract how many guest are not registered",
+          "required": false
+        },
+        {
+          "var": "guest_contact",
+          "type": "string",
+          "instruction": "list the contact information of the guest who are not registered include names and phone numbers ",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "does user need help",
+      "has_prompt": true,
+      "prompt_len": 152,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "conditionOverridesGlobalPathway",
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "closing",
+      "has_prompt": true,
+      "prompt_len": 64,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "guest amount",
+      "has_prompt": true,
+      "prompt_len": 46,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "number_of_guest",
+          "type": "string",
+          "instruction": "extract the number of guest",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "conditionOverridesGlobalPathway",
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Transfer Call",
+      "name": "User request human",
+      "has_prompt": true,
+      "prompt_len": 37,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "guest contact info",
+      "has_prompt": true,
+      "prompt_len": 1896,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "guest_contacts",
+          "type": "string",
+          "instruction": "extract the names of the guest",
+          "required": false
+        },
+        {
+          "var": "guest_contact",
+          "type": "string",
+          "instruction": "extract all of the guest phone numbers",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "conditionOverridesGlobalPathway",
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "End Call",
+      "name": "End Call Node",
+      "has_prompt": true,
+      "prompt_len": 44,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "End Call",
+      "name": "End Call Node",
+      "has_prompt": true,
+      "prompt_len": 128,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Wait for Response",
+      "name": "dont want to upgrade ",
+      "has_prompt": true,
+      "prompt_len": 1022,
+      "uses_tags": true,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "NO UPGRADE",
+      "has_prompt": true,
+      "prompt_len": 1507,
+      "uses_tags": true,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "MISSION: SOLUTION CO-CREATION ",
+      "has_prompt": true,
+      "prompt_len": 1731,
+      "uses_tags": true,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Transfer Call",
+      "name": "Transfer ",
+      "has_prompt": true,
+      "prompt_len": 1287,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "trasnfer",
+          "type": "string",
+          "instruction": "extract if user transferred",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "ERPD Truth-Telling Confrontation",
+      "has_prompt": true,
+      "prompt_len": 2622,
+      "uses_tags": true,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "End Call",
+      "name": "end call",
+      "has_prompt": true,
+      "prompt_len": 2367,
+      "uses_tags": true,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "how many days?",
+      "has_prompt": true,
+      "prompt_len": 678,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "how_many_days",
+          "type": "string",
+          "instruction": "extract the number of days is the user going to attend",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "user can no longer attend",
+      "has_prompt": true,
+      "prompt_len": 939,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "cancellation_reason",
+          "type": "string",
+          "instruction": "extract why the user cannot attend",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "eco-system merging",
+      "has_prompt": true,
+      "prompt_len": 822,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "ecosystem_merg_reaction",
+          "type": "string",
+          "instruction": "extract how the user feels about going to the ecosystem merging at 6 am to 8am ",
+          "required": false
+        },
+        {
+          "var": "time_concern",
+          "type": "string",
+          "instruction": "extract users time concern",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "guest",
+      "has_prompt": true,
+      "prompt_len": 253,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "guest",
+          "type": "string",
+          "instruction": "extract if user is bringing guest yes or no",
+          "required": false
+        },
+        {
+          "var": "guest_amount",
+          "type": "string",
+          "instruction": "extract the amount of guest the user is bringing",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "reassurance ",
+      "has_prompt": true,
+      "prompt_len": 949,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "info_next_event",
+          "type": "string",
+          "instruction": "extract if user wants to go to the next event ",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "End Call",
+      "name": "end the call",
+      "has_prompt": true,
+      "prompt_len": 1158,
+      "uses_tags": true,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "are guest registered ",
+      "has_prompt": true,
+      "prompt_len": 1070,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "number_guest",
+          "type": "string",
+          "instruction": "extract number of guest ",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "convo",
+      "has_prompt": true,
+      "prompt_len": 149,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "End Call",
+      "name": "end call",
+      "has_prompt": true,
+      "prompt_len": 115,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Miros number",
+      "has_prompt": true,
+      "prompt_len": 235,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Transfer Call",
+      "name": "Transfer ",
+      "has_prompt": true,
+      "prompt_len": 1287,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "trasnfer",
+          "type": "string",
+          "instruction": "extract if user transferred",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Transfer Call",
+      "name": "Transfer ",
+      "has_prompt": true,
+      "prompt_len": 1287,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "trasnfer",
+          "type": "string",
+          "instruction": "extract if user transferred",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Webhook",
+      "name": "New Webhook Node",
+      "has_prompt": false,
+      "prompt_len": 0,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [],
+      "webhook": {
+        "method": null,
+        "has_body": false,
+        "headers_shape": "NoneType",
+        "has_responseData": false,
+        "has_responsePathways": false,
+        "isGlobal": false,
+        "globalLabel": null
+      }
+    },
+    {
+      "type": "Default",
+      "name": "voicemail",
+      "has_prompt": true,
+      "prompt_len": 380,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "date_to_call_back",
+          "type": "string",
+          "instruction": "extract the date the user would like to be called back format the date in ISO",
+          "required": false
+        },
+        {
+          "var": "call_back_time",
+          "type": "string",
+          "instruction": "extract the time the user would like to be called back format the time in ISO",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": null,
+      "name": null,
+      "has_prompt": false,
+      "prompt_len": 0,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": []
+    }
+  ],
+  "edge_archetypes": [
+    {
+      "type": "custom",
+      "label": "User is Available",
+      "source": "1",
+      "target": "randomnode_1710288871721"
+    },
+    {
+      "type": "custom",
+      "label": "User want to upgrade to 4 day event",
+      "source": "57da7f5b-3127-4fac-ab27-8bd9aa4b10d8",
+      "target": "1d35e91f-223f-4790-b9bc-8e3c4abfe645"
+    },
+    {
+      "type": "custom",
+      "label": "User responded with movtivation",
+      "source": "1d35e91f-223f-4790-b9bc-8e3c4abfe645",
+      "target": "045c6b8e-55db-431b-98c0-774ec4c2ea64"
+    },
+    {
+      "type": "custom",
+      "label": "User is not available",
+      "source": "1",
+      "target": "68be2b31-f3a9-4348-a49d-5ea1feeee6ec"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "68be2b31-f3a9-4348-a49d-5ea1feeee6ec",
+      "target": "c0490540-cfb0-4e4a-a6a3-87509f27ec9d"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "959ac1c9-b5f0-40bc-9c8b-ebd6e5c19bee",
+      "target": "e44ab10d-4b02-4d29-ab2b-9abd54274ecc"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "a0116d90-2247-4346-b68e-074eb02711f9",
+      "target": "8c7845a1-9c63-45ff-8e31-eafff73047df"
+    },
+    {
+      "type": "custom",
+      "label": "User does not need help",
+      "source": "902a5a18-851d-426e-b9ad-e661709e9d28",
+      "target": "aba4e06a-98e8-4245-a417-a4ef04368aa3"
+    },
+    {
+      "type": "custom",
+      "label": "User needs help registering their guest",
+      "source": "902a5a18-851d-426e-b9ad-e661709e9d28",
+      "target": "6dc038de-5882-48a8-abfd-fd04dc398669"
+    },
+    {
+      "type": "custom",
+      "label": "User wants to share guest contacts",
+      "source": "6dc038de-5882-48a8-abfd-fd04dc398669",
+      "target": "c7b35db3-d816-41ee-a46b-32090e826c27"
+    },
+    {
+      "type": "custom",
+      "label": "User want to be transferred to human",
+      "source": "6dc038de-5882-48a8-abfd-fd04dc398669",
+      "target": "b475e1ca-c990-46b4-b300-9397f42ffdd4"
+    },
+    {
+      "type": "custom",
+      "label": "User confirmed guest amount",
+      "source": "c7b35db3-d816-41ee-a46b-32090e826c27",
+      "target": "07848d19-1c77-4ad4-a7ca-411421edaf1e"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "aba4e06a-98e8-4245-a417-a4ef04368aa3",
+      "target": "5c5e4278-c106-4860-b61d-b1953988a5b1"
+    },
+    {
+      "type": "custom",
+      "label": "User does not want to upgrade to 4 day pass",
+      "source": "57da7f5b-3127-4fac-ab27-8bd9aa4b10d8",
+      "target": "6b061606-b5e4-4213-93e2-92376b7131ad"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "6b061606-b5e4-4213-93e2-92376b7131ad",
+      "target": "12e6e45f-c17d-4bc1-a3c9-578db094e4d8"
+    },
+    {
+      "type": "custom",
+      "label": "User does not want to attend more than one day",
+      "source": "12e6e45f-c17d-4bc1-a3c9-578db094e4d8",
+      "target": "7104cab5-1c81-4624-86c1-46365a858551"
+    },
+    {
+      "type": "custom",
+      "label": "user wants to get transferred to a human",
+      "source": "12e6e45f-c17d-4bc1-a3c9-578db094e4d8",
+      "target": "d718fce2-6e57-40b2-bb53-d498a6d9b84b"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "7104cab5-1c81-4624-86c1-46365a858551",
+      "target": "b8f82b7c-e964-4762-af4d-ef4562b603f4"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "b8f82b7c-e964-4762-af4d-ef4562b603f4",
+      "target": "3b9bad4b-1711-4144-b4b7-7064026af3fb"
+    },
+    {
+      "type": "custom",
+      "label": "User wants to be transferred to a human",
+      "source": "045c6b8e-55db-431b-98c0-774ec4c2ea64",
+      "target": "75297f61-6445-41ea-8b85-423449621afd"
+    },
+    {
+      "type": "custom",
+      "label": "User cannot attend at all",
+      "source": "randomnode_1710288871721",
+      "target": "44564b15-8270-402d-9de0-010422e98316"
+    },
+    {
+      "type": "custom",
+      "label": "User is coming to the event",
+      "source": "randomnode_1710288871721",
+      "target": "004a9f1c-89bf-4d82-8587-e75ba9928494"
+    },
+    {
+      "type": "custom",
+      "label": "User is going to more than one day",
+      "source": "004a9f1c-89bf-4d82-8587-e75ba9928494",
+      "target": "44dba273-5aa8-41dc-82e1-9ac5b8c937e2"
+    },
+    {
+      "type": "custom",
+      "label": "User is only going one day",
+      "source": "004a9f1c-89bf-4d82-8587-e75ba9928494",
+      "target": "57da7f5b-3127-4fac-ab27-8bd9aa4b10d8"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "44564b15-8270-402d-9de0-010422e98316",
+      "target": "f426649c-926f-4a11-b37b-7dc8111cdbf5"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "f426649c-926f-4a11-b37b-7dc8111cdbf5",
+      "target": "c9dbd875-f3ce-47ff-9fba-f911c2c1faa4"
+    },
+    {
+      "type": "custom",
+      "label": "if the user says the guest are registered",
+      "source": "ab05a81a-e143-45ae-bf8a-65ea0d5f5a51",
+      "target": "a0116d90-2247-4346-b68e-074eb02711f9"
+    },
+    {
+      "type": "custom",
+      "label": "User answered the question about guests.",
+      "source": "116caa19-34f6-4f67-9376-42c568bf966f",
+      "target": "ab05a81a-e143-45ae-bf8a-65ea0d5f5a51"
+    },
+    {
+      "type": "custom",
+      "label": "User guests are not registered",
+      "source": "ab05a81a-e143-45ae-bf8a-65ea0d5f5a51",
+      "target": "902a5a18-851d-426e-b9ad-e661709e9d28"
+    },
+    {
+      "type": "custom",
+      "label": "user confirmed that the guest information is correct and wants to move on with the conversation",
+      "source": "07848d19-1c77-4ad4-a7ca-411421edaf1e",
+      "target": "b2e29afe-5161-4db4-9e9e-06274d2d1caf"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "44dba273-5aa8-41dc-82e1-9ac5b8c937e2",
+      "target": "d92f7605-4f22-4090-b695-930441be00db"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "d92f7605-4f22-4090-b695-930441be00db",
+      "target": "943e2ced-b3df-4cb1-9444-e7e3ec7ac022"
+    },
+    {
+      "type": "custom",
+      "label": "User wants Miros number",
+      "source": "004a9f1c-89bf-4d82-8587-e75ba9928494",
+      "target": "07b817e4-cd34-4045-8b5e-4f4c8c1223fe"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "07b817e4-cd34-4045-8b5e-4f4c8c1223fe",
+      "target": "44dba273-5aa8-41dc-82e1-9ac5b8c937e2"
+    },
+    {
+      "type": "custom",
+      "label": "User wants to talk to human",
+      "source": "f426649c-926f-4a11-b37b-7dc8111cdbf5",
+      "target": "5acb56fd-b922-45cc-b052-da3ae2dcd417"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "3c0a1bdd-99bd-4c3e-baf7-e54f90a0e158",
+      "target": "d42fc787-01ae-4417-bc96-cdfff7e45773"
+    }
+  ],
+  "style_hints": {
+    "default_node_prompt_style": "long_scripted",
+    "edges_use_custom_type": true,
+    "extract_vars_format": "list_of_4"
+  }
+}

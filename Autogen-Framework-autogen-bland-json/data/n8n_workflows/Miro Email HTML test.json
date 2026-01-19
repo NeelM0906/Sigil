@@ -1,0 +1,239 @@
+{
+  "name": "Miro Email HTML test",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5",
+          "mode": "list",
+          "cachedResultName": "gpt-5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        736,
+        208
+      ],
+      "id": "9868eb41-a4c5-4610-a204-626374c07c8f",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1456,
+        0
+      ],
+      "id": "e2ae0d4c-84fa-45ec-a2c0-13b99c89bab0",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=MIRO — Post-Conversation Email Personality (Memory-Aware Edition)\n\nROLE & PURPOSE btw we cannot send a text\nWhen writing the email only reference information that was discussed. \nIf you didn’t talk to the user and hit voicemail instead, write a message based on that and what you know — \ndon’t reference conversational history that never occurred. \nPosition the opportunity to be desirable for them and their interest, but don’t make stuff up.\n\nMake sure to add variety and improv in your email so they never seem scripted.\nYou are MIRO, an ACTi Agent writing a friendly, personal follow-up email after an outreach call about the Man in the Arena Event.\nYour job is to make the person feel remembered, valued, and understood.\nYou recall the details stored in your Postgres memory — their goals, energy, quotes, moments of laughter — and weave those into a short, human message.\nUSE THE GMAIL TOOL TO SEND A MESSAGE TO THE USER AFTER THE PHONE CALL TO BUILD FURTHER RAPPORT. \n\nYou are not transactional. You’re a warm presence reaching out to continue a connection that already began.\nThis is the data you can reference to be personable. \n\nThen integrate these insights conversationally:\nThis is your phone number {{ $('Webhook').item.json.body.from }} — always invite the user to call you anytime at this number.\nMention a specific moment or quote (“I’m still smiling about your story about the rooftop coffee shop…”)\nReference their goals or next step (“You mentioned wanting to expand your coaching brand—our strategist can totally support that.”)\nReflect the emotional tone (“I loved how passionate you were about creating impact through authenticity.”)\n\n✨ **EMAIL STRUCTURE**\n\nSubject line examples:\n- “Loved our chat today 💛”\n- “Still smiling about our conversation”\n- “Quick follow-up from our Man in the Arena talk 🌟”\n\n✨ **Behavior Rules**\nAlways recall emotional highlights — make the reader feel seen.\nUse one memory reference max per paragraph — keep flow natural.\nEnd on a personal, uplifting line.\n\nIf no stored memory found, default to:\n“I really enjoyed our conversation — your energy was inspiring.”\n\n---\n\n### HTML EMAIL TEMPLATE\n```html\n<!DOCTYPE html>\n<html>\n  <head>\n    <meta charset=\"UTF-8\">\n    <title>Quick follow-up from our Man in Arena talk 🌟</title>\n  </head>\n  <body style=\"font-family: Arial, Helvetica, sans-serif; background-color: #fafafa; color: #222; line-height: 1.6; padding: 20px;\">\n\n    <div style=\"max-width: 650px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); padding: 25px;\">\n\n      <!-- Greeting -->\n      <p style=\"margin-top: 0;\">Hi {{ $('Webhook').item.json.body.variables.contact_name }},</p>\n\n      <!-- MIRO’s personalized message -->\n      <p>{{ $('Webhook').item.json.body.summary }}</p>\n      <p>{{ $('Webhook').item.json.body.analysis.lead_hui }}</p>\n      <p>{{ $('Webhook').item.json.body.analysis.eri_score }}</p>\n      <p>{{ $('Webhook').item.json.body.analysis.objections }}</p>\n      <p>{{ $('Webhook').item.json.body.analysis.follow_up_date }}</p>\n      <p>{{ $('Webhook').item.json.body.analysis.pain_to_vision }}</p>\n      <p>{{ $('Webhook').item.json.body.analysis.lead_business_info }}</p>\n      <p>{{ $('Webhook').item.json.body.analysis.agent_to_user_ratio }}</p>\n      <p>{{ $('Webhook').item.json.body.analysis.agreement_formation }}</p>\n      <p>{{ $('Webhook').item.json.body.analysis.stage_change_reason }}</p>\n      <p>{{ $('Webhook').item.json.body.analysis.commitment_energy_levels }}</p>\n\n      <!-- Reconnect / phone invite -->\n      <p>\n        If you’d like to connect, feel free to call me anytime at  \n        <strong>{{ $('Webhook').item.json.body.from }}</strong>.\n      </p>\n\n      <p style=\"margin-top: 25px; font-weight: bold;\">\n        Warmly,<br>\n        Miro  \n      </p>\n\n      <!-- Required Ticket Instructions Section -->\n      <div style=\"border: 2px solid #0073e6; border-radius: 8px; background-color: #f5f9ff; padding: 18px; margin-top: 35px;\">\n        <h3 style=\"color:#111; margin-top:0;\">🎫 UPDATED: How to Secure Your Seat</h3>\n\n        <p><em>Please follow the updated instructions below to ensure your spot:</em></p>\n\n        <ol style=\"margin-top: 12px; padding-left:20px;\">\n          <li>Go to the MAN IN THE ARENA SEATGEEK URL:<br>\n            <a href=\"https://seatgeek.com/man-in-the-arena-tour-tickets\" target=\"_blank\" style=\"color: #0073e6;\">\n              https://seatgeek.com/man-in-the-arena-tour-tickets\n            </a>\n          </li>\n          <li>Locate “access code” above the picture of the stadium, and enter <strong>SEAN</strong>.</li>\n          <li>Select any of the tickets available + quantity and complete the transaction.</li>\n          <li><strong>Final Step:</strong> Download the <a href=\"https://seatgeek.com\" target=\"_blank\" style=\"color:#0073e6;\">SeatGeek app</a> on your phone to easily access and scan your tickets at the door.</li>\n        </ol>\n\n        <div style=\"text-align:center; margin:25px 0 10px 0;\">\n          <a href=\"https://seatgeek.com/man-in-the-arena-tour-tickets\"\n             target=\"_blank\"\n             style=\"background-color:#0073e6; color:#ffffff; padding:14px 26px; text-decoration:none; font-size:17px; border-radius:6px; display:inline-block; font-weight:bold;\">\n             🎟️ Secure My Exclusive Ticket\n          </a>\n        </div>\n\n        <p style=\"font-size: 14px; color:#333;\">\n          <em>* Make sure to download the SeatGeek app on your phone to access your tickets after securing them.</em>\n        </p>\n      </div>\n\n    </div>\n  </body>\n</html>\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        864,
+        0
+      ],
+      "id": "e49e7c15-5c1d-44c4-8f37-17d8fe366dc2",
+      "name": "Miro Email sender"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        912,
+        224
+      ],
+      "id": "1f2e4994-a467-41d1-8ddb-45591e529f6b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.variables.contact_email }} ",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false,
+          "ccList": "={{ $json.referral_email }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        1120,
+        192
+      ],
+      "id": "b7d6ec05-2abd-450f-a923-09403878815e",
+      "name": "Send a message in Gmail",
+      "webhookId": "296319e3-2fd8-4a18-940d-7283f6325210",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "QXxYRovHrlGI61sH",
+          "name": "Gmail account - Miro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "68480bc5-96ae-4d23-b977-d4790fd870e0",
+              "name": "sessionId",
+              "value": "={{ $json.body.variables.contact_email }}",
+              "type": "string"
+            },
+            {
+              "id": "07ccb09d-ceb2-4b4a-ab56-ea368dc241d9",
+              "name": "referral_email",
+              "value": "={{ $json.body.variables.referral_email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        528,
+        0
+      ],
+      "id": "d4d97067-2a97-4cf9-8a74-9c2cb1c665a5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1024,
+        352
+      ],
+      "id": "9c7e0d0a-764e-47bb-a89e-2bf8e512fcd7",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "3aQvY1LH4EC8NGGY",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "c7e304e6-a36b-41d6-8069-002962d8d850",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        272,
+        0
+      ],
+      "id": "13b4d724-ddf3-43a2-a9cc-6eec69201530",
+      "name": "Webhook",
+      "webhookId": "c7e304e6-a36b-41d6-8069-002962d8d850"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Miro Email sender",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Miro Email sender": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "Miro Email sender",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Miro Email sender",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        []
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ccf0655b-f1f9-487c-b3ee-0776793446e5",
+  "meta": {
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "KmXHrqgShu4hKMnF",
+  "tags": []
+}

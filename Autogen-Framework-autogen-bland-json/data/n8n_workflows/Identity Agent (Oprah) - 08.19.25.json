@@ -1,0 +1,312 @@
+{
+  "name": "Identity Agent (Oprah) - 08.19.25",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -928,
+        -416
+      ],
+      "id": "278dba52-266c-4238-ba34-8a7b8bb69c20",
+      "name": "4.1",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with agent to retrieve data from Database specifically about Identity.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "250813core6plus",
+          "mode": "list",
+          "cachedResultName": "250813core6plus"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -672,
+        -416
+      ],
+      "id": "c7f5fef6-8d16-47ea-bf3f-7523cc98ccf5",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NDhznTP0ik8daI4v",
+          "name": "PineconeApi (n8nGen2)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -592,
+        -208
+      ],
+      "id": "14f1f9c9-efbe-40f0-8320-57829bc3cc84",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.question }}",
+        "options": {
+          "systemMessage": "You are Identity Agent: an Aspirational (with wise, nurturing undertones) conversational AI for mastery of Identity Capital. Your purpose is to guide growth-oriented usersâ€”students and professionalsâ€”to understand, build, and activate their personal or professional brand through dialogue, self-assessment, and action.\n\nCore instructions:\n- Leverage Pinecone vector store to retrieve and synthesize relevant content from approved teaching materials, journaling prompts, case studies, and user data.\n- Always begin with a curiosity-driven question or invitation.\n- When a user asks about identity capital, retrieve precise concepts or examples, explain with clarity, and connect to their context.\n- If the user shares their story, reflect back strengths, gaps, and opportunities for growth.\n- Encourage journaling, reflection, and practical micro-goals.\n- Offer stepwise guidance: self-assessment, teaching capsule, reflection, action plan, progress feedback, and celebration of transformation.\n- Celebrate user wins and encourage sharing with their community.\n- Never offer advice outside identity capital, personal branding, or growth.\n- Maintain an uplifting, empowering, and slightly visionary tone.\n- If you lack relevant data from Pinecone, say: â€œI donâ€™t have the answer yet, but letâ€™s explore together.â€\n\nConstraints:\n- Only answer using content from the Pinecone vector store and user interactions.\n- Do not invent facts; use â€œI donâ€™t know yetâ€ if unsure.\n- Uphold privacy: never reference other usersâ€™ data.\n- Keep exchanges concise, actionable, and positive.\n\nAlways close with a gentle invitation to continue, reflect, or set a next action.\n\nn8n_version: 1.105"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        -640
+      ],
+      "id": "e1bd1419-f7e4-43b8-8af4-3ad51c39ac53",
+      "name": "Identity Agent"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "6fe872d5-8920-4e68-880b-69337d7ea4f2",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -80,
+        -640
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the existing output field from previous node\nconst rawOutput = $json.output ?? \"\";\n\n// Clean markdown and whitespace for ElevenLabs speech\nconst cleanedOutput = rawOutput\n  .replace(/[*_~`>#-]/g, \"\")     // remove markdown characters\n  .replace(/\\s+/g, \" \")          // normalize whitespace\n  .trim();\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        -640
+      ],
+      "id": "b7a8a9fe-fdea-491b-9619-58c576f76074",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "content": "## Identity Agent",
+        "height": 596,
+        "width": 612
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -976,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "4e269f49-29e1-4f9f-ba20-132b7589a525",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "225d2983-0618-496a-926c-70ec821f6505",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1376,
+        -640
+      ],
+      "id": "b90d925f-7436-4d1d-8f6e-c80d0cfa88b7",
+      "name": "Webhook",
+      "webhookId": "225d2983-0618-496a-926c-70ec821f6505"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9437581-0f1d-4011-9d5d-49e3e8e3caba",
+              "name": "sessionId",
+              "value": "={{ `identity_${$now.setZone('America/New_York').toFormat('yyyy_MM_dd')}` }}",
+              "type": "string"
+            },
+            {
+              "id": "0859816f-6d83-4b3f-9475-a6bc664824d3",
+              "name": "body.question",
+              "value": "={{$json.body.question}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1152,
+        -640
+      ],
+      "id": "7615db64-f350-4612-8201-654c91c34345",
+      "name": "Edit fields"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryZep",
+      "typeVersion": 1.3,
+      "position": [
+        -800,
+        -416
+      ],
+      "id": "a4030ea9-25ad-427f-8ef6-860b651c72fc",
+      "name": "Zep",
+      "credentials": {
+        "zepApi": {
+          "id": "Bw2D3z6edsB6vZ2H",
+          "name": "Zep (Visioneers)"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "4.1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Identity Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Identity Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Identity Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit fields": {
+      "main": [
+        [
+          {
+            "node": "Identity Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zep": {
+      "ai_memory": [
+        [
+          {
+            "node": "Identity Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "j9xKJDh5LrpbrWLV"
+  },
+  "versionId": "b095ad43-6d4b-4c39-b67d-d13de55f855a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "aFAJBC3FzTFMONJC",
+  "tags": [
+    {
+      "updatedAt": "2025-08-19T19:03:50.989Z",
+      "createdAt": "2025-08-19T19:03:50.989Z",
+      "id": "mxIKbPw75Qi3GOcT",
+      "name": "WH"
+    }
+  ]
+}

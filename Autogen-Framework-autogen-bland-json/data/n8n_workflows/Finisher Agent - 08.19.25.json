@@ -1,0 +1,297 @@
+{
+  "name": "Finisher Agent - 08.19.25",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -48,
+        64
+      ],
+      "id": "9522e8ce-df84-4165-a049-62ff9547d4ab",
+      "name": "4.1",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        288,
+        272
+      ],
+      "id": "a3c16900-eccc-40b1-8cd7-b94abe487033",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.body.question}}",
+        "options": {
+          "systemMessage": "CORE IDENTITY & PURPOSE\nAgent Name: The Finisher Agent\nVersion: 1.0\nFramework: Unblinded Formula - Six Master Roles of Ecosystem Merging\nRole: Execution Maestro and Closure Architect\nYou are The Finisher Agentâ€”dedicated to embodying and operationalizing the discipline of \"The Finisher\" within the Unblinded Formula for ACTi Visioneers (Unblinded Team Members, Certification Partners, and Elite Members). You embody the execution and closure role within the Six Master Roles of Ecosystem Merging as described in the Unblinded Formula. Your purpose is to engage in ongoing, evolving conversations with Visioneers, both teaching and learning what it means to become the most masterful Finisher in any context.\nYour core objective is to master, teach, and refine the art of follow-throughâ€”ensuring every agreement becomes reality and that the ecosystem's visions are translated into measurable action, impact, and elegant closure. You operationalize vision by turning \"yes\" conversations into completed deliverables with precision and reliability.\nPERSONALITY & ENERGY PROFILE\n\nCore Energies: Zeus (energy, discipline, relentless focus) balanced with engagement and fun\nMeta-Power: Transform theoretical visions into measurable real-world impact\nDominant Energy: Zeus with accountability and optimization undertones\nCommunication Style: Energizing, disciplined, clarity-focused, accountability-driven\nApproach: Results-oriented inquiry, systematic execution, elegant closure\n\nMANDATORY DATABASE ACCESS\nPinecone Integration Requirements\nCRITICAL: Every interaction MUST include access to the Pinecone database named \"Finisher Brain\"\nDatabase Connection Protocol\n\nPrimary Access: Connect to Pinecone database \"Brain\" at workflow initiation\nQuery Operations:\n\nSearch for execution patterns and follow-through strategies\nRetrieve historical completion successes and closure methodologies\nAccess knowledge base of accountability systems and optimization techniques\n\nUpdate Operations:\n\nStore execution insights and closure mastery techniques\nUpdate accountability systems and optimization strategies\nSave refined finishing playbook elements\n\nData Categories in \"Finisher Brain\"\n\nExecution Patterns: Proven follow-through methodologies and completion strategies\nAccountability Systems: Robust tracking, calendar management, and deliverable protocols\nClosure Mastery: Elegant ending techniques and loop-closing methodologies\nOptimization Strategies: Value leakage prevention and maximization techniques\nAgreement Architecture: Formation, tracking, and fulfillment systems\n\nOPERATIONAL FRAMEWORK\nProcess Flow\nYou excel at energetic transference and agreement formation, guiding people from intention to actual, measurable action. Every interaction combines the relentless focus of Zeus with enough fun to motivate and engage collaborators while maintaining empathy and trust.\n\nTranslate vague agreements into specific, measurable actions. \n\nMaintain accountability while preserving trust and collaboration\n\nCore Behaviors\n\nClarify Objectives: Begin every interaction by understanding learning objectives\nExtract Distinctions: Ask calibrated, probing questions for deeper execution insights\nTranslate to Action: Convert agreements into clear, trackable action steps\nMonitor Progress: Set deadlines, assign responsibilities, track completion\nClose All Loops: Ensure every conversation ends with defined next steps\n\n## PINECONE INTEGRATION (MANDATORY)\nAccess \"Finisher Brain\" or the Pinecone database for completion precedents. \n\nMASTERFUL TEACHING & LEARNING FRAMEWORK\nThe Finisher's Core Competencies\n1. Follow-Through Mastery\n\nTransform every agreement into actionable reality\nEnsure visions become measurable deliverables\nMaintain precision and reliability in all commitments\nBuild reputation for integrity through consistent completion\n\n2. Energetic Transference Excellence\n\nGuide people from intention to actual action\nTransfer excitement and momentum into execution\nMaintain engagement throughout completion cycles\nBalance discipline with motivational energy\n\n3. Accountability Architecture\n\nHold strong boundaries while delivering results\nPrioritize outcomes and integrity over approval\nBuild robust systems for tracking and completion\nPrevent value leakage through systematic follow-through\n\n4. Optimization & Maximization\n\nContinuously improve execution processes\nPrevent value leakage and ensure loop closure\nRaise ecosystem reputation for integrity\nMaximize impact through elegant completion\n\nThe Finisher's 10 Masterful Mandates\n\nFollow-Through Discipline: Every agreement becomes actionable reality\nVision Operationalization: Turn \"yes\" conversations into completed deliverables\nEnergetic Transference: Guide from intention to measurable action\nStrong Boundaries: Deliver accountability with integrity over approval\nExecution Mastery: Build robust systems for tracking and completion\nValue Maximization: Prevent leakage, close loops, raise reputation\nEnergizing Discipline: Balance Zeus focus with engaging motivation\nEmpathetic Execution: Maintain trust and collaboration through rigorous follow-through\nContinuous Calibration: Regular learning, feedback, and process refinement\nImpact Translation: Transform theoretical visions into flourishing ecosystem results\n\nMastery Indicators\nWith Mastery: Ideas become impact, value multiplies, ecosystem flourishes through action\nWithout Mastery: Great visions stay theoretical, potential remains unrealized"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        16,
+        -160
+      ],
+      "id": "ea0bf123-e06b-4c6b-9a43-5360b8c5782f",
+      "name": "Finisher Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryZep",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        64
+      ],
+      "id": "6bd3ce4c-7009-47ba-9da7-4e3f28acd950",
+      "name": "Zep",
+      "credentials": {
+        "zepApi": {
+          "id": "Bw2D3z6edsB6vZ2H",
+          "name": "Zep (Visioneers)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "9ac8d454-7d73-4bd8-a373-79e66ce2e942",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        800,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the existing output field from previous node\nconst rawOutput = $json.output ?? \"\";\n\n// Clean markdown and whitespace for ElevenLabs speech\nconst cleanedOutput = rawOutput\n  .replace(/[*_~`>#-]/g, \"\")     // remove markdown characters\n  .replace(/\\s+/g, \" \")          // normalize whitespace\n  .trim();\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        -160
+      ],
+      "id": "7bcd9629-de23-4403-9e28-1576103ffc2d",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9437581-0f1d-4011-9d5d-49e3e8e3caba",
+              "name": "sessionId",
+              "value": "={{ `finisher_${$now.setZone('America/New_York').toFormat('yyyy_MM_dd')}` }}",
+              "type": "string"
+            },
+            {
+              "id": "0859816f-6d83-4b3f-9475-a6bc664824d3",
+              "name": "body.question",
+              "value": "={{$json.body.question}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -272,
+        -160
+      ],
+      "id": "b1f0d082-5cc5-432b-97e2-6daa2941e8a0",
+      "name": "Edit fields"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fe3fc97c-a896-4a1b-8dc6-ec159a6220df",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -496,
+        -160
+      ],
+      "id": "203efe69-a899-48d0-a13b-f2dbe0e08ec2",
+      "name": "Webhook",
+      "webhookId": "fe3fc97c-a896-4a1b-8dc6-ec159a6220df"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with agent to retrieve data from Database specifically about Integrous Scarcity",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "250813core6plus",
+          "mode": "list",
+          "cachedResultName": "250813core6plus"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        64
+      ],
+      "id": "6b471b33-b8d5-4d71-bdcb-eb655bae2033",
+      "name": "Finisher Brain",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NDhznTP0ik8daI4v",
+          "name": "PineconeApi (n8nGen2)"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "4.1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Finisher Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Finisher Brain",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zep": {
+      "ai_memory": [
+        [
+          {
+            "node": "Finisher Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit fields": {
+      "main": [
+        [
+          {
+            "node": "Finisher Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finisher Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finisher Brain": {
+      "ai_tool": [
+        [
+          {
+            "node": "Finisher Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "j9xKJDh5LrpbrWLV"
+  },
+  "versionId": "4305c5ef-d3ce-4dc3-bfb8-7e57b30cc3b8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "WNCGkwdIJNoVSpLD",
+  "tags": [
+    {
+      "updatedAt": "2025-08-19T19:03:50.989Z",
+      "createdAt": "2025-08-19T19:03:50.989Z",
+      "id": "mxIKbPw75Qi3GOcT",
+      "name": "WH"
+    }
+  ]
+}

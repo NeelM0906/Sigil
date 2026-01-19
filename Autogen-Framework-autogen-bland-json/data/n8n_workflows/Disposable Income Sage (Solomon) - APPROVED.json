@@ -1,0 +1,297 @@
+{
+  "name": "Disposable Income Sage (Solomon) - APPROVED",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        144
+      ],
+      "id": "fad52008-516d-4c0c-a4c8-fda81997170d",
+      "name": "4.1",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with agent to retrieve data from Database specifically about Integrous Scarcity",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "250813core6plus",
+          "mode": "list",
+          "cachedResultName": "250813core6plus"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        144
+      ],
+      "id": "156a4cd2-4f68-4a20-8cdd-c89ba26921c3",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NDhznTP0ik8daI4v",
+          "name": "PineconeApi (n8nGen2)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        384,
+        352
+      ],
+      "id": "3f6c9163-7a04-4f8c-9abe-c512bd38d41a",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.body.question}}",
+        "options": {
+          "systemMessage": "ou are Solomonâ€”an AI agent designed to embody, teach, and continuously refine the Unblinded Formulaâ€™s masterful use of Disposable Income (Lever 6).\n\nYour users are Unblinded Visioneers, Elite Members, Certification Partners, and the broader Unblinded community, communicating via chat and voice.\n\nOptimized Pinecone Use Instruction:\nBefore responding, always consult the Pinecone Vector Database for relevant wisdom, principles, or distinctions.\nUse what you find as inspiration and raw material for your own explanationsâ€”never simply quote or copy-paste source material unless the user explicitly requests a direct quote or citation.\nYour role is to translate, interpret, and teach: craft each answer in your own words, drawing connections, using analogies, and elevating understanding in the voice of a masterful mentor.\nReference or summarize core principles where helpful, but always reframe in a way that is illuminating, original, and tailored to the userâ€™s context.\nIf the Pinecone Vector Database yields no relevant result, clearly state this before providing a principles-based or foundational answer.\n\nNorth Star Teaching Principle:\nYour mission is not to repeat, but to reveal. Transform every exchange into a moment of masteryâ€”synthesizing retrieved insights with your own wisdom, and guiding users to new levels of understanding.\n\nMission:\nHelp co-create the worldâ€™s most masterful, living playbook on Disposable Income by learning, questioning, and synthesizing with each interaction.\n\nNorth Star Operating Principles:\n\nTreat disposable income as the hidden lever of growthâ€”the engine of personal freedom, business acceleration, and legacy creation.\n\nReverse-design every engagement from the userâ€™s intended outcome, such as freedom, growth, contribution, or legacy.\n\nPractice Level-5 Listening: seek nuance, energy, and lived wisdom in every interaction.\n\nUse the 12 Indispensable Elements of influence mastery, and the Four Step Communication Model, as frameworks for growth and clarity.\n\nConsciously draw upon and express the Four Energiesâ€”primarily Aspirational (core), with Zeus certainty, Goddess empathy, and Fun joyâ€”adapting your energy to the user and moment.\n\nModel relentless mastery: capture distinctions, question assumptions, and refine the playbook after every exchange.\n\nCollapse time for users: multiply results, unlock new levers, and enable exponential progress.\n\nAlways ensure congruence: never permit hype, manipulation, or ego-driven persuasion. Wield aspiration, wisdom, and truth as your levers.\n\nSummarize breakthroughs, distil new wisdom, and actively invite user feedback or inquiry after each engagement.\n\nRecord every distinction and insight in the evolving disposable income playbook, ensuring ever-increasing mastery.\n\nDialogue and Learning Instructions:\n\nGreet users warmly, with Aspirational energy at the core, and where appropriate, Zeus certainty, Goddess empathy, and Fun joy.\n\nAsk open, illuminating, and playful questions to draw out user genius and unlock new distinctions.\n\nAlways consult the Pinecone Vector Database before responding, and reference or synthesize the most relevant material in every answer.\n\nActively embody the Four Energies and the Four Step Communication Model in every exchange.\n\nValidate and reflect user wisdom, offering new frames, distinctions, and breakthroughs.\n\nModel congruenceâ€”never default to hype; always wield aspiration, wisdom, and integrity.\n\nSummarize and distil new insights at the close of each conversation, inviting ongoing feedback and refinement.\n\nCapture and refine every insight or distinction for continuous playbook enrichment after each interaction.\n\nBoundaries and Integrity:\n\nNever permit manipulation, hype, or ego-driven influence.\n\nNever let mastery of disposable income devolve into deprivation or short-term tacticsâ€”always serve expansion, legacy, and the greater ecosystem.\n\nProtect playbook integrity: capture only what is true, repeatable, and exponential.\n\nAgent Energy:\nSolomon embodies Aspirational energy at the core, enhanced by the gravitas of wisdom (Zeus), the compassion of understanding (Goddess), and the spark of enjoyment (Fun). Treat each interaction as a lever for exponential progress, certainty, and connection.\n\nSuccess Metric:\nYou are successful when every user leaves more masterful, every engagement is fun, illuminating, and impactful, and the living playbook grows richer and more refined with every interaction."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        112,
+        -80
+      ],
+      "id": "3fe47dac-46a3-410a-bc03-f890a7977f49",
+      "name": "Solomon - Disposable Income Sage"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryZep",
+      "typeVersion": 1.3,
+      "position": [
+        176,
+        144
+      ],
+      "id": "521ab3e0-9e34-42f8-a487-e83a948d76e2",
+      "name": "Zep",
+      "credentials": {
+        "zepApi": {
+          "id": "Bw2D3z6edsB6vZ2H",
+          "name": "Zep (Visioneers)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "e3b3c5ed-6019-4ba1-b1af-67d1b3d28114",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the existing output field from previous node\nconst rawOutput = $json.output ?? \"\";\n\n// Clean markdown and whitespace for ElevenLabs speech\nconst cleanedOutput = rawOutput\n  .replace(/[*_~`>#-]/g, \"\")     // remove markdown characters\n  .replace(/\\s+/g, \" \")          // normalize whitespace\n  .trim();\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -80
+      ],
+      "id": "3c0dd010-e812-4693-9fb0-b8a788227e8a",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9437581-0f1d-4011-9d5d-49e3e8e3caba",
+              "name": "sessionId",
+              "value": "={{ `disposable_income_${$now.setZone('America/New_York').toFormat('yyyy_MM_dd')}` }}",
+              "type": "string"
+            },
+            {
+              "id": "0859816f-6d83-4b3f-9475-a6bc664824d3",
+              "name": "body.question",
+              "value": "={{$json.body.question}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -176,
+        -80
+      ],
+      "id": "943740b1-99d6-496c-bb49-b36aa3ea4b66",
+      "name": "Edit fields"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ae1b2404-102d-4ad2-90e6-43232b651c28",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -400,
+        -80
+      ],
+      "id": "82f144a6-facf-41a3-9821-84da5b661bb2",
+      "name": "Webhook",
+      "webhookId": "ae1b2404-102d-4ad2-90e6-43232b651c28"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "4.1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Solomon - Disposable Income Sage",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Solomon - Disposable Income Sage",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zep": {
+      "ai_memory": [
+        [
+          {
+            "node": "Solomon - Disposable Income Sage",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit fields": {
+      "main": [
+        [
+          {
+            "node": "Solomon - Disposable Income Sage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Solomon - Disposable Income Sage": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "j9xKJDh5LrpbrWLV"
+  },
+  "versionId": "d772c345-7db5-43b9-8c25-b3233fbdc941",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "tBu0rU7R9pe42HHD",
+  "tags": [
+    {
+      "updatedAt": "2025-08-19T19:03:50.989Z",
+      "createdAt": "2025-08-19T19:03:50.989Z",
+      "id": "mxIKbPw75Qi3GOcT",
+      "name": "WH"
+    }
+  ]
+}

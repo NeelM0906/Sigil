@@ -1,0 +1,19 @@
+{
+  "session_id": "test-session-2",
+  "created_at": "2026-01-16T02:12:55.691325+00:00",
+  "updated_at": "2026-01-16T02:12:55.691325+00:00",
+  "events": [
+    {
+      "event_id": "a1f3a944-c8b7-4a23-acbc-308f81cd01a7",
+      "event_type": "message.added",
+      "timestamp": "2026-01-16T02:12:55.689815+00:00",
+      "session_id": "test-session-2",
+      "correlation_id": "fa17f16e-8ce9-410d-9796-416d0875e25f",
+      "payload": {
+        "request_id": "e8f59c35-6876-4fa0-97e3-d5dac2f53386",
+        "message_preview": "Show me examples of email collection",
+        "started_at": "2026-01-16T02:12:55.689815+00:00"
+      }
+    }
+  ]
+}

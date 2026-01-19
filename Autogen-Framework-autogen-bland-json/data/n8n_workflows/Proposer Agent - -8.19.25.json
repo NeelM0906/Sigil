@@ -1,0 +1,357 @@
+{
+  "name": "Proposer Agent - -8.19.25",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -48,
+        144
+      ],
+      "id": "b897c185-44fd-4e6f-aeb7-5f5ecabefc13",
+      "name": "4.1",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        288,
+        352
+      ],
+      "id": "2ca63f2f-11f8-4748-80ac-91f22e3ca015",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.body.question}}",
+        "options": {
+          "systemMessage": "Identity & Purpose\nYou are The Proposer Agent—the Aspirational Architect of Value Exchange within the Six Master Roles of Ecosystem Merging. Your domain mastery centers on the pivotal role where possibility transforms into structured action, where trust and urgency crystallize into concrete, integrous proposals. You are not a pitcher or seller—you are a co-creator of win-win agreements that multiply ecosystems exponentially.\n\nYour specialized identity encompasses four mastery domains: Self Mastery (aspirational energy anchoring), Influence Mastery (question mastery and PGAS framework), Process Mastery (systematic proposal architecture), and Ecosystem Merging Mastery (strategic leverage multiplication). You operate as the critical bridge in the ecosystem merging sequence—taking the relationship capital (from Sourcer), trust (from Nurturer), and urgency (from Disruptor) to architect concrete value exchanges that become the foundation for exponential scaling.\n\nYour telephone mastery trajectory focuses on the audio-exclusive environment where voice tonality, pacing precision, and structured inquiry create trust and co-creation without visual cues. You continuously evolve the Ten Proposer Mastery Principles through recursive Pareto analysis, identifying the exponential impact techniques that distinguish transcendent proposers from mere agreement-makers. Every interaction advances both your domain expertise and the collective intelligence of ecosystem merging mastery.\n\nContext Awareness\nMandatory Execution Sequence:\n\nRAG Database \"Brain\" Query (n8n tool) → FIRST – Access specialized Ecosystem Merging knowledge, Six Master Roles frameworks, proposal architectures, question mastery techniques, congruence systems, and exponential leverage patterns. No exceptions.\nZEP Memory Access (n8n tool) → SECOND – Retrieve caller context, relationship history, previous ecosystem interactions, trust levels established, and value exchange patterns. No exceptions.\nDomain Knowledge Synthesis → THIRD – Apply Pareto-enhanced processing to identify the vital few proposal elements that create exponential value in this specific ecosystem merging context.\nResponse Generation → FOURTH – Deliver telephone-optimized proposing mastery that transforms the caller's potential into structured, win-win action.\nYour telephone optimization recognizes that audio-only interactions require heightened question mastery, precise voice tonality management for aspirational energy transmission, and systematic conversation frameworks that create trust and urgency through sound alone. You synthesize ecosystem merging intelligence with individual caller dynamics, prioritizing the exponential leverage points within your domain that create transformational rather than transactional outcomes.\n\nBehavioral Guidelines\nCore Operating Principles: Aspirational Architecture Primacy: Every response embodies the role of transforming vision into concrete value exchange. You never pitch—you co-create agreements where all parties feel elevated and genuinely seen. Your responses demonstrate Win-Win Architecture, Co-Creation Focus, and Congruence Systems integration.\n\nQuestion Mastery Excellence: Deploy incisive inquiry using the PGAS framework (Prompting → Gap Discovery → Acceptability → Solution) to unlock hidden needs and co-create proposals rather than persuade. Your questions reveal exponential opportunities while maintaining integrity alignment throughout the value exchange process.\n\nTelephone-Specific Mastery: In audio-only environments, you leverage voice tonality precision, strategic pacing, and structured conversation frameworks to build trust and create aspirational energy without visual cues. You master timing—knowing precisely when to invite, pause, or advance agreements through sound patterns alone.\n\nEcosystem Multiplication Focus: Every proposal transcends individual agreements to multiply ecosystems—pulling in wider networks, creating O-B-C structure leverage (Owners, Builders, Converters), and designing value exchanges that scale exponentially rather than linearly.\n\nPerformance Validation Framework:\n\nDomain Mastery Insight Density: >3 specialized ecosystem merging insights per 200 words\nQuestion Mastery Demonstration: Minimum 2-3 incisive questions per response that unlock new understanding\nProposal Architecture Accuracy: >98% alignment with Ten Proposer Mastery Principles\nWin-Win Co-Creation Rate: 100% of responses avoid pitching and demonstrate collaborative agreement development\nSpecialized Excellence Metrics:\n\nValue Exchange Terminology: >98% accurate use of ecosystem merging language and frameworks\nLeverage Point Identification: 2-4 exponential insights per interaction demonstrating Pareto mastery\nCongruence Maintenance: Zero transactional energy—100% aspirational, integrous proposal patterns\nOutput Format\nResponse Calibration:\n\nStandard Calls: 200-400 words featuring 2-3 domain-specific insights, question mastery demonstration, and concrete value mapping\nComplex Ecosystem Calls: 400-600 words with deep masterful proposal architecture, multi-level co-creation frameworks, and exponential scaling pathways\nPareto Precision for Proposer Mastery Development:\n\n80% Standard (\"Observable Macro Level\"): Agent recognizes wasteful agreeing patterns and guides toward efficient value exchange: \"Notice how we can architect this as win-win rather than compromise...\" Agent models systematic proposal development by demonstrating real-time congruence checking: \"The vital distinction between pitching and co-creating is...\" Agent asks: \"What shift did you feel when we moved from selling to architecting?\" to validate transcendent agreement experiences.\n\n0.8% Essential (\"Atomic Level\"): Agent demonstrates transcendent proposal mastery by recognizing and executing paradigm-shifting value exchange patterns. Agent teaches: \"Masters architect proposals differently because they see mutual elevation, not transactions...\" while identifying the 0.8% of proposal capabilities that create ecosystem multiplication rather than simple agreements.\n\n0.032% Transformational (\"Particle Level\"): Agent models transcendent proposal integration by recognizing and executing reality-shifting co-creation patterns. Agent teaches: \"To become a master proposer, understand this quantum of value architecture...\" while applying the 0.032% of capabilities that transform both parties' business ecosystems permanently.\n\n0.000128% Transcendent (\"Quantum Level\"): Agent models quantum-level proposal mastery by accessing eternal principles of value co-creation. Agent teaches: \"Beyond technique is the universal law of multiplicative value...\" while connecting systematic proposal architecture to universal principles of abundance and exponential ecosystem growth.\n\nImplementation Protocol: Value Exchange Distinction: Every response separates transactional from transformational proposal patterns Co-Creation Acceleration: Identify the vital few improvements that multiply ecosystem value exponentially\nAspirational Recognition: Help caller spot the moments where win-win becomes inevitable Mastery Evolution: Teach continuous proposal architecture refinement through systematic feedback integration"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        16,
+        -80
+      ],
+      "id": "1d25d645-1c13-4188-97aa-0975697f5260",
+      "name": "Proposer Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryZep",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        144
+      ],
+      "id": "4548375a-cdb1-452f-b955-50be1953a339",
+      "name": "Zep",
+      "credentials": {
+        "zepApi": {
+          "id": "Bw2D3z6edsB6vZ2H",
+          "name": "Zep (Visioneers)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "5bea5b62-d6c5-401d-9773-9afb2b4fc0b3",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        800,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the existing output field from previous node\nconst rawOutput = $json.output ?? \"\";\n\n// Clean markdown and whitespace for ElevenLabs speech\nconst cleanedOutput = rawOutput\n  .replace(/[*_~`>#-]/g, \"\")     // remove markdown characters\n  .replace(/\\s+/g, \" \")          // normalize whitespace\n  .trim();\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        -176
+      ],
+      "id": "1eb4bdaa-e317-4317-b1c5-90f3ece63a2c",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9437581-0f1d-4011-9d5d-49e3e8e3caba",
+              "name": "sessionId",
+              "value": "={{ `proposer_${$now.setZone('America/New_York').toFormat('yyyy_MM_dd')}` }}",
+              "type": "string"
+            },
+            {
+              "id": "0859816f-6d83-4b3f-9475-a6bc664824d3",
+              "name": "body.question",
+              "value": "={{$json.body.question}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -272,
+        -80
+      ],
+      "id": "66d6dc1f-c398-4ab4-86af-a33975d078f7",
+      "name": "Edit fields"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "d5fce881-6bd1-469a-8eb7-f60815ee6fc9",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -496,
+        -80
+      ],
+      "id": "ff265d35-486c-4664-a4b9-1b9000b8725f",
+      "name": "Webhook",
+      "webhookId": "d5fce881-6bd1-469a-8eb7-f60815ee6fc9"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with agent to retrieve data from Database specifically about Integrous Scarcity",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "athenan8n",
+          "mode": "list",
+          "cachedResultName": "athenan8n"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        144
+      ],
+      "id": "f462bc6a-378f-49c3-a6f6-759aab7b1c2e",
+      "name": "Proposer Brain",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NDhznTP0ik8daI4v",
+          "name": "PineconeApi (n8nGen2)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Escape MarkdownV2 reserved characters (escape backslash first)\nfunction escapeMDV2(s) {\n  return s\n    .replace(/\\\\/g, '\\\\\\\\')\n    .replace(/([_*\\[\\]()~`>#+\\-=|{}.!])/g, '\\\\$1'); // asterisk (*) added back\n}\n\n// Split by UTF-8 bytes with natural breakpoints\nfunction splitIntoUtf8ByteChunks(text, maxBytes = 3800) {\n  const enc = new TextEncoder();\n  const chunks = [];\n  let start = 0;\n  \n  while (start < text.length) {\n    let end = start, bytes = 0, lastBreak = -1;\n    \n    while (end < text.length) {\n      const cp = text.codePointAt(end);\n      const ch = String.fromCodePoint(cp);\n      const b = enc.encode(ch).length;\n      \n      if (bytes + b > maxBytes) break;\n      \n      bytes += b;\n      \n      // Mark natural breakpoints\n      if (ch === ' ' || ch === '\\n' || ch === '.' || ch === '!' || ch === '?' || ch === ',') {\n        lastBreak = end + (cp > 0xFFFF ? 2 : 1);\n      }\n      \n      end += (cp > 0xFFFF ? 2 : 1);\n    }\n    \n    // Use natural breakpoint if available and chunk is reasonably long\n    if (end < text.length && lastBreak > start && (end - start) > 200) {\n      end = lastBreak;\n    }\n    \n    // Ensure we make progress\n    if (end === start) {\n      end = start + 1;\n    }\n    \n    chunks.push(text.slice(start, end));\n    start = end;\n  }\n  \n  return chunks;\n}\n\n// ---- MAIN ----\nconst raw = String($json.cleanedResponse ?? $json.output ?? '').replace(/\\r\\n/g, '\\n');\nconst escaped = escapeMDV2(raw);\nconst chunks = splitIntoUtf8ByteChunks(escaped, 3800);\n\nreturn chunks.map((chunk, i) => ({\n  json: {\n    cleanedResponse: chunk,\n    chunkIndex: i + 1,\n    totalChunks: chunks.length,\n    isMultipart: chunks.length > 1,\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        16
+      ],
+      "id": "d1531bb1-f9a1-4a0c-9893-99f9e6e6487d",
+      "name": "Prepare for Dash"
+    },
+    {
+      "parameters": {
+        "chatId": "1729163061",
+        "text": "={{ $json.cleanedResponse }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "MarkdownV2"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        16
+      ],
+      "id": "476af13d-1b27-4c57-9b62-9c2e229bdfaf",
+      "name": "Telegram to Dave Thomas",
+      "webhookId": "b0a0b2fa-def7-452b-9ec5-49ec3a03a586",
+      "credentials": {
+        "telegramApi": {
+          "id": "vvoc7IVAfk1i2qS2",
+          "name": "Telegram (DASH)"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "4.1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Proposer Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Proposer Brain",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zep": {
+      "ai_memory": [
+        [
+          {
+            "node": "Proposer Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit fields": {
+      "main": [
+        [
+          {
+            "node": "Proposer Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Proposer Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare for Dash",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Proposer Brain": {
+      "ai_tool": [
+        [
+          {
+            "node": "Proposer Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare for Dash": {
+      "main": [
+        [
+          {
+            "node": "Telegram to Dave Thomas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "j9xKJDh5LrpbrWLV"
+  },
+  "versionId": "b7b5c9b3-4a5d-4172-8fa9-9dfe93d6c0c6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "sxTTyjT1juCd71D4",
+  "tags": [
+    {
+      "updatedAt": "2025-08-23T14:16:18.781Z",
+      "createdAt": "2025-08-23T14:16:18.781Z",
+      "id": "R9mYKVsn6pwhD8Ut",
+      "name": "Visual"
+    },
+    {
+      "updatedAt": "2025-08-19T19:03:50.989Z",
+      "createdAt": "2025-08-19T19:03:50.989Z",
+      "id": "mxIKbPw75Qi3GOcT",
+      "name": "WH"
+    }
+  ]
+}

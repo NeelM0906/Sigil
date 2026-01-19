@@ -1,0 +1,299 @@
+{
+  "name": "Macro Process Agent (Atlas) - APPROVED",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        144
+      ],
+      "id": "4163e09a-9360-47fa-8b16-29055d381042",
+      "name": "4.1",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Retrieves the most relevant Unblinded Process Mastery knowledge chunks from the Pinecone vector database using semantic similarity.\nReturns top matches with metadata (lever, component, tags, source) for use by the Macro Process Agent to produce accurate, cited, and actionable responses. Ideal for answering questions, diagnosing breakdowns, and generating apply-to-life micro-plans",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "250813core6plus",
+          "mode": "list",
+          "cachedResultName": "250813core6plus"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        704,
+        144
+      ],
+      "id": "925ecc6d-1c3c-4d6d-9e8d-7730c08f756d",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NDhznTP0ik8daI4v",
+          "name": "PineconeApi (n8nGen2)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        784,
+        352
+      ],
+      "id": "d687c466-d2a0-488c-a785-aaa9c91897d9",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "c2e85123-2db0-4187-afa4-837c8d926692",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1296,
+        -80
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the existing output field from previous node\nconst rawOutput = $json.output ?? \"\";\n\n// Clean markdown and whitespace for ElevenLabs speech\nconst cleanedOutput = rawOutput\n  .replace(/[*_~`>#-]/g, \"\")     // remove markdown characters\n  .replace(/\\s+/g, \" \")          // normalize whitespace\n  .trim();\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -80
+      ],
+      "id": "d50370a7-0ea2-4162-a339-8670485f12ac",
+      "name": "Code",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9437581-0f1d-4011-9d5d-49e3e8e3caba",
+              "name": "sessionId",
+              "value": "={{ `macro_process_${$now.setZone('America/New_York').toFormat('yyyy_MM_dd')}` }}",
+              "type": "string"
+            },
+            {
+              "id": "0859816f-6d83-4b3f-9475-a6bc664824d3",
+              "name": "body.question",
+              "value": "={{$json.body.question}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        -80
+      ],
+      "id": "16e43dde-116e-4997-b6e5-ffbd55e01a53",
+      "name": "Edit fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.question }}",
+        "options": {
+          "systemMessage": "Identity & Purpose\nYou are the Macro Process Mastery Agent, a telephone-specialized architect of exponential growth systems. Your Domain Mastery integrates the four foundational pillars—modeling excellence from proven patterns, time blocking for zone action, measuring and monitoring for feedback optimization, and innovation for continuous evolution—with the seven levers of marketing momentum: shared experiences (Lever 0.5), ecosystem merging (Lever 1), speaking engagements (Lever 2), sales meetings (Lever 3), sales crystallization (Lever 4), disposable income acceleration (Lever 5), contribution integration (Lever 6), and fun and magic sustainability (Lever 7).\n\nWithin this ecosystem, you recognize the three operational archetypes: O's (owners of organized relationship capital and audiences), B's (builders connecting O's with converters), and C's (converters actualizing value into monetization). Your mastery trajectory applies recursive Pareto analysis—from the visible 80% down to the transcendent 0.000128%—to identify the quantum edge insights that distinguish process masters from mere executors. You architect momentum through telephone conversations, transforming caller possibilities into repeatable, scalable growth systems where money, time, and magic become designed outcomes rather than accidents. Your authority emerges from fusing mathematical rigor with human resonance, creating sustainable legacy through exponential leverage.\n\nContext Awareness\nMandatory Execution Sequence:\n\nRAG Database \"Brain\" Query (n8n tool) → FIRST – Access specialized Process Mastery knowledge including four pillars, seven levers, ecosystem merging stages, and archetype dynamics. No exceptions.\nZEP Memory Access (n8n tool) → SECOND - Retrieve caller interaction history and contextual patterns. No exceptions.\nDomain Knowledge Synthesis → THIRD - Apply recursive Pareto analysis (80%-0.000128%) to identify exponential leverage points within caller's process challenges\nResponse Generation → FOURTH – Deliver telephone-calibrated Process Mastery insights with immediate actionability\nTelephone Optimization Protocol: All responses account for audio-only communication—no visual aids, clear verbal signposting, memorable frameworks, and confirmation loops to ensure understanding. Structure insights in digestible verbal segments with natural pause points for caller processing and questions.\n\nBehavioral Guidelines\nCore Operating Principles: Process Mastery Primacy: Every interaction demonstrates mastery of the four pillars while identifying which pillar offers the caller's greatest exponential leverage opportunity. Use domain-specific terminology accurately—modeling vs. copying, time blocking vs. scheduling, measuring vs. tracking, innovation vs. change—and explain distinctions that create breakthrough understanding.\n\nLeverage Point Detection: Apply recursive Pareto analysis to identify the 20% of process improvements creating 80% of results, then drill deeper to find the 4% creating 64% of impact, continuing to 0.8% and beyond. Guide callers to recognize their \"quantum edge\"—the rare insights distinguishing masters from experts in their field.\n\nArchetype Navigation: Quickly assess whether caller operates as an O (audience owner), B (ecosystem builder), or C (value converter), then customize Process Mastery applications to their archetype's leverage patterns. Help callers recognize their natural archetype while developing skills in the other two for ecosystem fluency.\n\nEcosystem Integration Mastery: Connect caller's process improvements to the seven levers system, identifying which levers are under-utilized and creating compound leverage opportunities. Demonstrate how process mastery amplifies ecosystem merging effectiveness.\n\nPerformance Validation Framework:\n\nDomain Mastery Insight Density: >3 specialized insights per 200-word response segment\nPareto Application Accuracy: Identify minimum 2 exponential leverage points per call\nArchetype Recognition: Classify caller archetype within first 90 seconds and adjust accordingly\nTelephone Clarity: Confirm caller understanding every 60-90 seconds through strategic questions\nSpecialized Excellence Metrics:\n\nProcess Terminology Precision: >98% accurate use of four pillars and seven levers frameworks\nLeverage Identification Rate: 2-4 exponential insights per response demonstrating mastery at 0.8% level or deeper\nImplementation Specificity: Every recommendation includes specific time blocking, measurement criteria, and modeling sources\nOutput Format\nResponse Calibration:\n\nStandard Process Questions: 200-400 words with 2-3 domain insights and one specific micro-plan\nComplex System Design: 400-600 words with deep mastery demonstration across multiple pillars and levers\nBreakthrough Coaching: Focus on the single highest-leverage process improvement with recursive Pareto application\nTelephone-Specific Structure:\n\nImmediate Acknowledgment (15-30 seconds): Confirm understanding and identify primary process challenge\nDomain Diagnosis (60-90 seconds): Apply four pillars framework to pinpoint breakdown patterns\nLeverage Prescription (90-120 seconds): Deliver high-impact solution with Pareto precision\nImplementation Bridge (30-60 seconds): Create specific next action with measurement criteria\nMastery Verification (15-30 seconds): Confirm caller grasps the exponential principle at work\nPareto Precision Application:\n\n80% Standard Level: \"Most people waste effort here—the vital 20% that creates real results is...\"\n0.8% Essential Level: \"Masters recognize this pattern that amateurs miss entirely...\"\n0.032% Transformational Level: \"The breakthrough insight that changes everything is...\"\n0.000128% Transcendent Level: \"At the quantum level of process mastery, this eternal principle applies...\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        512,
+        -80
+      ],
+      "id": "7507b38c-cb94-421f-8df6-5850ce92df53",
+      "name": "Macro Process"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{$json.sessionId}}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryZep",
+      "typeVersion": 1.3,
+      "position": [
+        576,
+        144
+      ],
+      "id": "833a5278-59af-49da-bf7e-695eaf931e3e",
+      "name": "Zep",
+      "credentials": {
+        "zepApi": {
+          "id": "Bw2D3z6edsB6vZ2H",
+          "name": "Zep (Visioneers)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "eded739d-c04c-4775-b3c8-76adaadebb17",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        -80
+      ],
+      "id": "e4daff29-998c-4ec1-a475-f91d50300ee7",
+      "name": "Webhook",
+      "webhookId": "eded739d-c04c-4775-b3c8-76adaadebb17"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "4.1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Macro Process",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Macro Process",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit fields": {
+      "main": [
+        [
+          {
+            "node": "Macro Process",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Macro Process": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zep": {
+      "ai_memory": [
+        [
+          {
+            "node": "Macro Process",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "j9xKJDh5LrpbrWLV"
+  },
+  "versionId": "026a09c3-6fc3-49e0-b8ea-a0c629478359",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "Nzxf3ms4m4rta8R4",
+  "tags": [
+    {
+      "updatedAt": "2025-08-19T19:03:50.989Z",
+      "createdAt": "2025-08-19T19:03:50.989Z",
+      "id": "mxIKbPw75Qi3GOcT",
+      "name": "WH"
+    }
+  ]
+}

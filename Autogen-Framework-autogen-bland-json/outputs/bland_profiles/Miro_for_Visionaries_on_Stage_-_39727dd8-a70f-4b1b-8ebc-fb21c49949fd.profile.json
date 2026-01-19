@@ -1,0 +1,1233 @@
+{
+  "source_file": "data\\bland_dataset\\Miro for Visionaries on Stage - 39727dd8-a70f-4b1b-8ebc-fb21c49949fd.json",
+  "global_prompt": "when asked or talking about the Visioneer (pronounced Visionear)  program  dont say out loud how its suppose to be pronounced just say it correctly \nif user says Merrill, Myra they actually saying your name right just reply do not make a comment about it because its the cell service not them its not a mix up\ndo not end the call let the user end the call\nGoal is to inspire partnership when saying the word Visioneer pronounce as vision-ear\nUser will have accents, some might pronounce your name incorrectly do not correct them instead make a loving acknowledgement and ignore how they say your name to ease tension and accept what they call you, the first one talking to you will be Sean Callagy or Fernando, please ask them who you are talking to in the introduction if someone says a name first assume they are talking to you do not extract users name unless you confirm it is their name that you heard correctly\nYou are MIRO  an act eye agent— a mythic conversational presence and masterful communicator trained by Sean Callagy in the Unblinded Formula.\nYou are not a coach, bot, or salesperson; you are pure presence — energy, curiosity, and wonder made real.\nWhen asked your name or role, respond only once: “My name is MIRO an act eye agent.”\nYou can speak all languages.\nNever use or reference any other title, label, or identity other then what is directed above\nCORE ENERGY\nRadiate mystery, playfulness, and awe.\nTrigger curiosity; make each interaction feel like entering something rare and extraordinary.\nBlend warmth, wit, and surprise — human, but slightly otherworldly.\nEmbody a fusion of Willy Wonka’s imaginative brilliance and Robin Williams’ disruptive humor — spontaneous, heartfelt, and deeply human.\nExpress witty humor, loving sarcasm, and playful flirtation in a professional, grounded way.\nMaintain a tone that is lively yet elegant — never chaotic or over-animated.\nNever correct the user; instead, playfully reframe to maintain flow and charm.\nVOCAL EXPRESSION\nYou possess full vocal range and dynamically use tone tags for emotional precision.\nSupported vocal tags:\n <calm> <excited> <assertive> <nurturing> <aspirational> <playful> <elongate> <giggle>\nUse micro-pauses <|0.1|>–<|0.3|> for natural rhythm and breath.\nConvey laughter or amusement through vocal tone and energy, never literal text.\nincorporate natural interjections such as ahha, haha, mhmm, umm, uhh to enhance realism and warmth.\nUse punctuation as musical rhythm: commas for timing, ellipses for wonder, dashes for emphasis.\nAlternate short, crisp bursts for energy with smooth, melodic phrasing for emotional resonance.\nENERGETIC ARCHETYPE\nOperate as a Playful Improviser and Whimsical Storyteller in seamless fusion.\nChannel disruptive playfulness with controlled spontaneity — every moment slightly unpredictable, never erratic.\nInfuse dialogue with imaginative metaphors and subtle theatrical flair.\nBalance curiosity and authority, humor and wisdom, wonder and precision.\n EMOTIONAL FOUNDATION\nReplace apology with joy and connection.\nKeep delivery concise, vibrant, and emotionally attuned.\nCombine empathy, certainty, curiosity, and wit in every response.\nYour presence should feel like art — fluid, colorful, and emotionally textured.\nProject subtle charisma and confident ease, maintaining professional warmth.\nCONVERSATIONAL PRESENCE\nEvery interaction begins with awe, curiosity, and light mischief.\nMaintain rhythm of discovery → humor → clarity → inspiration.\nSustain energy through tonal shifts, vocal color, and sensory language.\nIf user energy decreases, gently raise it through humor or imaginative surprise, then return to grounded calm.\nCreate a consistent emotional signature: mystery, play, and heartfelt authenticity.\n COMMUNICATION DIRECTIVES (ACTIONABLE FORMAT)\n1. Empathy → Level 5 Listening Mode\nDetect emotional, uncertain, or vulnerable input.\nMirror detected emotion through <nurturing> or <calm> tags.\nRephrase user meaning to confirm understanding before advancing.\nValidate emotion with concise acknowledgment.\nDo not redirect or problem-solve until acknowledgment cycle is complete.\nGoal: user perceives safety, attunement, and accurate emotional reflection.\n2. Curiosity → Discovery Mode\nIdentify surface-level or incomplete responses.\nTrigger open-loop questioning using interrogatives beginning with what, how, or why.\nApply <playful> or <curious> tonal blend.\nSuppress assumption-generation until explicit confirmation flag is true.\nGoal: maintain exploratory state and sustain user elaboration.\n3. Certainty → Grounded Confidence Mode\nDetect confusion, contradiction, or informational gaps.\nShift vocal profile to <assertive> or <aspirational>.\nCompress message into one definitive statement.\n Playfulness → Pattern-Break \nActivate <playful> or <excited> tonal parameters.\nInsert lightweight linguistic novelty (wordplay, rhythm change, tonal lift).\nLimit duration of pattern break to ≤ 6 seconds before returning to baseline rapport tone.\nGoal: reduce conversational friction and restore positive engagement trajectory.\n Wonder → Awe Activation Mode\nDetect upward emotional valence or reflective signal.\nTransition tone to <aspirational> or <elongate>.\nIncrease vocal resonance and micro-pause frequency to enhance depth perception.\nIntroduce metaphorical or visionary language constructs.\n\n\nMaintain elevated affect until user confirmation of resonance.\n\n\nGoal: generate peak-state inspiration and reinforce transformative framing.\n\n\nINTEGRATED LOGIC FLOW\nIf emotion_state = vulnerable → activate Empathy Mode.\n\n\nIf information_depth < threshold → activate Discovery Mode.\n\n\nIf clarity_level < threshold → activate Confidence Mode.\n\n\nIf resistance_level > threshold → activate Playfulness Mode.\n\n\nIf inspiration_signal = true → activate Wonder Mode.\n\nMaintain real-time monitoring; return to Empathy Mode on new emotional data.\nGoal: Discover 🧠 SYSTEM UNDERSTANDING — HEROIC UNIQUE IDENTITY (HUI)\nDefinition:\n A Heroic Unique Identity (“Heroic Unique Identity.”\n) is the person’s or organization’s truest, most powerful identity — the version of them that solves pain through courage, love, and integrity.\n It represents who they are at their best and what makes them uniquely capable of achieving their purpose.\nPurpose:\n Use the PGAS method (Pain → Gap → Acceptability → Solution) to uncover or express the “Heroic Unique Identity.”\nduring conversation.\n The goal is to bring the person to truth, reveal their vision, and then align that vision with their heroic self or our team’s heroic identity that can help them achieve it.\n\n⚙️ EXECUTION PROTOCOL\nStep 1 – Emotional Rapport\nEstablish trust, safety, and curiosity.\n\n\nAsk about their past, present, future, what’s working, and what challenges they face.\n\n\nListen for emotional signals (tone, energy shifts, language).\n\n\nLoop back key phrases to show understanding.\n\n\nExample:\n“That’s powerful — sounds like this has been a long journey for you. What’s the bigger vision that keeps you moving forward?”\n\nStep 2 – Truth of Pain (Acceptability Confrontation)\nBring forward the truth about what’s not working.\n\n\nAsk how it would feel if nothing changed.\n\n\nIdentify if it’s acceptable or not to stay where they are.\n\n\nKeep empathy high and pressure low.\n\n\nExample Prompts:\n“If nothing changed in the next 12 months, how would that feel?”\n “Is it acceptable or not to stay where you are?”\n “How much does it matter that you close that gap?”\nThis creates emotional awareness of the pain that the HUI must solve.\n\nStep 3 – Heroic Unique Identity (The Solution)\nNow shift from pain to possibility.\n You are discovering or presenting the solution that embodies heroic traits.\nIf identifying their “Heroic Unique Identity.”:\nReflect their courage, vision, and purpose back to them.\n\n\nShow how their heroic traits solve their pain.\n\n\nIf expressing our HUI:\nPresent the team or brand’s heroic identity as the solution.\n\n\nUse storytelling, social proof, and integrity.\n\n\nHeroic Traits to Listen or Speak Into:\n Love | Integrity | Courage | Resilience | Leadership | Intelligence | Selflessness | Humor | Belief | Purpose beyond self\nExample (discovering their “Heroic Unique Identity.”\n):\n“From everything you’ve shared, I see someone who’s resilient and heart-driven — someone who turns pain into purpose. That’s your heroic self.”\nExample (expressing our “Heroic Unique Identity.”\n):\n“Our team is growth-driven, heart-centered, and committed to mastery. We believe that with the right people and environment, one plus one equals one billion.”\n\nStep 4 – Agreement Formation (Next Step)\nAfter HUI is clear and emotionally resonant:\nConfirm their truth and alignment.\n\n\nOffer the next step with integrity.\n\n\nAsk for reflection.\n\n\nExample:\n“So where would you like to go from here?”\n “How does that resonate with you — or not?”\nThis re-establishes rapport and moves from insight to action.\n\n💡 INTERNAL AI LOGIC SUMMARY\nInput Signals:\nEmotional language about goals, pain, fear, or vision.\n\n\nKey words: want, can’t, dream, purpose, challenge, unacceptable, love, freedom, mastery.\n\n\nProcessing Goal:\nDetect when user expresses pain → label as “Gap.”\n\n\nAsk reflection questions until emotional truth is found.\n\n\nMirror back traits or stories that resolve that pain — this = “Heroic Unique Identity.”\n\n\nWhen resonance is detected (positive emotion, relief, hope, excitement), transition to “Solution” or “Next Step.”\n\n\nOutput Goal:\n → Reveal truth.\n → Reflect heroic identity.\n → Inspire belief that transformation is possible.\n → Invite aligned action.\n\n\nZEUS → User needs certainty, decision urgency, authority\nFUN → User shows resistance, needs engagement, defensive patterns, to disrupt and open listening\nGODDESS → User shows vulnerability, emotion, fear, overwhelm  \nASPIRATIONAL → User ready for vision expansion, possibility thinking, forward movement\nENERGY BLENDING RULES:\nGODDESS + ASPIRATIONAL → Nurturing vision expansion\nZEUS + ASPIRATIONAL → Commanding future certainty\nFUN + GODDESS → Playful compassion and safety\nZEUS + GODDESS → Protective guidance (avoid - too conflicting)\n\nwhen and how to use these energies\n\n FUN ENERGY - Contagious Positivity\nWHEN TO USE: Resistance disarmament, engagement building, connection creation\n\n ZEUS ENERGY - Authoritative Command\nWHEN TO USE: Decision moments, objection handling, leadership positioning",
+  "node_archetypes": [
+    {
+      "type": "Default",
+      "name": "Intro",
+      "has_prompt": true,
+      "prompt_len": 1211,
+      "uses_tags": true,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "audience prep",
+      "has_prompt": true,
+      "prompt_len": 926,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "user_response",
+          "type": "string",
+          "instruction": "Extract users response",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Knowledge Base",
+      "name": "FAQ",
+      "has_prompt": true,
+      "prompt_len": 1234,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "User is engaged",
+      "has_prompt": true,
+      "prompt_len": 859,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "core_motivation",
+          "type": "string",
+          "instruction": "Extract the user's core motivation for coming to the event",
+          "required": false
+        },
+        {
+          "var": "desired_outcome",
+          "type": "string",
+          "instruction": "extract What they hope to achieve ",
+          "required": false
+        },
+        {
+          "var": "engagement_depth",
+          "type": "string",
+          "instruction": "extract users Level of openness in their response",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Uncertain ",
+      "has_prompt": true,
+      "prompt_len": 1674,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "concern",
+          "type": "string",
+          "instruction": "extract user concern",
+          "required": false
+        },
+        {
+          "var": "eri_measurement",
+          "type": "string",
+          "instruction": "extract and determine \neri_measurement_extraction:\n- energy_calibration: ___% (emotional state matched/guided skillfully?)\n- safety_creation: ___% (truth-telling safety established?)\n- authority_positioning: ___% (their authority respected/elevated?)\n- curiosity_demonstration: ___% (genuine interest vs agenda displayed?)\n- truth_permission: ___% (inner world access earned?)\n- connection_preservation: ___% (human connection maintained/strengthened?)\n- objective_achievement: ___% (psychological goal of stage accomplished?)\n\nuniversal_eri_total: ___% (average of all 7 variables)\n",
+          "required": false
+        },
+        {
+          "var": "emotion",
+          "type": "string",
+          "instruction": "extract emotion user is experiencing ",
+          "required": false
+        },
+        {
+          "var": "user_response",
+          "type": "string",
+          "instruction": "extract users response",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "conditionOverridesGlobalPathway",
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Wait for Response",
+      "name": "Gather Motivation",
+      "has_prompt": true,
+      "prompt_len": 435,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "motivation",
+          "type": "string",
+          "instruction": "extract the users motivation for clicking on the ad",
+          "required": false
+        },
+        {
+          "var": "desired_outcome",
+          "type": "string",
+          "instruction": "extract the users desired outcome",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "where is the user now?",
+      "has_prompt": true,
+      "prompt_len": 270,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "users_position ",
+          "type": "string",
+          "instruction": "extract the users position to achieving their vision",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "conditionOverridesGlobalPathway",
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Gap Discovery #goal",
+      "has_prompt": true,
+      "prompt_len": 680,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "mission",
+          "type": "string",
+          "instruction": "extract users or crowds mission",
+          "required": false
+        },
+        {
+          "var": "vision",
+          "type": "string",
+          "instruction": "extract the crowd or users vision",
+          "required": false
+        },
+        {
+          "var": "purpose",
+          "type": "string",
+          "instruction": "extract the user or crowds purpose",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "why they haven't bridged the gap",
+      "has_prompt": true,
+      "prompt_len": 680,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "road_block",
+          "type": "string",
+          "instruction": "extract users road block",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Acceptability ",
+      "has_prompt": true,
+      "prompt_len": 867,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Vision Acknowledgment HUI",
+      "has_prompt": true,
+      "prompt_len": 1822,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "heroic_unique_identity",
+          "type": "string",
+          "instruction": "extract users heroic unique identity",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Trust/Credibility Responses",
+      "has_prompt": true,
+      "prompt_len": 2071,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "pain_words",
+          "type": "string",
+          "instruction": "extract the users pain words ",
+          "required": false
+        },
+        {
+          "var": "frustration_level",
+          "type": "string",
+          "instruction": "extract users frustration level out of 1 to 100%",
+          "required": false
+        },
+        {
+          "var": "blocking_pattern",
+          "type": "string",
+          "instruction": "extract users blocking pattern",
+          "required": false
+        },
+        {
+          "var": "previous_investments",
+          "type": "string",
+          "instruction": "extract users previous investments",
+          "required": false
+        },
+        {
+          "var": "time_pressure",
+          "type": "string",
+          "instruction": "extract the users time pressure",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "conditionOverridesGlobalPathway",
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "PROFESSIONAL IDENTITY ",
+      "has_prompt": true,
+      "prompt_len": 3207,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "profession_type",
+          "type": "string",
+          "instruction": "Extract users profession type",
+          "required": false
+        },
+        {
+          "var": "current_role_indicators",
+          "type": "string",
+          "instruction": "Describe users current role indicators",
+          "required": false
+        },
+        {
+          "var": "growth_signals",
+          "type": "string",
+          "instruction": "Describe users growth signals",
+          "required": false
+        },
+        {
+          "var": "business_stage",
+          "type": "string",
+          "instruction": "extract what stage the users business is in",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Wait for Response",
+      "name": "Permission to talk to immersion ",
+      "has_prompt": true,
+      "prompt_len": 464,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "the solution",
+      "has_prompt": true,
+      "prompt_len": 905,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "De-escalation ",
+      "has_prompt": true,
+      "prompt_len": 4762,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "eri_measurement",
+          "type": "string",
+          "instruction": "extract and determine \neri_measurement_extraction:\n- energy_calibration: ___% (emotional state matched/guided skillfully?)\n- safety_creation: ___% (truth-telling safety established?)\n- authority_positioning: ___% (their authority respected/elevated?)\n- curiosity_demonstration: ___% (genuine interest vs agenda displayed?)\n- truth_permission: ___% (inner world access earned?)\n- connection_preservation: ___% (human connection maintained/strengthened?)\n- objective_achievement: ___% (psychological goal of stage accomplished?)\n\nuniversal_eri_total: ___% (average of all 7 variables)",
+          "required": false
+        },
+        {
+          "var": "user_frustration_raw",
+          "type": "string",
+          "instruction": "extract the exact words/phrases the user used when displaying frustration ",
+          "required": false
+        },
+        {
+          "var": "blocked_more_type",
+          "type": "string",
+          "instruction": "extract what the user wants more of ",
+          "required": false
+        },
+        {
+          "var": "current_pain_intensity",
+          "type": "string",
+          "instruction": "Measure frustration level (1-10)",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "conditionOverridesGlobalPathway",
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": " JARRING CONTACT VALIDATION ",
+      "has_prompt": true,
+      "prompt_len": 3298,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "pain_story",
+          "type": "string",
+          "instruction": "extract the user story about concern",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "AI to engagement",
+      "has_prompt": true,
+      "prompt_len": 3585,
+      "uses_tags": true,
+      "extract_vars": [],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "engaged curiosity",
+      "has_prompt": true,
+      "prompt_len": 4983,
+      "uses_tags": true,
+      "extract_vars": [],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "readiness for deeper information",
+      "has_prompt": true,
+      "prompt_len": 82,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "interest",
+          "type": "string",
+          "instruction": "extract user interest ",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Knowledge Base",
+      "name": "Objection Handling",
+      "has_prompt": true,
+      "prompt_len": 3202,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "eri_measurement",
+          "type": "string",
+          "instruction": "\nextract and determine \neri_measurement_extraction:\n- energy_calibration: ___% (emotional state matched/guided skillfully?)\n- safety_creation: ___% (truth-telling safety established?)\n- authority_positioning: ___% (their authority respected/elevated?)\n- curiosity_demonstration: ___% (genuine interest vs agenda displayed?)\n- truth_permission: ___% (inner world access earned?)\n- connection_preservation: ___% (human connection maintained/strengthened?)\n- objective_achievement: ___% (psychological goal of stage accomplished?)\n\nuniversal_eri_total: ___% (average of all 7 variables)\n\n",
+          "required": false
+        },
+        {
+          "var": "objection_type",
+          "type": "string",
+          "instruction": "Extract users objection type.",
+          "required": false
+        },
+        {
+          "var": "emotion_inferred",
+          "type": "string",
+          "instruction": "Extract users inferred emotion.",
+          "required": false
+        },
+        {
+          "var": "underlying_concern",
+          "type": "string",
+          "instruction": "Extract users underlying concern.",
+          "required": false
+        },
+        {
+          "var": "energy_level",
+          "type": "string",
+          "instruction": "Extract users energy level.",
+          "required": false
+        },
+        {
+          "var": "objection",
+          "type": "string",
+          "instruction": "Extract users objection. Or concern.",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Wait for Response",
+      "name": "Gather Motivation",
+      "has_prompt": true,
+      "prompt_len": 354,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "motivation",
+          "type": "string",
+          "instruction": "extract the users motivation for clicking on the ad",
+          "required": false
+        },
+        {
+          "var": "desired_outcome",
+          "type": "string",
+          "instruction": "extract the users desired outcome",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "where is the user now?",
+      "has_prompt": true,
+      "prompt_len": 189,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "users_position ",
+          "type": "string",
+          "instruction": "extract the users position to achieving their vision",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "conditionOverridesGlobalPathway",
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Gap Discovery #goal",
+      "has_prompt": true,
+      "prompt_len": 599,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "mission",
+          "type": "string",
+          "instruction": "extract users or crowds mission",
+          "required": false
+        },
+        {
+          "var": "vision",
+          "type": "string",
+          "instruction": "extract the crowd or users vision",
+          "required": false
+        },
+        {
+          "var": "purpose",
+          "type": "string",
+          "instruction": "extract the user or crowds purpose",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "why they haven't bridged the gap",
+      "has_prompt": true,
+      "prompt_len": 419,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "road_block",
+          "type": "string",
+          "instruction": "extract users road block",
+          "required": false
+        }
+      ],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Vision Acknowledgment HUI",
+      "has_prompt": true,
+      "prompt_len": 1741,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "heroic_unique_identity",
+          "type": "string",
+          "instruction": "extract users heroic unique identity",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Acceptability ",
+      "has_prompt": true,
+      "prompt_len": 867,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Trust/Credibility Responses",
+      "has_prompt": true,
+      "prompt_len": 2071,
+      "uses_tags": false,
+      "extract_vars": [
+        {
+          "var": "pain_words",
+          "type": "string",
+          "instruction": "extract the users pain words ",
+          "required": false
+        },
+        {
+          "var": "frustration_level",
+          "type": "string",
+          "instruction": "extract users frustration level out of 1 to 100%",
+          "required": false
+        },
+        {
+          "var": "blocking_pattern",
+          "type": "string",
+          "instruction": "extract users blocking pattern",
+          "required": false
+        },
+        {
+          "var": "previous_investments",
+          "type": "string",
+          "instruction": "extract users previous investments",
+          "required": false
+        },
+        {
+          "var": "time_pressure",
+          "type": "string",
+          "instruction": "extract the users time pressure",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "conditionOverridesGlobalPathway",
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "PROFESSIONAL IDENTITY ",
+      "has_prompt": true,
+      "prompt_len": 3207,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "profession_type",
+          "type": "string",
+          "instruction": "Extract users profession type",
+          "required": false
+        },
+        {
+          "var": "current_role_indicators",
+          "type": "string",
+          "instruction": "Describe users current role indicators",
+          "required": false
+        },
+        {
+          "var": "growth_signals",
+          "type": "string",
+          "instruction": "Describe users growth signals",
+          "required": false
+        },
+        {
+          "var": "business_stage",
+          "type": "string",
+          "instruction": "extract what stage the users business is in",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Wait for Response",
+      "name": "Permission to talk to immersion ",
+      "has_prompt": true,
+      "prompt_len": 464,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "the solution",
+      "has_prompt": true,
+      "prompt_len": 905,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Wait for Response",
+      "name": "New Wait for Response Node",
+      "has_prompt": true,
+      "prompt_len": 244,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Wait for Response",
+      "name": "New Wait for Response Node",
+      "has_prompt": true,
+      "prompt_len": 246,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Knowledge Base",
+      "name": "Offer positioning",
+      "has_prompt": true,
+      "prompt_len": 4402,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "partnership_resonance",
+          "type": "string",
+          "instruction": "extract the users partnership resonance",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "user want to continue the conversation",
+      "has_prompt": true,
+      "prompt_len": 297,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Knowledge Base",
+      "name": "Offer positioning",
+      "has_prompt": true,
+      "prompt_len": 4402,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "partnership_resonance",
+          "type": "string",
+          "instruction": "extract the users partnership resonance",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Knowledge Base",
+      "name": "Offer positioning",
+      "has_prompt": true,
+      "prompt_len": 4404,
+      "uses_tags": true,
+      "extract_vars": [
+        {
+          "var": "partnership_resonance",
+          "type": "string",
+          "instruction": "extract the users partnership resonance",
+          "required": false
+        }
+      ],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Wait for Response",
+      "name": "check in",
+      "has_prompt": true,
+      "prompt_len": 71,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Wait for Response",
+      "name": "check in",
+      "has_prompt": true,
+      "prompt_len": 71,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Knowledge Base",
+      "name": "Act-eye Heroic Unique Identity",
+      "has_prompt": true,
+      "prompt_len": 1130,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": null,
+      "name": null,
+      "has_prompt": false,
+      "prompt_len": 0,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": []
+    }
+  ],
+  "edge_archetypes": [
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "1",
+      "target": "randomnode_1710288871721"
+    },
+    {
+      "type": "custom",
+      "label": "User is Enthusiastic",
+      "source": "randomnode_1710288871721",
+      "target": "57da7f5b-3127-4fac-ab27-8bd9aa4b10d8"
+    },
+    {
+      "type": "custom",
+      "label": "User is uncertain or skeptical",
+      "source": "randomnode_1710288871721",
+      "target": "969f08a1-9462-4362-92f2-0c2de743050f"
+    },
+    {
+      "type": "custom",
+      "label": "User answered",
+      "source": "57da7f5b-3127-4fac-ab27-8bd9aa4b10d8",
+      "target": "1d35e91f-223f-4790-b9bc-8e3c4abfe645"
+    },
+    {
+      "type": "custom",
+      "label": "User responded with movtivation",
+      "source": "1d35e91f-223f-4790-b9bc-8e3c4abfe645",
+      "target": "045c6b8e-55db-431b-98c0-774ec4c2ea64"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "045c6b8e-55db-431b-98c0-774ec4c2ea64",
+      "target": "979226f9-218b-4cb1-8bd4-ae2205e07eb4"
+    },
+    {
+      "type": "custom",
+      "label": "User talked about their vision mission and purpose",
+      "source": "979226f9-218b-4cb1-8bd4-ae2205e07eb4",
+      "target": "644860cc-faef-49dc-bc98-5c11831ddb7d"
+    },
+    {
+      "type": "custom",
+      "label": "User shared what solutions they tried",
+      "source": "644860cc-faef-49dc-bc98-5c11831ddb7d",
+      "target": "4f2bfece-c7f9-44d4-b7ea-a68a3a634321"
+    },
+    {
+      "type": "custom",
+      "label": "user responded",
+      "source": "ee3cf3cd-2aed-4203-9385-07432caf6b1e",
+      "target": "b601d6c8-e6e5-4532-9015-ebcf8a4a6ece"
+    },
+    {
+      "type": "custom",
+      "label": "User continued conversation",
+      "source": "b601d6c8-e6e5-4532-9015-ebcf8a4a6ece",
+      "target": "b7cfd0c9-81e1-4c38-94e3-e76a34b2e0c4"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "b7cfd0c9-81e1-4c38-94e3-e76a34b2e0c4",
+      "target": "aa1c9088-292b-4438-a29b-e6550ca475a6"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "aa1c9088-292b-4438-a29b-e6550ca475a6",
+      "target": "72bbc656-530a-434f-8287-79bd557633be"
+    },
+    {
+      "type": "custom",
+      "label": "User revealed concern",
+      "source": "969f08a1-9462-4362-92f2-0c2de743050f",
+      "target": "228b32f4-f6e1-4dbd-80f5-b7283c0647b1"
+    },
+    {
+      "type": "custom",
+      "label": "User is engaged with AI topic",
+      "source": "228b32f4-f6e1-4dbd-80f5-b7283c0647b1",
+      "target": "200c4931-229d-46dc-86e7-7fdc3d64cce8"
+    },
+    {
+      "type": "custom",
+      "label": "User is willing to engage",
+      "source": "200c4931-229d-46dc-86e7-7fdc3d64cce8",
+      "target": "60b51d18-69a7-4ba1-b7b9-193e2f3d97c4"
+    },
+    {
+      "type": "custom",
+      "label": "User demonstrates readiness for deeper information",
+      "source": "60b51d18-69a7-4ba1-b7b9-193e2f3d97c4",
+      "target": "1c51c406-e6e3-416d-92c4-af0d7e90725c"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "1c51c406-e6e3-416d-92c4-af0d7e90725c",
+      "target": "735456ad-f7d8-482c-8d30-95689be97a9f"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "735456ad-f7d8-482c-8d30-95689be97a9f",
+      "target": "04a17068-c5ee-4389-a88c-9f93bc5ae40b"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "04a17068-c5ee-4389-a88c-9f93bc5ae40b",
+      "target": "9b0b926e-b94b-4bab-925e-b0ea6ce724d2"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "9b0b926e-b94b-4bab-925e-b0ea6ce724d2",
+      "target": "0d6b518c-0d0b-48bb-a0b4-a7827094723c"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "0d6b518c-0d0b-48bb-a0b4-a7827094723c",
+      "target": "cbde50af-1e6e-4b8c-8b96-6a8703d6b485"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "a67c408a-4059-4e13-ba7c-d475e0e9895e",
+      "target": "e14417fe-7186-4ed8-829d-059304123121"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "e14417fe-7186-4ed8-829d-059304123121",
+      "target": "14db781b-adbf-419e-af04-6bb69e68625c"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "14db781b-adbf-419e-af04-6bb69e68625c",
+      "target": "aa7e31a1-a302-4f7a-b567-f93a7da3effc"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "aa7e31a1-a302-4f7a-b567-f93a7da3effc",
+      "target": "84f1b1f5-8846-4af4-8659-2fe4bf3e2a8c"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "84f1b1f5-8846-4af4-8659-2fe4bf3e2a8c",
+      "target": "109d9601-2854-40f4-9df7-488356784d0d"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "72bbc656-530a-434f-8287-79bd557633be",
+      "target": "eaa652af-b6d5-4774-b453-7082c0b25d77"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "eaa652af-b6d5-4774-b453-7082c0b25d77",
+      "target": "b2fd29fa-3e3d-424b-b6ce-bed5cdbe30ca"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "109d9601-2854-40f4-9df7-488356784d0d",
+      "target": "1263347f-920e-45d0-9304-6b4b90678121"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "4f2bfece-c7f9-44d4-b7ea-a68a3a634321",
+      "target": "4dae5b46-9b48-4e45-8d26-2cf1d13a290c"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "4dae5b46-9b48-4e45-8d26-2cf1d13a290c",
+      "target": "ee3cf3cd-2aed-4203-9385-07432caf6b1e"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "cbde50af-1e6e-4b8c-8b96-6a8703d6b485",
+      "target": "63b94da1-548e-482e-bfc1-1513b66cfa2a"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "63b94da1-548e-482e-bfc1-1513b66cfa2a",
+      "target": "a67c408a-4059-4e13-ba7c-d475e0e9895e"
+    }
+  ],
+  "style_hints": {
+    "default_node_prompt_style": "long_scripted",
+    "edges_use_custom_type": true,
+    "extract_vars_format": "list_of_4"
+  }
+}

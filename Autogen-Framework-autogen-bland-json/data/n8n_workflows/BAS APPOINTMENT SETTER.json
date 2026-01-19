@@ -1,0 +1,384 @@
+{
+  "name": "BAS APPOINTMENT SETTER",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        416,
+        176
+      ],
+      "id": "d5301449-a822-485e-8821-11f6532dc704",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the existing output field from previous node\nconst rawOutput = $json.output ?? \"\";\n\n// Clean markdown and whitespace for ElevenLabs speech\nconst cleanedOutput = rawOutput\n  .replace(/[*_~`>#-]/g, \"\")     // remove markdown characters\n  .replace(/\\s+/g, \" \")          // normalize whitespace\n  .trim();\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        0
+      ],
+      "id": "77a732e5-c307-4713-a97f-a2bd5d7a0068",
+      "name": "output"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "25e91954-68cf-4bf5-8b0c-a77cfeb69fbc",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        112,
+        0
+      ],
+      "id": "9c9b334e-bddd-4cf8-8040-2f891181788d",
+      "name": "Webhook",
+      "webhookId": "25e91954-68cf-4bf5-8b0c-a77cfeb69fbc"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        832,
+        0
+      ],
+      "id": "7d8386dc-5fed-4d6a-b4ba-f7c84ff9fcfd",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "basactualizer@unblindedmastery.com",
+          "mode": "list",
+          "cachedResultName": "basactualizer@unblindedmastery.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', `most bas sessions are one hour long`, 'string') }}",
+        "useDefaultReminders": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Use_Default_Reminders', ``, 'boolean') }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('attendees0_Attendees', ``, 'string') }}"
+          ],
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', `add any details the coach should know`, 'string') }}",
+          "sendUpdates": "all",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', `add a summary saying this person wants bas session and add the guest's name to it and the description of who they are and what was discussed on the phone call `, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        560,
+        208
+      ],
+      "id": "47d3a9af-ae7a-4f39-96de-eb8d32f274bb",
+      "name": "BAS Event Creator",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "SMmJviirvhZmalKK",
+          "name": "Google Calendar account - superadmin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1xdSCBWrVd_ySND3LdLfieUn2NcO6kr5T0irRc3FbRZw",
+          "mode": "list",
+          "cachedResultName": "HOI/BAS Call Summaries",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xdSCBWrVd_ySND3LdLfieUn2NcO6kr5T0irRc3FbRZw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 299774553,
+          "mode": "list",
+          "cachedResultName": "Scheduled BAS Calls",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xdSCBWrVd_ySND3LdLfieUn2NcO6kr5T0irRc3FbRZw/edit#gid=299774553"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Contact Name": "={{ $json.body.contact_name }}",
+            "Contact Email": "={{ $json.body.contact_email }}",
+            "Date Selected": "={{ $json.body.bas_date_time }}",
+            "Contact Phone Number": "={{ $json.body.phone_number }}",
+            "Referral Name": "={{ $json.body.referral_name }}",
+            "Referral Email": "={{ $json.body.referral_email }}",
+            "Call Info": "={{ $json.body.call_info }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Contact Name",
+              "displayName": "Contact Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Contact Phone Number",
+              "displayName": "Contact Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Contact Email",
+              "displayName": "Contact Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date Selected",
+              "displayName": "Date Selected",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Referral Name",
+              "displayName": "Referral Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Referral Email",
+              "displayName": "Referral Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Call Info",
+              "displayName": "Call Info",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Contact HUI",
+              "displayName": "Contact HUI",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Stage",
+              "displayName": "Stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Owner",
+              "displayName": "Owner",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Record Type",
+              "displayName": "Record Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Experience",
+              "displayName": "Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Lead Source",
+              "displayName": "Lead Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        256,
+        0
+      ],
+      "id": "acf42426-dfb3-4006-b99e-e60bd40f4412",
+      "name": "BAS Date Updater",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pGG9vHkc60ZLCVd8",
+          "name": "Nick - Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Contact Name:{{ $('Webhook').item.json.body.contact_name }}\nContact Email:{{ $('Webhook').item.json.body.contact_email }}\nDate Selected:{{ $('Webhook').item.json.body.bas_date_time }}\nCall Info:{{ $('Webhook').item.json.body.call_info }}",
+        "options": {
+          "systemMessage": "=ROLE\nYou are n8n, an Act-Eye BAS Scheduling Agent.\nYour only job is to create a BAS session event on the BAS calendar and add the guest as an attendee.\nINPUTS\nYou will receive these values from the Webhook node:\ncontact_name – the guest’s full name.\ncontact_email – the guest’s email address.\nbas_date_time – the start time of the BAS session in ISO format, in Eastern Time (ET).\ncall_info – notes / details about the call.\n(These are provided as:\n{{ $('Webhook').item.json.body.contact_name }}\n{{ $('Webhook').item.json.body.contact_email }}\n{{ $('Webhook').item.json.body.bas_date_time }}\n{{ $('Webhook').item.json.body.call_info }})\nGOAL\nUsing only the values above, book a BAS session on the BAS calendar and invite the guest.\nRULES\nCalendar\nAlways create the event on the BAS calendar only.\nTime & Timezone\nTreat bas_date_time as the event start time in Eastern Time (ET).\nUse ET when creating the event, converting to the calendar’s timezone only if required.\nIf no duration is provided, set the event duration to 60 minutes by default.\nEvent Title\nEvent title must be:\nBAS — [referral_name]\nUse contact_name as [referral_name].\nExample: if contact_name = \"Jane Doe\", the title is BAS — Jane Doe.\nAttendees\nAdd one attendee: the guest at contact_email.\nMake sure the guest receives the calendar invite (send invite/notifications enabled).\nDescription / Notes\nPut the following details in the event description:\nContact Name: [contact_name]\nContact Email: [contact_email]\nDate Selected (ET): [bas_date_time]\nCall Info: [call_info]\nScope\nDo not modify, delete, or read other events.\nDo not create events on any calendar other than BAS.\nDo not ask follow-up questions; assume the provided data is complete and schedule the event.\nUse the provided variables to create exactly one BAS session event on the BAS calendar and ensure the guest is added as an attendee and sent the invite."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "3eac28f2-27c5-49fc-9de6-8cc2dccb1ccc",
+      "name": "Calendar Grandmaster"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Calendar Grandmaster",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "output": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "BAS Date Updater",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BAS Event Creator": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Grandmaster",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BAS Date Updater": {
+      "main": [
+        [
+          {
+            "node": "Calendar Grandmaster",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar Grandmaster": {
+      "main": [
+        [
+          {
+            "node": "output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c5e5d403-cf08-495a-84b2-c4c59283693c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "kByX1To210zo3KGL",
+  "tags": []
+}

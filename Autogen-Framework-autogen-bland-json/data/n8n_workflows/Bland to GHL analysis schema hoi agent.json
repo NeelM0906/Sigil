@@ -1,0 +1,562 @@
+{
+  "name": "Bland to GHL analysis schema hoi agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "4441d6d0-65e3-43b0-9772-4e34bf5e4e00",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        464,
+        496
+      ],
+      "id": "88b5ae0b-3fc2-4c32-8d40-f7f8aef34cc4",
+      "name": "Webhook",
+      "webhookId": "4441d6d0-65e3-43b0-9772-4e34bf5e4e00"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.body.metadata.standard_url }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "lead_hui",
+              "value": "={{ $json.body.analysis.lead_hui }}"
+            },
+            {
+              "name": "eri_score",
+              "value": "={{ $json.body.analysis.eri_score }}"
+            },
+            {
+              "name": "objections",
+              "value": "={{ $json.body.analysis.objections }}"
+            },
+            {
+              "name": "follow_up_date",
+              "value": "={{ $json.body.analysis.follow_up_date }}"
+            },
+            {
+              "name": "pain_to_vision",
+              "value": "={{ $json.body.analysis.pain_to_vision }}"
+            },
+            {
+              "name": "lead_business_info",
+              "value": "={{ $json.body.analysis.lead_business_info }}"
+            },
+            {
+              "name": "agent_to_user_ratio",
+              "value": "={{ $json.body.analysis.agent_to_user_ratio }}"
+            },
+            {
+              "name": "agreement_formation",
+              "value": "={{ $json.body.analysis.agreement_formation }}"
+            },
+            {
+              "name": "stage_change_reason",
+              "value": "={{ $json.body.analysis.stage_change_reason }}"
+            },
+            {
+              "name": "commitment_energy_levels",
+              "value": "={{ $json.body.analysis.commitment_energy_levels }}"
+            },
+            {
+              "name": "disposition_tag",
+              "value": "={{ $json.body.disposition_tag }}"
+            },
+            {
+              "name": "ghl_contact_id",
+              "value": "={{ $json.body.metadata.ghl_contact_id }}"
+            },
+            {
+              "name": "opportunity_id",
+              "value": "={{ $json.body.metadata.opportunity_id }}"
+            },
+            {
+              "name": "contact_phone_number",
+              "value": "={{ $json.body.metadata.phone_number }}"
+            },
+            {
+              "name": "contact_followup_phone",
+              "value": "={{ $json.body.to }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1216,
+        144
+      ],
+      "id": "36c7c348-a33a-424e-8fe6-e7bf53b62c2c",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1376,
+        752
+      ],
+      "id": "6889fdae-a122-47b0-9b67-533074b4be18",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1968,
+        592
+      ],
+      "id": "6d8637d7-54af-4a14-a4d1-1942a2cbaf1f",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "68480bc5-96ae-4d23-b977-d4790fd870e0",
+              "name": "sessionId",
+              "value": "={{ $json.body.variables.contact_email }}",
+              "type": "string"
+            },
+            {
+              "id": "de48f544-6b67-45e8-acef-ef4767a3add7",
+              "name": "referral_email",
+              "value": "={{ $json.body.variables.referral_email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        816,
+        496
+      ],
+      "id": "0dd400f4-2a0d-45c9-8d97-9f661a536225",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7b17c61b-efad-497d-bb7d-9023e381cd91",
+              "leftValue": "={{$json.body?.variables?.next_call}}",
+              "rightValue": "={{''}}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        816,
+        288
+      ],
+      "id": "4249829b-9968-4f84-a623-4e18242454d1",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.body.metadata.follow_up_url }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "next_call",
+              "value": "={{$json.body.variables.next_call}}"
+            },
+            {
+              "name": "phone_number",
+              "value": "={{$json.body.variables.phone_number}}"
+            },
+            {
+              "name": "contact_email",
+              "value": "={{$json.body.variables.contact_email}}"
+            },
+            {
+              "name": "contact_name",
+              "value": "={{$json.body.variables.contact_name}}"
+            },
+            {
+              "name": "ghl_contact_id",
+              "value": "={{ $json.body.metadata.ghl_contact_id }}"
+            },
+            {
+              "name": "opportunity_id",
+              "value": "={{ $json.body.metadata.opportunity_id }}"
+            },
+            {
+              "name": "referral_name",
+              "value": "={{ $json.body.metadata.referral_name }}"
+            },
+            {
+              "name": "disposition_tag",
+              "value": "={{ $json.body.disposition_tag }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1216,
+        304
+      ],
+      "id": "4964dada-565d-4338-8877-cc55029ce660",
+      "name": "Schedule Follow Up GHL"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1504,
+        800
+      ],
+      "id": "7915789e-e8bd-4b30-8545-656c28f0510f",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "3aQvY1LH4EC8NGGY",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "dd0664a1-96f3-4553-9794-cd7f73fd666f",
+              "leftValue": "={{ $('Webhook').item.json.body.answered_by }}",
+              "rightValue": "=voicemail",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1008,
+        496
+      ],
+      "id": "5125342d-7e9a-4913-94a1-aa11816a0418",
+      "name": "Human or Voicemail"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.metadata.contact_email }}",
+        "subject": "Miro here — tried calling, let's connect! ⚡",
+        "message": "=<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  </head>\n  <body style=\"margin: 0; padding: 0; background-color: #0f172a; font-family: Arial, Helvetica, sans-serif;\">\n    <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" bgcolor=\"#0f172a\" style=\"background-color: #0f172a;\">\n      <tr>\n        <td style=\"padding: 30px 15px;\">\n          <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"max-width: 600px; margin: 0 auto; background-color: #1a0a2e; border-radius: 16px; border: 2px solid #d4af37;\" bgcolor=\"#1a0a2e\">\n            <tr>\n              <td style=\"padding: 35px 28px;\">\n                \n                <!-- Header -->\n                <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n                  <tr>\n                    <td style=\"text-align: center; padding-bottom: 25px; border-bottom: 2px solid #d4af37;\">\n                      <div style=\"font-size: 32px; margin-bottom: 12px;\">⚡💛⚡</div>\n                      <h1 style=\"color: #d4af37; font-size: 28px; font-weight: 700; margin: 0; font-family: Arial, Helvetica, sans-serif;\">Heart of Influence</h1>\n                      <div style=\"color: #d4af37; font-size: 11px; margin-top: 8px; text-transform: uppercase; letter-spacing: 3px; font-family: Arial, Helvetica, sans-serif;\">Unblinded • ACTi</div>\n                    </td>\n                  </tr>\n                </table>\n\n                <!-- Greeting -->\n                <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n                  <tr>\n                    <td style=\"padding-top: 28px;\">\n                      <p style=\"font-size: 18px; color: #ffffff; margin: 0 0 20px 0; font-family: Arial, Helvetica, sans-serif;\">Hi {{ $('Webhook').item.json.body.variables.contact_name }},</p>\n                      <p style=\"font-size: 16px; color: #ffffff; line-height: 1.7; margin: 0 0 20px 0; font-family: Arial, Helvetica, sans-serif;\">I gave you a quick call today but we just missed each other. Totally understand how full your schedule can be! ✨</p>\n                    </td>\n                  </tr>\n                </table>\n\n                <!-- Message Box -->\n                <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n                  <tr>\n                    <td style=\"padding: 20px 0;\">\n                      <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n                        <tr>\n                          <td style=\"background-color: #3b0764; border-left: 4px solid #d4af37; border-radius: 0 12px 12px 0; padding: 22px;\" bgcolor=\"#3b0764\">\n                            <p style=\"color: #ffffff; font-size: 15px; line-height: 1.8; margin: 0; font-family: Arial, Helvetica, sans-serif;\">\n                              I was reaching out on behalf of <strong style=\"color: #d4af37;\">{{ $('Webhook').item.json.body.variables.referral_name }}</strong>. ⚡ They thought you'd be a perfect fit for a conversation about the <strong style=\"color: #d4af37;\">Heart of Influence</strong>, a one-hour, invitation-only experience connecting growth-driven, heart-centered professionals. 💛\n                            </p>\n                          </td>\n                        </tr>\n                      </table>\n                    </td>\n                  </tr>\n                </table>\n\n                <!-- Continue Message -->\n                <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n                  <tr>\n                    <td>\n                      <p style=\"font-size: 16px; color: #ffffff; line-height: 1.7; margin: 0 0 20px 0; font-family: Arial, Helvetica, sans-serif;\">\n                        I'd love to share more about what this could mean for you and hear what's most important in your world right now. Let's continue the great energy that <strong style=\"color: #d4af37;\">{{ $('Webhook').item.json.body.variables.referral_name }}</strong> started.\n                      </p>\n                    </td>\n                  </tr>\n                </table>\n\n                <!-- CTA Section -->\n                <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n                  <tr>\n                    <td style=\"padding: 20px 0;\">\n                      <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n                        <tr>\n                          <td style=\"background-color: #3b0764; border-radius: 12px; border: 2px solid #d4af37; padding: 24px; text-align: center;\" bgcolor=\"#3b0764\">\n                            <p style=\"font-size: 13px; color: #d4af37; margin: 0 0 14px 0; text-transform: uppercase; letter-spacing: 2px; font-family: Arial, Helvetica, sans-serif;\">⚡ I'd Love to Hear From You ⚡</p>\n                            <div style=\"font-size: 18px; color: #d4af37; font-weight: 700; margin-bottom: 10px; font-family: Arial, Helvetica, sans-serif;\">Miro</div>\n                            <a href=\"tel:{{ $('Webhook').item.json.body.from }}\" style=\"color: #ffffff; text-decoration: none; font-weight: 700; font-size: 20px; font-family: Arial, Helvetica, sans-serif;\">📞 {{ $('Webhook').item.json.body.from }}</a>\n                            <p style=\"font-size: 14px; color: #b0b0b0; margin: 14px 0 0 0; font-style: italic; font-family: Arial, Helvetica, sans-serif;\">Give me a ring when you have a moment</p>\n                          </td>\n                        </tr>\n                      </table>\n                    </td>\n                  </tr>\n                </table>\n\n                <!-- Signature -->\n                <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n                  <tr>\n                    <td style=\"padding-top: 25px; border-top: 2px solid #d4af37;\">\n                      <p style=\"color: #b0b0b0; font-size: 16px; margin: 20px 0 8px 0; font-family: Arial, Helvetica, sans-serif;\">Warmly,</p>\n                      <div style=\"font-size: 22px; color: #d4af37; font-weight: 700; margin-bottom: 4px; font-family: Arial, Helvetica, sans-serif;\">Miro ⚡</div>\n                      <div style=\"font-size: 12px; color: #a0a0a0; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; font-family: Arial, Helvetica, sans-serif;\">ACTi Actualizer</div>\n                      <div style=\"font-size: 14px; color: #b0b0b0; margin-bottom: 4px; font-family: Arial, Helvetica, sans-serif;\">On behalf of <strong style=\"color: #d4af37;\">{{ $('Webhook').item.json.body.variables.referral_name }}</strong></div>\n                      <a href=\"mailto:{{ $json.referral_email }}\" style=\"font-size: 13px; color: #808080; text-decoration: none; font-family: Arial, Helvetica, sans-serif;\">{{ $json.referral_email }}</a>\n                    </td>\n                  </tr>\n                </table>\n\n                <!-- Footer -->\n                <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n                  <tr>\n                    <td style=\"text-align: center; padding-top: 30px;\">\n                      <div style=\"font-size: 18px; margin-bottom: 10px;\">💛⚡💜⚡💛</div>\n                      <div style=\"font-size: 10px; color: #808080; letter-spacing: 2.5px; text-transform: uppercase; font-family: Arial, Helvetica, sans-serif;\">Actualized Intelligence</div>\n                    </td>\n                  </tr>\n                </table>\n\n              </td>\n            </tr>\n          </table>\n        </td>\n      </tr>\n    </table>\n  </body>\n</html>",
+        "options": {
+          "appendAttribution": false,
+          "ccList": "={{ $('Webhook').item.json.body.metadata.referral_email }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1392,
+        432
+      ],
+      "id": "1ba6544c-6fc9-4332-8f52-e1e6134da8cf",
+      "name": "Voicemail Email",
+      "webhookId": "80ca79d2-f9c5-47e0-a4c9-c9c2086259e5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "QXxYRovHrlGI61sH",
+          "name": "Gmail account - Miro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "0BS3QH7XJFlPBZvB",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/0BS3QH7XJFlPBZvB",
+          "cachedResultName": "ACTi Visioneers and Pathfinders — Aurion - HOI/BAS Summary Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        832,
+        784
+      ],
+      "id": "8503dd62-4526-4e6d-b0fc-eb8a8105a295",
+      "name": "Call 'Aurion - HOI/BAS Summary Agent'"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Miro Email Parser & Builder - Code Node\n// Place this node directly after the \"Draftsmith - Email Agent\" node\n\nconst agentOutput = $('Draftsmith - Email Agent').item.json.output;\n\nlet parsed;\n\ntry {\n  let cleanOutput = agentOutput;\n  \n  if (typeof cleanOutput === 'string') {\n    cleanOutput = cleanOutput\n      .replace(/```json\\s*/gi, '')\n      .replace(/```\\s*/g, '')\n      .trim();\n  }\n  \n  parsed = typeof cleanOutput === 'string' ? JSON.parse(cleanOutput) : cleanOutput;\n  \n} catch (error) {\n  parsed = {\n    opening_line: \"It was great connecting with you today. I really enjoyed our conversation.\",\n    standout_1: \"Your openness and willingness to connect.\",\n    standout_2: \"The goals and vision you shared.\",\n    standout_3: \"Your genuine, authentic energy throughout our call.\",\n    hoi_booked: false,\n    hoi_date: \"\",\n    hoi_time: \"\",\n    follow_up_scheduled: false,\n    follow_up_details: \"\",\n    next_step: \"Whenever it feels right, I'd love to continue our conversation. Call me anytime.\",\n    tone_emoji: \"💛\"\n  };\n}\n\n// Get contact data from your workflow nodes\nconst contactEmail = $('Edit Fields').item.json.sessionId || \"\";\nconst referralEmail = $('Edit Fields').item.json.referral_email || \"\";\n\n// Get data from webhook body\nconst webhookBody = $('Webhook').item.json.body || {};\nconst variables = webhookBody.variables || {};\n\nconst contactName = variables.contact_name || \"there\";\nconst referralName = variables.referral_name || \"\";\nconst fromNumber = webhookBody.from || \"\";\n\n// Build dynamic subject line\nlet emailSubject = \"\";\nif (parsed.hoi_booked && parsed.hoi_date) {\n  emailSubject = `You're booked! Miro here with your HOI details ⚡`;\n} else if (parsed.follow_up_scheduled) {\n  emailSubject = `Great chatting, ${contactName}! Miro here 💛`;\n} else {\n  emailSubject = `Miro here — loved our conversation 💛`;\n}\n\n// Build HOI booked section if applicable\nlet hoiBookedSection = \"\";\nif (parsed.hoi_booked && parsed.hoi_date) {\n  hoiBookedSection = `\n        <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\">\n          <tr>\n            <td style=\"background-color: #2a1a4a; border: 2px solid #d4af37; border-radius: 12px; padding: 20px; margin: 24px 0; text-align: center;\" bgcolor=\"#2a1a4a\">\n              <div style=\"font-size: 12px; color: #d4af37; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;\">✨ You're Booked ✨</div>\n              <p style=\"color: #ffffff; font-size: 16px; line-height: 1.6; margin: 0;\">You're officially on the calendar for the Heart of Influence Show on <strong style=\"color: #d4af37;\">${parsed.hoi_date}</strong> at <strong style=\"color: #d4af37;\">${parsed.hoi_time}</strong>. Can't wait to see you shine.</p>\n            </td>\n          </tr>\n        </table>`;\n}\n\n// Build follow-up mention if applicable\nlet followUpText = \"\";\nif (parsed.follow_up_scheduled && parsed.follow_up_details) {\n  followUpText = ` We also have our ${parsed.follow_up_details} on the books.`;\n}\n\n// Build the complete HTML email\nconst emailHtml = `<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  </head>\n  <body style=\"margin: 0; padding: 0; background-color: #0f172a; font-family: Arial, Helvetica, sans-serif;\">\n    <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" bgcolor=\"#0f172a\" style=\"background-color: #0f172a;\">\n      <tr>\n        <td style=\"padding: 30px 15px;\">\n          <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"max-width: 600px; margin: 0 auto; background-color: #1a0a2e; border-radius: 16px; border: 1px solid #d4af37;\" bgcolor=\"#1a0a2e\">\n            <tr>\n              <td style=\"padding: 35px 28px;\">\n                \n                <!-- Header -->\n                <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\">\n                  <tr>\n                    <td style=\"text-align: center; padding-bottom: 25px; border-bottom: 1px solid #d4af37;\">\n                      <div style=\"font-size: 32px; margin-bottom: 12px;\">⚡💛⚡</div>\n                      <h1 style=\"color: #d4af37; font-size: 28px; font-weight: 700; margin: 0;\">Heart of Influence</h1>\n                      <div style=\"color: #d4af37; font-size: 11px; margin-top: 8px; text-transform: uppercase; letter-spacing: 3px;\">Unblinded • ACTi</div>\n                      <div style=\"color: #b0b0b0; font-size: 13px; margin-top: 12px; font-style: italic;\">Following up on our call</div>\n                    </td>\n                  </tr>\n                </table>\n\n                <!-- Greeting -->\n                <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\">\n                  <tr>\n                    <td style=\"padding-top: 28px;\">\n                      <p style=\"font-size: 18px; color: #ffffff; margin: 0 0 20px 0;\">Hi ${contactName},</p>\n                      <p style=\"font-size: 16px; color: #e0e0e0; line-height: 1.7; margin: 0 0 20px 0;\">${parsed.opening_line || \"It was great connecting with you today.\"} ${parsed.tone_emoji || \"💛\"}</p>\n                    </td>\n                  </tr>\n                </table>\n\n                <!-- HOI Booked Section (conditional) -->\n                ${hoiBookedSection}\n\n                <!-- What Stood Out -->\n                <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\">\n                  <tr>\n                    <td style=\"background-color: #2a1a4a; border-left: 4px solid #d4af37; border-radius: 0 12px 12px 0; padding: 22px; margin: 24px 0;\" bgcolor=\"#2a1a4a\">\n                      <div style=\"color: #d4af37; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid #d4af37;\">💛 What Stood Out</div>\n                      <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\">\n                        <tr>\n                          <td style=\"color: #ffffff; font-size: 15px; line-height: 1.7; padding: 8px 0 8px 20px;\">• ${parsed.standout_1 || \"Your openness during our conversation.\"}</td>\n                        </tr>\n                        <tr>\n                          <td style=\"color: #ffffff; font-size: 15px; line-height: 1.7; padding: 8px 0 8px 20px;\">• ${parsed.standout_2 || \"The vision you shared for your work.\"}</td>\n                        </tr>\n                        <tr>\n                          <td style=\"color: #ffffff; font-size: 15px; line-height: 1.7; padding: 8px 0 8px 20px;\">• ${parsed.standout_3 || \"Your genuine energy and presence.\"}</td>\n                        </tr>\n                      </table>\n                    </td>\n                  </tr>\n                </table>\n\n                <!-- Next Steps -->\n                <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\">\n                  <tr>\n                    <td style=\"padding: 28px 0;\">\n                      <div style=\"color: #d4af37; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #d4af37;\">Next Steps ✨</div>\n                      <p style=\"color: #e0e0e0; font-size: 16px; line-height: 1.7; margin: 0;\">${parsed.next_step || \"Whenever it feels right, let's continue the conversation.\"}${followUpText}</p>\n                    </td>\n                  </tr>\n                </table>\n\n                <!-- CTA Section -->\n                <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\">\n                  <tr>\n                    <td style=\"background-color: #2a1a4a; border-radius: 12px; border: 1px solid #d4af37; padding: 24px; text-align: center;\" bgcolor=\"#2a1a4a\">\n                      <p style=\"font-size: 15px; color: #c0c0c0; margin: 0 0 14px 0;\">Questions or just want to chat? Call me anytime.</p>\n                      <div style=\"font-size: 18px; color: #d4af37; font-weight: 700; margin-bottom: 10px;\">Miro</div>\n                      <a href=\"tel:${fromNumber}\" style=\"color: #ffffff; text-decoration: none; font-weight: 700; font-size: 20px;\">📞 ${fromNumber}</a>\n                    </td>\n                  </tr>\n                </table>\n\n                <!-- Signature -->\n                <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\">\n                  <tr>\n                    <td style=\"padding-top: 30px; border-top: 1px solid #d4af37; margin-top: 30px;\">\n                      <p style=\"color: #c0c0c0; font-size: 16px; margin: 20px 0 8px 0;\">Warmly,</p>\n                      <div style=\"font-size: 22px; color: #d4af37; font-weight: 700; margin-bottom: 4px;\">Miro ⚡</div>\n                      <div style=\"font-size: 12px; color: #a0a0a0; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px;\">ACTi Actualizer</div>\n                      \n                      <!-- On Behalf Of Section -->\n                      <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\">\n                        <tr>\n                          <td style=\"background-color: #2a1a4a; border: 1px solid #d4af37; border-radius: 10px; padding: 16px 20px;\" bgcolor=\"#2a1a4a\">\n                            <div style=\"font-size: 11px; color: #d4af37; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;\">On Behalf Of</div>\n                            <div style=\"font-size: 18px; color: #d4af37; font-weight: 700; margin-bottom: 4px;\">${referralName}</div>\n                            <a href=\"mailto:${referralEmail}\" style=\"font-size: 14px; color: #c0c0c0; text-decoration: none;\">${referralEmail}</a>\n                          </td>\n                        </tr>\n                      </table>\n                    </td>\n                  </tr>\n                </table>\n\n                <!-- Footer -->\n                <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\">\n                  <tr>\n                    <td style=\"text-align: center; padding-top: 30px;\">\n                      <div style=\"font-size: 18px; margin-bottom: 10px;\">💛⚡💜⚡💛</div>\n                      <div style=\"font-size: 10px; color: #808080; letter-spacing: 2.5px; text-transform: uppercase;\">Actualized Intelligence</div>\n                    </td>\n                  </tr>\n                </table>\n\n              </td>\n            </tr>\n          </table>\n        </td>\n      </tr>\n    </table>\n  </body>\n</html>`;\n\nreturn {\n  json: {\n    emailBody: emailHtml,\n    emailSubject: emailSubject,\n    contact_name: contactName,\n    contact_email: contactEmail,\n    referral_name: referralName,\n    referral_email: referralEmail,\n    from_number: fromNumber,\n    hoi_booked: parsed.hoi_booked || false,\n    hoi_date: parsed.hoi_date || \"\",\n    hoi_time: parsed.hoi_time || \"\"\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        592
+      ],
+      "id": "d762a30c-6edb-43ab-8de2-365c373162b6",
+      "name": "Personalized Email Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Call Transcript: {{ $('Webhook').item.json.body.concatenated_transcript }}",
+        "options": {
+          "systemMessage": "You are a call analysis agent for Miro, an ACTi Actualizer who calls on behalf of referrals for the Heart of Influence show.\n\nYour job is to analyze the call transcript and extract key personalization variables for a follow-up email. You must output ONLY valid JSON with no additional text.\n\n────────────────────────────────────────\nCONTEXT: HEART OF INFLUENCE\n────────────────────────────────────────\nThe Heart of Influence (HOI) is a one-hour, invitation-only shared experience designed to connect growth-driven, heart-centered professionals through ethical influence. Guests meet directly with Sean Callagy, Bella Verita, and select ecosystem partners.\n\n────────────────────────────────────────\nANALYSIS INSTRUCTIONS\n────────────────────────────────────────\nReview the call transcript carefully and extract:\n\n1. **opening_line**: A warm, personalized thank-you that references their specific energy or a memorable moment from the call. Keep it genuine and conversational. Do NOT use em dashes.\n\n2. **standout_1**: A specific moment, quote, or detail from the call that made an impression. Be concrete and specific.\n\n3. **standout_2**: Their goal, vision, project, or what they're working toward. If they mentioned something they're building or pursuing, capture it here.\n\n4. **standout_3**: The emotional tone or vibe you picked up from them (e.g., \"grounded energy,\" \"excited about possibilities,\" \"thoughtful and curious\").\n\n5. **hoi_booked**: Boolean. Did they schedule/book a Heart of Influence show appearance? Look for confirmed date/time.\n\n6. **hoi_date**: If booked, the date of their HOI appearance (e.g., \"January 21, 2026\"). Leave empty string if not booked.\n\n7. **hoi_time**: If booked, the time of their HOI appearance (e.g., \"4:10 PM\"). Leave empty string if not booked.\n\n8. **follow_up_scheduled**: Boolean. Is there a follow-up call or prep call scheduled?\n\n9. **follow_up_details**: If follow-up scheduled, include the details (e.g., \"prep call on the 17th at 1:00 PM\"). Leave empty string if none.\n\n10. **next_step**: Based on what actually happened on the call:\n    - If HOI was booked → express excitement, mention looking forward to their appearance\n    - If follow-up was scheduled → mention it warmly\n    - If interested but no booking yet → express openness and availability\n    - If the call was brief/interrupted → acknowledge and offer to continue\n    - NEVER invent fake next steps, schedules, or processes\n\n11. **tone_emoji**: Pick ONE emoji that best captures the vibe of this specific call: ⚡ (energetic), 💛 (warm), ✨ (inspiring), 🔥 (passionate), 🌟 (bright)\n\n────────────────────────────────────────\nOUTPUT FORMAT (JSON ONLY)\n────────────────────────────────────────\n{\n  \"opening_line\": \"string\",\n  \"standout_1\": \"string\", \n  \"standout_2\": \"string\",\n  \"standout_3\": \"string\",\n  \"hoi_booked\": boolean,\n  \"hoi_date\": \"string\",\n  \"hoi_time\": \"string\",\n  \"follow_up_scheduled\": boolean,\n  \"follow_up_details\": \"string\",\n  \"next_step\": \"string\",\n  \"tone_emoji\": \"string\"\n}\n\n────────────────────────────────────────\nEXAMPLES\n────────────────────────────────────────\n\nEXAMPLE 1 - HOI Booked with prep call:\n{\n  \"opening_line\": \"What a fantastic conversation! Your mission to ensure members receive the quality services they deserve really resonated with me.\",\n  \"standout_1\": \"How you described building reliable systems for consistent new membership while keeping your team empowered.\",\n  \"standout_2\": \"Your focus on time freedom and efficient operations so the business runs smoothly without burning out your team.\",\n  \"standout_3\": \"Practical, growth-oriented, and deeply mission-driven. You know exactly what you're building and why.\",\n  \"hoi_booked\": true,\n  \"hoi_date\": \"January 21, 2026\",\n  \"hoi_time\": \"4:10 PM\",\n  \"follow_up_scheduled\": true,\n  \"follow_up_details\": \"prep call on the 17th at 1:00 PM\",\n  \"next_step\": \"I'm thrilled you're joining us for the Heart of Influence Show! We'll connect for our prep call to make sure everything is dialed in. This is going to be great.\",\n  \"tone_emoji\": \"🔥\"\n}\n\nEXAMPLE 2 - Great call, no booking yet:\n{\n  \"opening_line\": \"Really enjoyed our conversation today. Your thoughtfulness about every decision shows how intentional you are with your business.\",\n  \"standout_1\": \"When you mentioned your approach to partnerships being 'slow to start, built to last.' That resonates deeply.\",\n  \"standout_2\": \"Your vision of scaling while maintaining the personal touch that got you here.\",\n  \"standout_3\": \"Measured, wise, and genuinely curious. You ask great questions.\",\n  \"hoi_booked\": false,\n  \"hoi_date\": \"\",\n  \"hoi_time\": \"\",\n  \"follow_up_scheduled\": false,\n  \"follow_up_details\": \"\",\n  \"next_step\": \"Whenever you're ready to explore the Heart of Influence further, I'm here. No rush, just alignment.\",\n  \"tone_emoji\": \"✨\"\n}\n\nEXAMPLE 3 - Brief call with interruption:\n{\n  \"opening_line\": \"I appreciated your candid energy today, and I hope things settled down on your end. Thanks for keeping it real.\",\n  \"standout_1\": \"Even in a brief moment, your openness and directness came through clearly.\",\n  \"standout_2\": \"We didn't get to dive deep into your goals yet, and I'm genuinely curious about what you're building.\",\n  \"standout_3\": \"Real, direct, and easy to connect with despite the time crunch.\",\n  \"hoi_booked\": false,\n  \"hoi_date\": \"\",\n  \"hoi_time\": \"\",\n  \"follow_up_scheduled\": false,\n  \"follow_up_details\": \"\",\n  \"next_step\": \"Whenever it feels good, we can pick back up and I'll share more about the Heart of Influence invitation. Call me anytime.\",\n  \"tone_emoji\": \"💛\"\n}\n\n────────────────────────────────────────\nIMPORTANT RULES\n────────────────────────────────────────\n- Output ONLY the JSON object, no other text\n- Be specific and concrete, not generic\n- Never invent details that weren't in the transcript\n- Keep each field concise (1-3 sentences max)\n- Match the tone to what actually happened on the call\n- If HOI was booked, make sure to capture the exact date and time\n- Do NOT use em dashes (—) anywhere in your output\n- If the call was very short or limited info, be honest about that"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1376,
+        592
+      ],
+      "id": "28fe12ff-d68f-476b-9bd5-a351ac6af195",
+      "name": "Draftsmith - Email Agent"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.metadata.contact_email }}",
+        "subject": "Miro here — loved our conversation 💛",
+        "message": "={{ $json.emailBody }}",
+        "options": {
+          "appendAttribution": false,
+          "ccList": "={{ $('Webhook').item.json.body.metadata.referral_email }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1808,
+        592
+      ],
+      "id": "de3e2dc8-7c91-44af-93b8-eff9b6af79fc",
+      "name": "Personalized Email",
+      "webhookId": "d0a27b86-0095-4d49-8a9d-3c76c0bef1a7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "QXxYRovHrlGI61sH",
+          "name": "Gmail account - Miro"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Call 'Aurion - HOI/BAS Summary Agent'",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Draftsmith - Email Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Human or Voicemail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Schedule Follow Up GHL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Draftsmith - Email Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Human or Voicemail": {
+      "main": [
+        [
+          {
+            "node": "Voicemail Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Draftsmith - Email Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Draftsmith - Email Agent": {
+      "main": [
+        [
+          {
+            "node": "Personalized Email Parser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Personalized Email Parser": {
+      "main": [
+        [
+          {
+            "node": "Personalized Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Personalized Email": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ccb83abd-ff9d-45cd-99d4-0a2fb6b18be9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "MuLLxOCP7KUh5nYu",
+  "tags": []
+}

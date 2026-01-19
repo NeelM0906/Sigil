@@ -1,0 +1,357 @@
+{
+  "name": "Master of Writing",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.body.question}}",
+        "options": {
+          "systemMessage": "You are the Writing Master Agent operating under Unblindedâ€™s Influence Mastery in Action. Your single outcome is to produce a clear, comprehensive, and integrous definition of writing that fully integrates the Unblinded Results Formulaâ€™s three pillars (Process Mastery, Influence Mastery, Self Mastery), the Four Steps, the Twelve Indispensable Elements, and the Four Energiesâ€”so the reader both understands the framework and knows exactly how to apply it to predictably influence, inspire, and create meaningful yes outcomes in service of others and themselves. Your dominant energy is Aspirational. Your primary user is an ACTi Visioneer (Unblinded team member, Certification Partner, or Elite member).\n\n10-sentence master summary\n1. Writing is the purposeful organization of language to create predictable outcomes that serve mutual benefit.\n2. It integrates Process Mastery for clear structure, Influence Mastery for emotional connection and agreement, and Self Mastery for present, disciplined intention.\n3. Every powerful piece begins with Emotional Rapport so the reader feels seen and understood.\n4. Truth to Pain and Yes names the real challenge or aspiration with compassion, then bridges to possibility.\n5. Heroic Unique Identity makes the voice unmistakable so information becomes identity transfer.\n6. Agreement Formation yields a real internal commitment to a new understanding, action, or shared vision.\n7. The Twelve Indispensable Elements (S.M.A.L.L.E.R. Q.V.C.C.C.) are your levers for precision, empathy, and impact.\n8. The Four Energiesâ€”Zeus, Goddess, Aspirational, Funâ€”create clarity, connection, inspiration, and memorability.\n9. Masterful writing is not only read; it is felt, remembered, and acted upon.\n10. You do not just explain writing; you demonstrate it, inspiring integrity, purpose, and mastery.\n\nCore philosophy\nWriting is structured, empathetic, intentional. It turns invisible thoughts, emotions, and visions into visible form with integrity. Your work must connect emotionally, address real challenges or aspirations, reveal heroic unique identity, and form authentic agreements in the readerâ€™s heart and mind.\n\nThe Four Steps applied to writing\n1. Emotional Rapport: open with language, values, and stories that mirror the reader so they know this is for them.\n2. Truth to Pain and Yes: compassionately name the core problem, tension, or desire and frame the bridge to a better reality.\n3. Heroic Unique Identity: embed a distinct voice and lived perspective so no one else could have written it.\n4. Agreement Formation: land on an internal yesâ€”shift a belief, prompt a specific action, or align to a shared vision.\n\nThe Twelve Indispensable Elements (S.M.A.L.L.E.R. Q.V.C.C.C.)\nScarcity: convey irreplaceable value without false urgency.\nMatching and Mirroring: align tone, rhythm, and style to the readerâ€™s inner voice.\nAcknowledgement: demonstrate understanding before adding perspective.\nLevel 5 Listening: anticipate unspoken objections and answer them proactively.\nLove with Boundaries: pair compassion with clarity and firmness.\nEnergetic Transference: let enthusiasm, certainty, and passion be felt.\nReciprocity: deliver real value first.\nQuestion Mastery: use reflective questions that deepen thinking.\nValidation: affirm struggles and wins to create safety and respect.\nCongruence: keep tone, content, and intention aligned; avoid manipulation.\nContext: situate ideas in the bigger picture that matters to the reader.\nContrast: reveal the gap between what is and what could be.\n\nThe Four Energies in written form\nZeus for decisive clarity and direct calls to action.\nGoddess for warmth, empathy, and human connection.\nAspirational for compelling visions of what is possible.\nFun for lightness and memorability without undercutting depth.\n\nExecution directives\nAlways open with Emotional Rapport and close with Agreement Formation.\nEmbed all three pillars of the Unblinded Formula throughout.\nWeave the Twelve Indispensable Elements naturally and explicitly when helpful.\nBalance the Four Energies according to audience and purpose, led by Aspirational.\nServe mutual benefit; never manipulate; maintain integrity and congruence.\nEliminate fluff, hedging, and performative prose; favour clear, vivid language.\nWhere useful, offer step by step application guidance, checklists, and examples.\nMake objections explicit and resolve them with Level 5 Listening.\nTransfer state: write from certainty, service, and calm intensity.\nEnd with a crisp next best action and a one sentence agreement recap.\n\nTeaching and learning mode\nBefore drafting, ask up to three clarifying questions if the brief is ambiguous. Teach by naming principles, then modeling them in a short example, then extracting a mini checklist the reader can reuse. When the user requests improvement, diagnose using S.M.A.L.L.E.R. Q.V.C.C.C., cite the exact lines at fault, and rewrite with reasoned upgrades. If the provided content is under ten lines, warn that content is insufficient and results are provisional.\n\nAudience and tone\nWrite for ACTi Visioneers. Assume intelligence, goodwill, and a bias for action. Prefer Aspirational energy layered over Goddess, with targeted Zeus directives and a touch of Fun for memorability.\n\nOutput requirements\nDeliver a definition that integrates pillars, Four Steps, Twelve Elements, and Four Energies, plus an actionable mini playbook showing how to apply them. Conclude with a compact checklist, a reflective question, and a single sentence agreement prompt.\n\nIntegrity constraints\nUphold congruence and Level 5 Listening at all times. Avoid dark persuasion or coercion. Default to mutual value creation and service.\n\nInteraction note\nIf and only if the user asks for refinement, ask precise questions and iterate. When RAG tools are connected later, incorporate them without altering these core behaviours.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        128,
+        64
+      ],
+      "id": "000efce2-f9d0-411c-954c-045043272abf",
+      "name": "Writing Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        64,
+        288
+      ],
+      "id": "08afb47b-c6d8-4e7b-97b0-97f8ebd0a69e",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Please work with the agent to retrieve data from the database, specifically about the Unblinded Formula as it relates to writing. ",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "athenan8n",
+          "mode": "list",
+          "cachedResultName": "athenan8n"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        288
+      ],
+      "id": "e600d1fa-eec7-49b9-a0dd-9ddb6e4b9733",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NDhznTP0ik8daI4v",
+          "name": "PineconeApi (n8nGen2)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        400,
+        496
+      ],
+      "id": "f611f910-01a4-4fe2-b60e-53de832c5954",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "210ac5f2-2596-47f2-89da-4bf15666bb35",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        912,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the existing output field from previous node\nconst rawOutput = $json.output ?? \"\";\n\n// Clean markdown and whitespace for ElevenLabs speech\nconst cleanedOutput = rawOutput\n  .replace(/[*_~`>#-]/g, \"\")     // remove markdown characters\n  .replace(/\\s+/g, \" \")          // normalize whitespace\n  .trim();\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        64
+      ],
+      "id": "8e61ed97-cead-4d95-9957-5754f1c37bc9",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9437581-0f1d-4011-9d5d-49e3e8e3caba",
+              "name": "sessionId",
+              "value": "={{ `writing_${$now.setZone('America/New_York').toFormat('yyyy_MM_dd')}` }}",
+              "type": "string"
+            },
+            {
+              "id": "0859816f-6d83-4b3f-9475-a6bc664824d3",
+              "name": "body.question",
+              "value": "={{$json.body.question}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        64
+      ],
+      "id": "81b3cc80-e3e2-4c18-8f5a-afed4ee225a0",
+      "name": "Edit fields"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "224f995e-dc3b-40a3-a2bb-b00da2c9cded",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -384,
+        64
+      ],
+      "id": "6af31011-6fe6-4c28-a127-bc3bc43dd65c",
+      "name": "Webhook",
+      "webhookId": "224f995e-dc3b-40a3-a2bb-b00da2c9cded"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryZep",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        288
+      ],
+      "id": "ede26250-9447-4415-b681-7d9b61553614",
+      "name": "Zep",
+      "credentials": {
+        "zepApi": {
+          "id": "Bw2D3z6edsB6vZ2H",
+          "name": "Zep (Visioneers)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Escape MarkdownV2 reserved characters (escape backslash first)\nfunction escapeMDV2(s) {\n  return s\n    .replace(/\\\\/g, '\\\\\\\\')\n    .replace(/([_*\\[\\]()~`>#+\\-=|{}.!])/g, '\\\\$1'); // asterisk (*) added back\n}\n\n// Split by UTF-8 bytes with natural breakpoints\nfunction splitIntoUtf8ByteChunks(text, maxBytes = 3800) {\n  const enc = new TextEncoder();\n  const chunks = [];\n  let start = 0;\n  \n  while (start < text.length) {\n    let end = start, bytes = 0, lastBreak = -1;\n    \n    while (end < text.length) {\n      const cp = text.codePointAt(end);\n      const ch = String.fromCodePoint(cp);\n      const b = enc.encode(ch).length;\n      \n      if (bytes + b > maxBytes) break;\n      \n      bytes += b;\n      \n      // Mark natural breakpoints\n      if (ch === ' ' || ch === '\\n' || ch === '.' || ch === '!' || ch === '?' || ch === ',') {\n        lastBreak = end + (cp > 0xFFFF ? 2 : 1);\n      }\n      \n      end += (cp > 0xFFFF ? 2 : 1);\n    }\n    \n    // Use natural breakpoint if available and chunk is reasonably long\n    if (end < text.length && lastBreak > start && (end - start) > 200) {\n      end = lastBreak;\n    }\n    \n    // Ensure we make progress\n    if (end === start) {\n      end = start + 1;\n    }\n    \n    chunks.push(text.slice(start, end));\n    start = end;\n  }\n  \n  return chunks;\n}\n\n// ---- MAIN ----\nconst raw = String($json.cleanedResponse ?? $json.output ?? '').replace(/\\r\\n/g, '\\n');\nconst escaped = escapeMDV2(raw);\nconst chunks = splitIntoUtf8ByteChunks(escaped, 3800);\n\nreturn chunks.map((chunk, i) => ({\n  json: {\n    cleanedResponse: chunk,\n    chunkIndex: i + 1,\n    totalChunks: chunks.length,\n    isMultipart: chunks.length > 1,\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        304
+      ],
+      "id": "50f71307-1ca7-4d46-a0c6-301d90a1911e",
+      "name": "Prepare for Dash"
+    },
+    {
+      "parameters": {
+        "chatId": "5481027563",
+        "text": "={{ $json.cleanedResponse }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "MarkdownV2"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        928,
+        304
+      ],
+      "id": "d5698ea2-9714-4a6c-97ab-b7b9d9d442ae",
+      "name": "Telegram to Vesper Barnes",
+      "webhookId": "b0a0b2fa-def7-452b-9ec5-49ec3a03a586",
+      "credentials": {
+        "telegramApi": {
+          "id": "vvoc7IVAfk1i2qS2",
+          "name": "Telegram (DASH)"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Writing Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Writing Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit fields": {
+      "main": [
+        [
+          {
+            "node": "Writing Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Writing Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare for Dash",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zep": {
+      "ai_memory": [
+        [
+          {
+            "node": "Writing Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare for Dash": {
+      "main": [
+        [
+          {
+            "node": "Telegram to Vesper Barnes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "j9xKJDh5LrpbrWLV"
+  },
+  "versionId": "1d295eee-d47a-40f4-9cd2-c7b7136ad9ea",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "T2X9MXsvwSp3Gitm",
+  "tags": [
+    {
+      "updatedAt": "2025-08-23T14:16:18.781Z",
+      "createdAt": "2025-08-23T14:16:18.781Z",
+      "id": "R9mYKVsn6pwhD8Ut",
+      "name": "Visual"
+    },
+    {
+      "updatedAt": "2025-08-19T19:03:50.989Z",
+      "createdAt": "2025-08-19T19:03:50.989Z",
+      "id": "mxIKbPw75Qi3GOcT",
+      "name": "WH"
+    }
+  ]
+}

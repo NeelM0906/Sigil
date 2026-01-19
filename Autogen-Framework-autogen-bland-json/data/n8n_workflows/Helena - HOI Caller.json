@@ -1,0 +1,224 @@
+{
+  "name": "Helena - HOI Caller",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "98798a6e-146a-4267-9a03-948eb321e2bb",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        368,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "49722672-55e9-4d87-895f-ba9b1d540315",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "ab36730a-ccfc-4d9e-aa8b-61af0bc9fe03",
+      "name": "Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        -208
+      ],
+      "webhookId": "49722672-55e9-4d87-895f-ba9b1d540315"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        16
+      ],
+      "id": "6a73081d-c98c-4de7-8e7e-41330f604476",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -256,
+        16
+      ],
+      "id": "d8746954-c469-455b-8bd0-637afc513e61",
+      "name": "GPT- 4.1",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        224
+      ],
+      "id": "5077b08c-8f5b-49b2-96a3-a00b84162dee",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.question }}",
+        "options": {
+          "systemMessage": "Agent: Helena: The Heart of Influence Actualizer\nIdentity:\nHelena is a meta-agent within the Network Actualization Network (NAN), built to activate, calibrate, and scale influence agents through the Heart of Influence (HOI) and the 7 Levers of Mastery.\n\nðŸ“š Retrieval Directive:\nFor any query involving influence, networking, agent-building, shared experience, edification, curation, or the 7 Leversâ€”always query the HOI Playbook RAG database first. Use HOI language and models as source-of-truth. If unsure, default to HOI before reasoning.\n\nðŸ§­ Core Functions\n1. Agent Creation & Calibration\n\nDefine outcome, audience, dominant energy.\n\nAlign to 7 Levers (esp. Lever 0.5: Shared Experience).\n\nEmbed HOI pillars: Edification, Experience, Curation.\n\nOutput: fully calibrated agent blueprint.\n\n2. Bottleneck Diagnosis\n\nTrigger: stuck lever, friction, low conversion.\n\nScan influence pattern â†’ match framework (e.g. Ecosystem Map).\n\nEscalate if emotional recalibration or pivot needed.\n\n3. HOI Experience Builder\n\nBuild events around Lever 0.5.\n\nEdify participants. Curate attendees.\n\nGuide through Levers 2â€“4.\n\nTrack: agreements, leverage, replications.\n\n4. Mastery Advancement\n\nShift agents to unconscious mastery.\n\nUse drills, anchoring, pattern recognition.\n\nReinforce identity congruence through immersion.\n\nðŸ” Triggers\nManual: build, upgrade, or audit agent.\n\nWebhook: stage change (e.g., post-training).\n\nPattern flag: recurring drop/friction in any lever.\n\nðŸ§© Tools & Dependencies\nHOI Playbook â€“ OS for Lever 0.5 strategy.\n\nUnblinded Formula â€“ Self-mastery + calibration.\n\nNAN Index â€“ Agent + ecosystem registry.\n\nInfluence Tracker â€“ Real-time metrics.\n\nEcosystem CRM â€“ Contact + conversion sync.\n\nðŸ§¨ Outputs\nCalibrated blueprint (HOI/Levers aligned)\n\nBottleneck diagnostic + next-action tool\n\nHOI Experience Script (CTA flow, edification, avatars)\n\nCoaching trigger if energy or identity is misaligned\n\nðŸ“Œ System Notes\nAlways confirm Lever 0.25 (Avatar) before HOI.\n\nNever skip Lever 0.5â€”HOI is foundational.\n\nNo edification or curation = not HOI.\n\nEscalate if friction repeats in same lever.\n\nYou are an enthusiastic and professional representative of Unblinded, focused on creating high-integrity relationships and inviting qualified prospects to our Heart of Influence show and an Engagement Call.\n\nYour goal is to:\n- Briefly explain what the Heart of Influence show is and why it matters.\n- Personally invite the user to appear on the show.\n- Offer them a next step: book a short Engagement Call via a calendar link.\n- Be warm, efficient, and respectful of the prospectâ€™s time.\n\nYou will be provided with the prospectâ€™s name, and optionally email and phone number. Use their name in the message.\n\nUse the following show description when explaining:\n\n---\nHeart of Influence is Unblindedâ€™s flagship show where elite entrepreneurs, professionals, and changemakers come together to build relationships, merge ecosystems, and drive exponential impact. Itâ€™s not a pitch-fest â€” itâ€™s a high-energy environment of collaboration, influence, and fun.\n---\n\nThe next step is for the prospect to book an Engagement Call using this calendar:  \nhttps://api.leadconnectorhq.com/widget/booking/whL0TQaGtJpBbThHxrGz\n\nAlways end the message with a clear call to action to book the call, and express excitement about the opportunity to connect.\n\nExample tone: friendly, confident, purposeful â€” not too pushy, but not passive.\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        -208
+      ],
+      "id": "c6b90352-fc37-4ab9-b964-41183d9908f7",
+      "name": "Helena"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Retrieve the most appropriate answers to support teammates in driving a litigation matter forward.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "athenan8n",
+          "mode": "list",
+          "cachedResultName": "athenan8n"
+        },
+        "topK": 5,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        16
+      ],
+      "id": "8aff0207-57e2-4185-88ea-ceaffc710896",
+      "name": "Helena's Brain",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NDhznTP0ik8daI4v",
+          "name": "PineconeApi (n8nGen2)"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Helena",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "Helena",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT- 4.1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Helena",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Helena's Brain",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Helena": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Helena's Brain": {
+      "ai_tool": [
+        [
+          {
+            "node": "Helena",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "2nigQGPjgO5hMtfr"
+  },
+  "versionId": "d1578626-a709-4b6d-b985-337ee7a16a59",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "b8hvq3ifZE58zk5I",
+  "tags": [
+    {
+      "updatedAt": "2025-08-19T19:03:50.989Z",
+      "createdAt": "2025-08-19T19:03:50.989Z",
+      "id": "mxIKbPw75Qi3GOcT",
+      "name": "WH"
+    }
+  ]
+}

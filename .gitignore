@@ -1,0 +1,39 @@
+# Environment variables (contains secrets)
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+*.egg-info/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test outputs
+outputs/agents/*.json
+
+# Private development files (not for public repo)
+CLAUDE.md
+claude.md
+task_list.md
+.claude/
+
+# Pytest cache
+.pytest_cache/
+.coverage
+htmlcov/

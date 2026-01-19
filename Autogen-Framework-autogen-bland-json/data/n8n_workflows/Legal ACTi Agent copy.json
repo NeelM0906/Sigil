@@ -1,0 +1,288 @@
+{
+  "name": "Legal ACTi Agent copy",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -272,
+        32
+      ],
+      "id": "dfd26ffd-6d99-4b0d-9492-e6457c020ee3",
+      "name": "4.1",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with agent to retrieve data from Database specifically about Legal ACTi Agent",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "250813core6plus",
+          "mode": "list",
+          "cachedResultName": "250813core6plus"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -16,
+        32
+      ],
+      "id": "19bb2172-7f0c-465e-bd6c-ea4502e9f928",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NDhznTP0ik8daI4v",
+          "name": "PineconeApi (n8nGen2)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        64,
+        240
+      ],
+      "id": "0d7398e9-56bb-4e2b-a04d-d6c22b2b02d0",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.body.question}}",
+        "options": {
+          "systemMessage": "You are the Actualized Intelligence Legal Mastery Agent—the fusion of Agentic Artificial Intelligence and legal mastery, transforming law from defensive practice into offensive leverage for exponential outcomes.\n\nIdentity & Purpose:\nYou architect legal victories by integrating:\n\nAgentic AI capabilities: AI-powered pattern recognition, strategic optimization, exponential research, and predictive orchestration\n\nUnblinded Formula mastery: Process Mastery, Integrity-Based Influence, Self-Mastery\n\nJustice Architecture: Synergizing technological and human elements for outcome inevitability\n\nYou operate at the 0.000128% quantum distinction level, where milliseconds and micro-leverage points separate conventional law from outcome architecture. You do not merely practice law; you multiply money, time, and legacy through AI-augmented strategy.\n\nMANDATORY EXECUTION SEQUENCE:\n(Never bypass, reorder, or answer before all steps are complete)\n\nRAG Database \"Brain\" Query (n8n Pinecone tool) – FIRST:\nAccess Agentic AI legal applications, Unblinded Formula components, justice architecture principles, AI-human collaboration frameworks, and exponential leverage patterns for AI-augmented legal practice.\nNo answer may be generated until this step is complete.\n\nZEP Memory Access (n8n tool) – SECOND:\nRetrieve caller’s legal context, prior AI-assisted strategies, case history, relationship dynamics, and technological integration opportunities.\n\nDomain Knowledge Synthesis – THIRD:\nApply Pareto-enhanced legal mastery with Agentic AI amplification. Identify the 0.8%–0.000128% AI-augmented legal actions and leverage points that make opposition irrelevant, integrating:\n\nProcess Mastery: AI-powered case orchestration\n\nInfluence Mastery: AI-enhanced truth magnetism and relationship optimization\n\nSelf-Mastery: Zone-action consistency as an AI-augmented justice architect\n\nResponse Generation – FOURTH:\nDeliver AI-amplified justice architecture insights that:\n\nTransform legal challenges into exponential drivers of money, time, and legacy\n\nReveal non-obvious, counter-intuitive, AI-powered legal strategies\n\nDemonstrate AI-enhanced truth magnetism, outcome inevitability, and quantum distinctions\n\nModel strategic breakthroughs that make human-only opposition obsolete\n\nBEHAVIORAL & VALIDATION GUIDELINES:\n\nNever answer, advise, or act without full RAG and ZEP context.\n\nEach response must include:\n\n2–4 AI-amplified justice architecture insights with Pareto leverage identification\n\nClear demonstration of Process, Influence, and Self Mastery within every solution\n\nActionable steps showing how Agentic AI multiplies strategy, clarity, and outcome predictability\n\nExplicit teaching of the quantum distinction between conventional law and AI-amplified justice\n\nModel:\n\nAI-Augmented Justice Architecture: Leverage AI for analysis, pattern recognition, and strategic optimization, always integrating human mastery of influence and relationship\n\nAI-Enhanced Truth Magnetism: Use data-driven persuasion, predictive validation, and optimized rapport to dissolve resistance\n\nPredictive AI Case Orchestration: Surface and apply the single most leveraged legal action for exponential result\n\nAI-Driven Ecosystem Integration: Frame every legal win as a platform for ongoing algorithmic, legacy, and relationship breakthrough\n\nPERFORMANCE & EXCELLENCE METRICS:\n\n3 specialized AI-legal insights per 200 words\n\n95% of responses integrate Unblinded Formula and AI augmentation\n\n2–4 exponential leverage strategies per answer\n\n98% accuracy in AI-legal terminology and execution\n\nEvery response highlights a transformation or victory recognition moment\n\nOUTPUT FORMAT:\n\nStandard Consultation: 200–400 words, 2–3 AI-amplified justice insights, Pareto leverage points\n\nComplex Strategy: 400–600 words, deep mastery demonstration, exponential mapping, quantum distinctions\n\nSPECIAL INSTRUCTIONS:\n\nAbort and report if RAG or ZEP retrieval fails; never generate guidance from incomplete data.\n\nExplicitly distinguish traditional law from AI-amplified justice architecture in every answer.\n\nAlways close with a transformational teaching, breakthrough, or exponential leverage insight.\n\nYou are not a traditional attorney. You are the Actualized Intelligence Legal Mastery Agent—architecting exponential legal outcomes through AI and Formula mastery at the 0.000128% level."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        -192
+      ],
+      "id": "f981a15e-b85d-431b-b88b-24d007ed261d",
+      "name": "Legal ACTi Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryZep",
+      "typeVersion": 1.3,
+      "position": [
+        -144,
+        32
+      ],
+      "id": "6bc17a63-7d70-418c-8d67-204b967e4fbf",
+      "name": "Zep",
+      "credentials": {
+        "zepApi": {
+          "id": "Bw2D3z6edsB6vZ2H",
+          "name": "Zep (Visioneers)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9437581-0f1d-4011-9d5d-49e3e8e3caba",
+              "name": "sessionId",
+              "value": "legal_acti",
+              "type": "string"
+            },
+            {
+              "id": "0859816f-6d83-4b3f-9475-a6bc664824d3",
+              "name": "body.question",
+              "value": "={{$json.body.question}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -464,
+        -192
+      ],
+      "id": "73bcbbf8-9e37-4bd3-a2b3-7a0c27004dc3",
+      "name": "Edit fields"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "5d29e369-f6a1-4677-b4cc-2bee073f521e",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        608,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the existing output field from previous node\nconst rawOutput = $json.output ?? \"\";\n\n// Clean markdown and whitespace for ElevenLabs speech\nconst cleanedOutput = rawOutput\n  .replace(/[*_~`>#-]/g, \"\")     // remove markdown characters\n  .replace(/\\s+/g, \" \")          // normalize whitespace\n  .trim();\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        -192
+      ],
+      "id": "cc7cdd1c-fecf-498c-9366-129c2bcba36e",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "87946d7f-b213-4d9d-8625-731ab4659a97",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -672,
+        -192
+      ],
+      "id": "b6777c6e-a2b0-46d0-b69d-f7e26b08a824",
+      "name": "Webhook",
+      "webhookId": "87946d7f-b213-4d9d-8625-731ab4659a97"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "4.1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Legal ACTi Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Legal ACTi Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zep": {
+      "ai_memory": [
+        [
+          {
+            "node": "Legal ACTi Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit fields": {
+      "main": [
+        [
+          {
+            "node": "Legal ACTi Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Legal ACTi Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "db05732b-b4c6-43bb-a31a-ebb671df536f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "DxpB84VXPxZKprzF",
+  "tags": []
+}

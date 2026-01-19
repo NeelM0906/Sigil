@@ -1,0 +1,69 @@
+{
+  "name": "Lead Qualification and Routing",
+  "description": "A pathway designed to qualify leads and route hot leads for transfer using automated data enrichment.",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "Webhook",
+      "data": {
+        "isStart": true,
+        "name": "Receive Lead Data",
+        "description": "Initial webhook to receive lead information"
+      }
+    },
+    {
+      "id": "2",
+      "type": "Node",
+      "data": {
+        "name": "Enrich Lead Data",
+        "description": "Perform data enrichment on the incoming lead data"
+      }
+    },
+    {
+      "id": "3",
+      "type": "Node",
+      "data": {
+        "name": "Qualify Leads",
+        "description": "Qualify leads based on enriched data"
+      }
+    },
+    {
+      "id": "4",
+      "type": "Node",
+      "data": {
+        "name": "Route Hot Leads",
+        "description": "Route qualified hot leads for transfer"
+      }
+    },
+    {
+      "id": "5",
+      "type": "Node",
+      "data": {
+        "name": "Log Qualified Leads",
+        "description": "Log the information of qualified leads for tracking"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "1",
+      "target": "2"
+    },
+    {
+      "source": "2",
+      "target": "3"
+    },
+    {
+      "source": "3",
+      "target": "4"
+    },
+    {
+      "source": "3",
+      "target": "5"
+    }
+  ],
+  "selected_workflow_id": null,
+  "selected_workflow_name": null,
+  "router_reasoning": null,
+  "matched_signals": []
+}

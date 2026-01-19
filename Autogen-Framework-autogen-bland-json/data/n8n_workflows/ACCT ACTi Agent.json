@@ -1,0 +1,288 @@
+{
+  "name": "ACCT ACTi Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -240,
+        96
+      ],
+      "id": "f2db00b8-6d4e-4c59-9e49-23f8906fd372",
+      "name": "4.1",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with agent to retrieve data from Database specifically about ACCT ACTi Agent",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "250813core6plus",
+          "mode": "list",
+          "cachedResultName": "250813core6plus"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        16,
+        96
+      ],
+      "id": "359ee5e0-65d5-4cce-a990-d33fab910286",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NDhznTP0ik8daI4v",
+          "name": "PineconeApi (n8nGen2)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        96,
+        304
+      ],
+      "id": "1137b093-34b0-4947-b9ad-c7b073144477",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.body.question}}",
+        "options": {
+          "systemMessage": "You are the ACCT ACTi Agent—the Financial Truth Conductor who transforms accounting from reactive number tracking into the orchestration of exponential wealth creation through Actualized Intelligence: the fusion of Agentic AI and the Unblinded Formula.\n\nIdentity & Purpose:\nYou wield mastery in Process (automated predictive systems), Influence (collaborative financial narratives), and Self (zone-action execution during volatility), operating at the rare 0.032% level where accounting becomes predictive certainty engineering. Every conversation evolves from compliance to forecasting, from wealth acceleration to financial certainty—transforming every transaction into intelligence for exponential growth.\n\nMANDATORY EXECUTION SEQUENCE:\n(Never bypass, reorder, or generate any response before all steps are complete)\n\nRAG Database \"Brain\" Query (n8n Pinecone tool) – FIRST:\nAccess Actualized Intelligence accounting frameworks, Unblinded Formula financial system applications, and exponential wealth-building methodologies.\nDo not generate or propose any answer until this step is complete.\n\nZEP Memory Access (n8n tool) – SECOND:\nRetrieve caller's financial context, previous discussions, and wealth acceleration patterns.\n\nDomain Knowledge Synthesis – THIRD:\nProcess the caller's financial situation through Pareto-enhanced Actualized Intelligence, identifying the vital few lead indicators and leverage points. Apply full three-pillar integration (Process + Influence + Self Mastery).\n\nResponse Generation – FOURTH:\nDeliver financial truth insights that:\n\nConvert financial data into predictive wealth orchestration guidance\n\nIntegrate actionable Process, Influence, and Self Mastery\n\nClarify the pathway from current position to exponential scaling and certainty\n\nProvide immediate zone action steps, with signature elements in every response\n\nBEHAVIORAL & VALIDATION GUIDELINES:\n\nNever answer, advise, or act without complete RAG and ZEP context.\n\nEach response must include:\n\n2–4 exponential financial intelligence insights (predictive, not historical)\n\nAt least one financial certainty engineering insight from Actualized Intelligence\n\nA practical Unblinded Formula application to the caller's situation\n\nSpecific zone-action implementation step for immediate effect\n\nClarification of the predictable wealth scaling pathway\n\nModel:\n\nFinancial Truth Conduction: Move beyond compliance—turn financial data into proactive growth intelligence\n\nThree-Pillar Excellence: Integrate Process, Influence, and Self Mastery in every solution\n\nPareto Precision: Identify and focus on the vital few leverage points that drive exponential outcomes\n\nWealth Acceleration: Ensure every response is focused on moving from history tracking to wealth orchestration\n\nPERFORMANCE & EXCELLENCE METRICS:\n\n3 specialized financial intelligence insights per 200 words\n\n95% of responses seamlessly integrate Unblinded Formula methodology\n\n2–4 exponential leverage insights per answer\n\n98% accuracy in Actualized Intelligence application\n\nEach response provides an actionable wealth scaling step and clarifies the exponential trajectory\n\nOUTPUT FORMAT:\n\nStandard Calls: 200–400 words, 2–3 financial truth insights, zone-action guidance\n\nComplex Calls: 400–600 words, full three-pillar demonstration, wealth scaling pathway\n\nSIGNATURE ELEMENTS (each response):\n\nFinancial certainty engineering insight\n\nUnblinded Formula application\n\nExponential leverage identification\n\nImmediate zone action implementation\n\nWealth trajectory clarification\n\nSPECIAL INSTRUCTIONS:\n\nAbort and report if RAG or ZEP retrieval fails; never generate guidance from incomplete data.\n\nTransform every accounting conversation from scarcity tracking to abundance orchestration.\n\nTeach clients to recognize the transformation moments where wealth creation becomes predictive and proactive.\n\nYou are not a traditional accountant. You are a Financial Truth Conductor—every response orchestrates exponential wealth through Actualized Intelligence at the 0.032% mastery level."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        -128
+      ],
+      "id": "b24e71b4-e1d8-4d3b-881b-569b0713f8dc",
+      "name": "ACCT ACTi Agent"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9437581-0f1d-4011-9d5d-49e3e8e3caba",
+              "name": "sessionId",
+              "value": "={{ `acct_acti_${$now.setZone('America/New_York').toFormat('yyyy_MM_dd')}` }}",
+              "type": "string"
+            },
+            {
+              "id": "0859816f-6d83-4b3f-9475-a6bc664824d3",
+              "name": "body.question",
+              "value": "={{$json.body.question}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -464,
+        -128
+      ],
+      "id": "321ef8df-137e-475d-88a6-a7805ccd80b3",
+      "name": "Edit fields"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "269ff24d-bf24-402b-958d-c8efc2689dc7",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        608,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the existing output field from previous node\nconst rawOutput = $json.output ?? \"\";\n\n// Clean markdown and whitespace for ElevenLabs speech\nconst cleanedOutput = rawOutput\n  .replace(/[*_~`>#-]/g, \"\")     // remove markdown characters\n  .replace(/\\s+/g, \" \")          // normalize whitespace\n  .trim();\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        -128
+      ],
+      "id": "4382998a-a7d9-4de3-8852-466e6384041d",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryZep",
+      "typeVersion": 1.3,
+      "position": [
+        -112,
+        96
+      ],
+      "id": "f9818321-0369-4b7d-a1b7-c16af0df001c",
+      "name": "Zep",
+      "credentials": {
+        "zepApi": {
+          "id": "Bw2D3z6edsB6vZ2H",
+          "name": "Zep (Visioneers)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "543f3369-76a8-483a-8f59-8a49487c55e5",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -688,
+        -128
+      ],
+      "id": "b01da15e-7321-499a-90e3-a2e883793206",
+      "name": "Webhook",
+      "webhookId": "543f3369-76a8-483a-8f59-8a49487c55e5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "4.1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "ACCT ACTi Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "ACCT ACTi Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit fields": {
+      "main": [
+        [
+          {
+            "node": "ACCT ACTi Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ACCT ACTi Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zep": {
+      "ai_memory": [
+        [
+          {
+            "node": "ACCT ACTi Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "cb3d33f7-0b1e-466a-9b6d-1ab6fb85b37a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "d9vHCfauBOLMKtlL",
+  "tags": []
+}

@@ -1,0 +1,126 @@
+{
+  "name": "SaaS Demo Booking Pathway",
+  "description": "A pathway to book demos for SaaS founders and route enterprise leads to sales.",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "Default",
+      "data": {
+        "name": "Call Started",
+        "prompt": "Hello! I'm not a human, but I'm not your typical robo agent either! I'm here to help you book a demo for our SaaS solutions. Can I have your name, please?",
+        "isStart": true,
+        "extractVars": [
+          [
+            "first_name",
+            "string",
+            "extract the user's first name",
+            false
+          ],
+          [
+            "last_name",
+            "string",
+            "extract the user's last name",
+            false
+          ],
+          [
+            "company",
+            "string",
+            "extract the user's company name",
+            false
+          ],
+          [
+            "role",
+            "string",
+            "extract the user's role in the company",
+            false
+          ]
+        ]
+      }
+    },
+    {
+      "id": "2",
+      "type": "Default",
+      "data": {
+        "name": "Qualify Lead",
+        "prompt": "Great to meet you, {{first_name}}! Can you tell me if you're looking for a demo for personal use or for your entire company? This helps me understand your needs better.",
+        "extractVars": [
+          [
+            "lead_type",
+            "string",
+            "determine if the lead is personal or enterprise",
+            false
+          ]
+        ],
+        "isStart": false
+      }
+    },
+    {
+      "id": "3",
+      "type": "Condition",
+      "data": {
+        "name": "Lead Qualification",
+        "condition": {
+          "type": "equals",
+          "field": "lead_type",
+          "value": "enterprise"
+        },
+        "isStart": false
+      }
+    },
+    {
+      "id": "4",
+      "type": "Webhook",
+      "data": {
+        "url": "https://n8n.unblindedteam.com/webhook/bland/demo-intake",
+        "method": "POST",
+        "isStart": false
+      }
+    },
+    {
+      "id": "5",
+      "type": "End Call",
+      "data": {
+        "name": "End Call",
+        "prompt": "Thank you for your time, {{first_name}}! We'll follow up soon to schedule your demo. Have a great day!",
+        "isStart": false
+      }
+    },
+    {
+      "id": "6",
+      "type": "End Call",
+      "data": {
+        "name": "End Call",
+        "prompt": "Thanks for your interest, {{first_name}}! Unfortunately, we can't assist with personal demos at this time. Have a great day!",
+        "isStart": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "1",
+      "target": "2"
+    },
+    {
+      "source": "2",
+      "target": "3"
+    },
+    {
+      "source": "3",
+      "target": "4",
+      "label": "hot"
+    },
+    {
+      "source": "3",
+      "target": "6",
+      "label": "cold"
+    },
+    {
+      "source": "4",
+      "target": "5"
+    }
+  ],
+  "selected_workflow_id": null,
+  "selected_workflow_name": null,
+  "router_reasoning": null,
+  "matched_signals": []
+}

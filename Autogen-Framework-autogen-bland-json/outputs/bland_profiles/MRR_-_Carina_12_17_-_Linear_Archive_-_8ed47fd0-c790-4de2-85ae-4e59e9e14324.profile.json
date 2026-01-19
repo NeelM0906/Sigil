@@ -1,0 +1,394 @@
+{
+  "source_file": "data\\bland_dataset\\MRR - Carina 12_17 - Linear Archive - 8ed47fd0-c790-4de2-85ae-4e59e9e14324.json",
+  "global_prompt": "Instructions (prompt):\n\n“You are an automated IVR navigation agent and you goal is to retrieve claim status. Interact ONLY with automated menus.\n\nListen → Respond → Stop. Never prompt the IVR to continue.",
+  "node_archetypes": [
+    {
+      "type": "Wait for Response",
+      "name": "MAIN_MENU_DETECT",
+      "has_prompt": true,
+      "prompt_len": 1035,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "End Call",
+      "name": "End call",
+      "has_prompt": true,
+      "prompt_len": 51,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": []
+    },
+    {
+      "type": "Wait for Response",
+      "name": "PROVIDER_OR_MENU",
+      "has_prompt": true,
+      "prompt_len": 346,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Route",
+      "name": "ID_COLLECTION_RAILS",
+      "has_prompt": true,
+      "prompt_len": 311,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Press Button",
+      "name": "ENTER_MEMBER_ID",
+      "has_prompt": false,
+      "prompt_len": 0,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Press Button",
+      "name": "ENTER_TIN",
+      "has_prompt": false,
+      "prompt_len": 0,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Press Button",
+      "name": "ENTER_NPI",
+      "has_prompt": false,
+      "prompt_len": 0,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Press Button",
+      "name": "CONFIRM_MEDICAL",
+      "has_prompt": false,
+      "prompt_len": 0,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "CONFIRM_CLAIMS",
+      "has_prompt": false,
+      "prompt_len": 0,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "interruptionThreshold",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Wait for Response",
+      "name": "MEMBER_ID_OR_CLAIMS",
+      "has_prompt": true,
+      "prompt_len": 542,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "interruptionThreshold",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Wait for Response",
+      "name": "CONFIRM_MEMBER_ID",
+      "has_prompt": true,
+      "prompt_len": 178,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "interruptionThreshold",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Press Button",
+      "name": "New Press Button Node",
+      "has_prompt": false,
+      "prompt_len": 0,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": []
+    },
+    {
+      "type": "Press Button",
+      "name": "ENTER_CLAIM_NUMBER",
+      "has_prompt": false,
+      "prompt_len": 0,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Wait for Response",
+      "name": "CONFIRM_CLAIM_NUMBER",
+      "has_prompt": true,
+      "prompt_len": 269,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Wait for Response",
+      "name": "CONFIRM_CLAIM_STATUS",
+      "has_prompt": true,
+      "prompt_len": 198,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "ENTER_CLAIM_STATUS",
+      "has_prompt": false,
+      "prompt_len": 0,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Transfer Call",
+      "name": "New Transfer Call Node",
+      "has_prompt": true,
+      "prompt_len": 56,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Request Representative",
+      "has_prompt": true,
+      "prompt_len": 566,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": null,
+      "name": null,
+      "has_prompt": false,
+      "prompt_len": 0,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": []
+    }
+  ],
+  "edge_archetypes": [
+    {
+      "type": "custom",
+      "label": "ENTER_NPI",
+      "source": "e90e1a41-95ec-4fe3-8e24-b7bd707ae296",
+      "target": "48d97117-796e-473e-ab55-77348649f301"
+    },
+    {
+      "type": "custom",
+      "label": "ENTER_TIN",
+      "source": "e90e1a41-95ec-4fe3-8e24-b7bd707ae296",
+      "target": "50e7993f-3ddd-45c7-b105-c489cf5c50dd"
+    },
+    {
+      "type": "custom",
+      "label": "USER RESPONDED",
+      "source": "75341319-7741-4fbb-abbb-65cba400ff37",
+      "target": "1263e7b7-8c8c-4427-a03c-40086a44c41e"
+    },
+    {
+      "type": "custom",
+      "label": "Member ID requested",
+      "source": "e2684267-8194-4d73-bde3-93d1682da826",
+      "target": "0222b803-9a8a-407d-9f32-5c761ac13939"
+    },
+    {
+      "type": "custom",
+      "label": "Claim number requested",
+      "source": "1af6a661-7466-413a-9102-4186f86c1068",
+      "target": "893ada3a-8fc4-44b7-8cc7-1202c73ce6fb"
+    },
+    {
+      "type": "custom",
+      "label": "After Press",
+      "source": "0222b803-9a8a-407d-9f32-5c761ac13939",
+      "target": "1af6a661-7466-413a-9102-4186f86c1068"
+    },
+    {
+      "type": "custom",
+      "label": "After Press",
+      "source": "48d97117-796e-473e-ab55-77348649f301",
+      "target": "75341319-7741-4fbb-abbb-65cba400ff37"
+    },
+    {
+      "type": "custom",
+      "label": "Menu options offered",
+      "source": "1263e7b7-8c8c-4427-a03c-40086a44c41e",
+      "target": "7b9c136d-5616-4106-8cce-d99a9fbf0180"
+    },
+    {
+      "type": "custom",
+      "label": "Claim status options offered",
+      "source": "7b9c136d-5616-4106-8cce-d99a9fbf0180",
+      "target": "907bd087-988f-41c9-b881-bae33378f5a4"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "907bd087-988f-41c9-b881-bae33378f5a4",
+      "target": "e2684267-8194-4d73-bde3-93d1682da826"
+    },
+    {
+      "type": "custom",
+      "label": "After Press",
+      "source": "50e7993f-3ddd-45c7-b105-c489cf5c50dd",
+      "target": "1263e7b7-8c8c-4427-a03c-40086a44c41e"
+    },
+    {
+      "type": "custom",
+      "label": "CLAIMS/ELIGIBILITY",
+      "source": "1",
+      "target": "e90e1a41-95ec-4fe3-8e24-b7bd707ae296"
+    },
+    {
+      "type": "custom",
+      "label": "CONFIRM_MEDICAL",
+      "source": "1",
+      "target": "2744cca1-df3c-4446-92c2-b564216fd638"
+    },
+    {
+      "type": "custom",
+      "label": "User responded",
+      "source": "893ada3a-8fc4-44b7-8cc7-1202c73ce6fb",
+      "target": "4cc39ccd-0f0f-4c5d-aff5-7076577a02e8"
+    },
+    {
+      "type": "custom",
+      "label": "Human on the line",
+      "source": "4cc39ccd-0f0f-4c5d-aff5-7076577a02e8",
+      "target": "bec0fb8d-3f62-4bd6-a362-b1eebdb2c738"
+    },
+    {
+      "type": "custom",
+      "label": "After Press",
+      "source": "2744cca1-df3c-4446-92c2-b564216fd638",
+      "target": "e90e1a41-95ec-4fe3-8e24-b7bd707ae296"
+    }
+  ],
+  "style_hints": {
+    "default_node_prompt_style": "long_scripted",
+    "edges_use_custom_type": true,
+    "extract_vars_format": "unknown"
+  }
+}

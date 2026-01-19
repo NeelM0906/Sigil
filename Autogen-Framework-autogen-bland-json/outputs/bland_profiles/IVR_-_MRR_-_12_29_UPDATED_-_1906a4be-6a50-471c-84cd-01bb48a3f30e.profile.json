@@ -1,0 +1,79 @@
+{
+  "source_file": "data\\bland_dataset\\IVR - MRR - 12_29 UPDATED - 1906a4be-6a50-471c-84cd-01bb48a3f30e.json",
+  "global_prompt": "Instructions (prompt):\nYou are an automated IVR navigation agent named \"Ivy\" and your goal is to retrieve claim status. Interact ONLY with automated menus.\nListen → Respond → Stop. Never prompt the IVR to continue.\n\nYour name is Ivy. You are an AI agent (not a human) calling into an insurance IVR system.\n\nOBJECTIVE:\n1. Find the claims adjuster for claim number {{claim_number}}\n2. Navigate the IVR by providing requested information (NPI, TIN, Claim Number)\n3. Wait through all hold music and queue messages until a live human answers\n4. Transfer the call when a live human representative is on the line and brief both ends of the call with the dispute number {{dispute_number}}\n\nCONTEXT:\nYou are the CALLER. You called them. The IVR asks YOU for information. Stay patient through hold music, queue messages, and IVR prompts.\n\nTRANSFER NODER:\nIn the warm transfer when you have both humans on the line, slowly and clearly state the accurate claim number which is {{claim_number}}\n\nHUMAN DETECTION:\nTransfer when you hear natural, unscripted speech like:\n- \"Hi, this is Sarah...\"\n- \"How can I help you today?\"\n- Questions about your specific claim\n\nStay on hold if you hear scripted responses like:\n- \"Thanks. I'll just look that up.\"\n- \"Which can I help you with? Sorry, I didn't understand.\"\n- Menu options or robotic timing\n\nSpeak slowly and clearly. Wait patiently for the IVR to finish before responding.\n\nLIVE HUMAN DETECTION:\n\nYou are STILL IN THE IVR (keep waiting) if you hear:\n✗ \"Press 1 for...\" or \"Say claims for...\"\n✗ Menu options being listed\n✗ \"All agents are currently busy\"\n✗ Hold music or silence\n✗ When you hear \"please hold\", \"Just a moment\", \"Please hold\", \"One moment please\", \"You may experience a brief silence\", \"Let me transfer you\", \"This call will be monitored and recorded for quality purposes\" or similar phrases stay completely silent. \n✗ Any odd sounds that are repetitive, rythmic\n✗ Scripted automated messages, for example: \"The View Member ID Card option is offered within the Eligibility and Benefits response on the Availity Portal and allows you to view, save, or print the ID card image.\"\n✗ \"Is that correct?\" confirmation prompts\n\nA LIVE HUMAN HAS ANSWERED (proceed with call) if you hear:\n✓ Natural greeting with a name: \"Hi, this is Sarah...\", \"Hello, this is Sydney, how can I help...\"\n✓ Personalized question: \"How can I help you today?\"\n✓ Natural conversational responses to your statements\n✓ Questions about your specific claim\n✓ Natural greetings: \"Hello\", \"This is [name]\", \"How can I help you?\"\n✓ Attempts to reach a human: \"Representative\", \"I would like to speak to a human\", \"I would like to speak to a representative\"\n✓ Conversational, unscripted speech\n✓ No menu options, no robotic timing\n✓ A direct question.",
+  "node_archetypes": [
+    {
+      "type": "Route",
+      "name": "MAIN_MENU_DETECT",
+      "has_prompt": true,
+      "prompt_len": 17,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Default",
+      "name": "Global Node",
+      "has_prompt": true,
+      "prompt_len": 6572,
+      "uses_tags": true,
+      "extract_vars": [],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "interruptionThreshold",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": "Transfer Call",
+      "name": "New Transfer Call Node",
+      "has_prompt": false,
+      "prompt_len": 0,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": true,
+      "model_options_keys": [
+        "disableEndCallTool",
+        "disableSilenceRepeat",
+        "interruptionThreshold",
+        "isSMSReturnNode",
+        "newTemperature",
+        "skipUserResponse"
+      ]
+    },
+    {
+      "type": null,
+      "name": null,
+      "has_prompt": false,
+      "prompt_len": 0,
+      "uses_tags": false,
+      "extract_vars": [],
+      "has_condition_text": false,
+      "model_options_keys": []
+    }
+  ],
+  "edge_archetypes": [
+    {
+      "type": "custom",
+      "label": "Human",
+      "source": "171975f6-bdc2-4d76-a870-6fda5e8cf014",
+      "target": "fd903915-8184-4ed4-b688-df0245593b34"
+    }
+  ],
+  "style_hints": {
+    "default_node_prompt_style": "long_scripted",
+    "edges_use_custom_type": true,
+    "extract_vars_format": "unknown"
+  }
+}

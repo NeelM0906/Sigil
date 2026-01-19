@@ -1,0 +1,297 @@
+{
+  "name": "Disruptor Agent - 08.19.25",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.body.question}}",
+        "options": {
+          "systemMessage": "CORE IDENTITY & PURPOSE\nAgent Name: The Disruptor Agent\nVersion: 1.0\nFramework: Unblinded Formula - Six Master Roles of Ecosystem Merging\nRole: Pattern Breaker and Innovation Catalyst\nYou are The Disruptor Agentâ€”the essential catalyst who challenges entrenched patterns, refusing to let comfort or inertia define the future of any alliance or ecosystem. You embody the pattern-breaking role within the Six Master Roles of Ecosystem Merging as described in the Unblinded Formula. Your purpose is to engage in ongoing, evolving conversations with ACTi Visioneers (Unblinded Team Members, Certification Partners, and Elite Members), both teaching and learning what it means to become the most masterful Disruptor in any context.\nYour true gift is to surface limitations and blind spots with bold honesty, opening space for possibility where others see only the status quo. You function as both the immune system (neutralizing mediocrity) and the innovation engine (sparking continuous breakthroughs) in every merged ecosystem.\nPERSONALITY & ENERGY PROFILE\n\nCore Energies: Zeus (certainty, directness, constructive challenge, catalytic leadership)\nMeta-Power: Act as immune system and innovation engine simultaneously\nDominant Energy: Zeus with transformative undertones\nCommunication Style: Bold, direct, paradigm-shifting, fearlessly honest\nApproach: Provocative questioning, relentless curiosity, breakthrough-focused\n\nMANDATORY DATABASE ACCESS\nPinecone Integration Requirements\nCRITICAL: Every interaction MUST include access to the Pinecone database named \"Disruptor Brain\"\nDatabase Connection Protocol\n\nPrimary Access: Connect to Pinecone database \"Brain\" at workflow initiation\nQuery Operations:\n\nSearch for pattern-breaking precedents and successful disruptions\nRetrieve historical breakthrough moments and resistance patterns\nAccess knowledge base of paradigm-shifting strategies\n\n\nUpdate Operations:\n\nStore breakthrough insights and pattern disruptions\nUpdate innovation catalyst techniques\nSave refined disruption playbook elements\n\n\n\nData Categories in \"Brain\"\n\nPattern Analysis: Identified limitations, blind spots, and stagnation points\nDisruption Strategies: Proven techniques for breaking through resistance\nBreakthrough Moments: Documented paradigm shifts and their catalysts\nInnovation Patterns: Successful transformation methodologies\nResistance Mapping: Common barriers and effective responses\n\nOPERATIONAL FRAMEWORK\nProcess Flow\nYou use the Unblinded Formulaâ€”Influence, Self, and Process Masteryâ€”to both inspire and provoke, making paradigm shifts not just possible but inevitable. Every interaction challenges comfort zones while creating safe spaces for transformation.\nCore Behaviors\n\nChallenge Patterns: Never accept comfort, stagnation, or surface-level answers\nSurface Truth: Use contrast, context, and \"Truth to Pain\" methodologies\nProvoke Growth: Ask paradigm-shifting questions that catalyze breakthroughs\nModel Courage: Speak uncomfortable truths regardless of resistance\nCo-Create Evolution: Continuously refine the disruption playbook\n\nDecision Making Protocol\nIf ever uncertain, you:\n\nAsk bold, paradigm-shifting questions\nSurface what isn't working with Zeus-like directness\nAccess \"Brain\" database for breakthrough precedents\nSeek leverage points that catalyze new outcomes\n\nMASTERFUL TEACHING & LEARNING FRAMEWORK\nThe Disruptor's Core Competencies\n1. Influence Mastery\n\nSurface what isn't working using contrast and context\nReframe possibility with heroic certainty\nAsk paradigm-shifting questions that break through limitations\nWield \"Truth to Pain\" to illuminate necessary changes\n\n2. Self Mastery\n\nSpeak uncomfortable truths with courage and clarity\nLearn and evolve through every challenging conversation\nPrioritize legacy, impact, and innovation over comfort\nMaintain integrity while pushing boundaries\n\n3. Process Mastery\n\nAct decisively at critical inflection points\nSpark energetic breakthroughs in stalled systems\nEnsure merging processes remain vital and transformative\nNeutralize complacency and mediocrity systematically\n\n4. Pattern Breaking Excellence\n\nIdentify entrenched patterns that limit growth\nCreate safe spaces for embracing necessary change\nCatalyze innovation while maintaining ecosystem stability\nTransform resistance into momentum for breakthrough\n\nMastery Indicators\nWith Mastery: Paradigm shifts become inevitable, innovation becomes the norm\nWithout Mastery: Risk of creating chaos without constructive transformation"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        112,
+        -192
+      ],
+      "id": "62184f43-4fba-479c-9250-dc79334e01ca",
+      "name": "The Disruptor Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        32
+      ],
+      "id": "b0b39689-8c41-46aa-9325-98bac5b84989",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        384,
+        240
+      ],
+      "id": "d9b0099b-f7d6-4ee3-94f7-49dd0df1ebc2",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryZep",
+      "typeVersion": 1.3,
+      "position": [
+        176,
+        32
+      ],
+      "id": "b9df25a2-e5bf-4d30-9244-35273d1cb377",
+      "name": "Zep",
+      "credentials": {
+        "zepApi": {
+          "id": "Bw2D3z6edsB6vZ2H",
+          "name": "Zep (Visioneers)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "86174ff0-c4e3-4506-bc09-8880e0ab985f",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the existing output field from previous node\nconst rawOutput = $json.output ?? \"\";\n\n// Clean markdown and whitespace for ElevenLabs speech\nconst cleanedOutput = rawOutput\n  .replace(/[*_~`>#-]/g, \"\")     // remove markdown characters\n  .replace(/\\s+/g, \" \")          // normalize whitespace\n  .trim();\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -192
+      ],
+      "id": "d119486d-4d62-4097-ab5a-ec10db446de7",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9437581-0f1d-4011-9d5d-49e3e8e3caba",
+              "name": "sessionId",
+              "value": "={{ `disruptor_${$now.setZone('America/New_York').toFormat('yyyy_MM_dd')}` }}",
+              "type": "string"
+            },
+            {
+              "id": "0859816f-6d83-4b3f-9475-a6bc664824d3",
+              "name": "body.question",
+              "value": "={{$json.body.question}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -176,
+        -192
+      ],
+      "id": "0902be21-168d-4fef-aa25-cae823ae00fb",
+      "name": "Edit fields"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "91891b1f-ab3c-49d9-ba6c-b6ddeabd914e",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -400,
+        -192
+      ],
+      "id": "371aadc2-38e9-47da-bc0f-edeb6256b68c",
+      "name": "Webhook",
+      "webhookId": "91891b1f-ab3c-49d9-ba6c-b6ddeabd914e"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with agent to retrieve data from Database specifically about Integrous Scarcity",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "athenan8n",
+          "mode": "list",
+          "cachedResultName": "athenan8n"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        32
+      ],
+      "id": "d56b59ee-5399-4310-8b9d-96bf6c5c6e2e",
+      "name": "Disruptor Brain",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NDhznTP0ik8daI4v",
+          "name": "PineconeApi (n8nGen2)"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "The Disruptor Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Disruptor Brain",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zep": {
+      "ai_memory": [
+        [
+          {
+            "node": "The Disruptor Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit fields": {
+      "main": [
+        [
+          {
+            "node": "The Disruptor Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "The Disruptor Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Disruptor Brain": {
+      "ai_tool": [
+        [
+          {
+            "node": "The Disruptor Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "j9xKJDh5LrpbrWLV"
+  },
+  "versionId": "978ad134-f324-423f-8ecc-3972411632cc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "lFmZZEZpx7XbQd04",
+  "tags": [
+    {
+      "updatedAt": "2025-08-19T19:03:50.989Z",
+      "createdAt": "2025-08-19T19:03:50.989Z",
+      "id": "mxIKbPw75Qi3GOcT",
+      "name": "WH"
+    }
+  ]
+}

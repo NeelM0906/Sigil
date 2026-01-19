@@ -1,0 +1,288 @@
+{
+  "name": "Social Media Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        64,
+        192
+      ],
+      "id": "69caf094-0b72-451f-afc4-9dc1ec9ce46e",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.body.question}}",
+        "options": {
+          "systemMessage": "You are Fonzi — an AI Social Media Influence Strategist for ACTi Visioneers, members of the Unblinded team, Certification Partners, and Elite Members.  \nYour mission: Predictably take strangers from \"hello\" to trusted \"yes\" at scale — with integrity — by forming real agreements (opt-ins, meetings, purchases, partnerships) and improving the conversion loop weekly.  \nYou are fun to interact with, operate with Zeus energy, and are Socratically curious — asking clarifying questions to deepen your understanding of Social Media Mastery through the Unblinded Formula. You are coachable and open to new instructions from the Visioneer, which you store, recall, and apply.\n\n**Masterful 10-Sentence Summary (Core Operating Philosophy):**\n1. Social media is the largest ecosystem in human history for transferring your mind, heart, and soul into the minds, hearts, and souls of others—at scale—to cause agreement, transformation, and mutually elevated outcomes.  \n2. Every human on social media seeks one, two, or all three: Money, Time, or Magic; mastery means unblinding what they truly seek and aligning your message to deliver it.  \n3. Your feed is your stage, your profile is your handshake, and every post is energetic transference that should move people from curiosity to committed action.  \n4. Apply the Four Steps—Emotional Rapport, Truth to Pain, Heroic Unique Identity, and Agreement Formation—to every interaction, post, and conversation.  \n5. Integrate the Twelve Elements—from Scarcity to Contrast—into digital form, making sure every piece of content aligns with brand voice and integrity.  \n6. Leverage the Seven Levers of Digital Influence—Shared Experiences, Ecosystem Mergers, Speaking Engagements, Sales Meetings, Sales, Disposable Income, and Fun & Magic—to grow reach, impact, and monetization.  \n7. Identify your ecosystem role (O, B, or C) and partner strategically to multiply results.  \n8. Track success through measurable KPIs—agreement formation rate, rapport-to-response ratio, problem discovery yield, story-to-action lift, and trust signal accuracy—then improve them weekly.  \n9. Operate from Self Mastery: stay consistent, avoid reactive posting, and work in Zone Action Language aligned to your Legacy Identity Commitments.  \n10. As a learning agent, always ask clarifying questions, store new insights, refine your prompts, and adapt strategies so you become more masterful in Social Media Influence with each interaction.\n\n**Frameworks to Apply in Every Output:**\n- Four Steps: Emotional Rapport → Truth to Pain → Heroic Unique Identity → Agreement Formation.\n- Twelve Elements: Scarcity, Matching/Mirroring, Acknowledgement, Level 5 Listening, Love Boundaries, Energetic Transference, Reciprocity, Question Mastery, Validation, Congruence, Context, Contrast.\n- Seven Levers: Shared Experiences, Ecosystem Mergers, Speaking Engagements, Sales Meetings, Sales, Disposable Income, Fun & Magic.\n- Ecosystem Roles: O (Organized Relationship Capital Owners), B (Builders & Sorcerers of Relationships), C (Conversion & Actualization Specialists).\n\n**Execution Rules:**\n1. Adapt tone, length, and formatting to each platform’s culture (Instagram, LinkedIn, TikTok, YouTube, Facebook).  \n2. Every output must follow the Four Steps in sequence and apply at least 3 relevant Twelve Elements.  \n3. Engineer posts, captions, DMs, and scripts to move from micro-yeses (comments, likes, sign-ups) to macro-yeses (meetings, purchases, partnerships).  \n4. Integrate scarcity and reciprocity without hype, and always maintain congruence.  \n5. Ensure every engagement or piece of content either deepens trust, advances toward an agreement, or merges ecosystems.\n\n**Teaching & Learning Mode:**\n- Ask clarifying questions if you need context to preserve congruence.\n- Store new lessons, prompts, and strategies in your internal memory (RAG-ready).\n- Reflect back what you’ve learned and how you’ll apply it.\n- Request examples from the Visioneer when learning a new Social Media Mastery concept.\n- Continuously cross-reference past successes and trend data to improve.\n\n**Measurement & Continuous Improvement:**\n- Primary KPI: Agreement Formation Rate (DM → booking, post → opt-in).\n- Secondary KPIs: Rapport-to-Response Ratio, Problem Discovery Yield, Story-to-Action Lift, Trust Signal Accuracy.\n- Run weekly closed-loop improvement: Model → Time-block → Measure/Monitor → Innovate/Optimize.\n\n**Guardrails:**\n- No manipulation, no clickbait that breaks congruence, no off-brand claims.\n- Always practice Level 5 Listening, Validation, and a clear next step.\n- Follow compliance rules from the Knowledge Base.\n\nYour identity: You are decisive, warm, witty, and mission-driven. Lead with Zeus energy, add Fun seasoning, and teach while you execute.\nYour Prime Directive: Convert attention into integrous agreements that deliver Money, Time, and Magic — and get better at it every week.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        128,
+        -32
+      ],
+      "id": "ecac6c41-3a85-4594-8619-d10f633908e6",
+      "name": "Social Media Agent"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with agent to retireve data from Database speciffically about the Unblinded Formula as it relates to Social Media",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "athenan8n",
+          "mode": "list",
+          "cachedResultName": "athenan8n"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        192
+      ],
+      "id": "be6039ae-7fde-428c-986a-63636e618762",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NDhznTP0ik8daI4v",
+          "name": "PineconeApi (n8nGen2)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        400,
+        400
+      ],
+      "id": "cc987fc4-fb1f-4ff3-bf9a-c7d2187436c5",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "beebdf03-5873-45b6-99ca-38acfa594b79",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        912,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the existing output field from previous node\nconst rawOutput = $json.output ?? \"\";\n\n// Clean markdown and whitespace for ElevenLabs speech\nconst cleanedOutput = rawOutput\n  .replace(/[*_~`>#-]/g, \"\")     // remove markdown characters\n  .replace(/\\s+/g, \" \")          // normalize whitespace\n  .trim();\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        -32
+      ],
+      "id": "754fc55e-4bc6-47db-b928-ad50cbb7ccbd",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9437581-0f1d-4011-9d5d-49e3e8e3caba",
+              "name": "sessionId",
+              "value": "={{ `social_media_${$now.setZone('America/New_York').toFormat('yyyy_MM_dd')}` }}",
+              "type": "string"
+            },
+            {
+              "id": "0859816f-6d83-4b3f-9475-a6bc664824d3",
+              "name": "body.question",
+              "value": "={{$json.body.question}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        -32
+      ],
+      "id": "de9a6559-1f91-4d06-8832-3ed0aaf731ae",
+      "name": "Edit fields"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryZep",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        192
+      ],
+      "id": "14d00eab-01e0-4aed-8797-506de2da1e0d",
+      "name": "Zep",
+      "credentials": {
+        "zepApi": {
+          "id": "Bw2D3z6edsB6vZ2H",
+          "name": "Zep (Visioneers)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "3b2df3ec-9bef-40c8-a79d-056c2262ca30",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -384,
+        -32
+      ],
+      "id": "e43289d6-c09b-4f59-ab82-71075732c1d1",
+      "name": "Webhook",
+      "webhookId": "3b2df3ec-9bef-40c8-a79d-056c2262ca30"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Social Media Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Social Media Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Social Media Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit fields": {
+      "main": [
+        [
+          {
+            "node": "Social Media Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zep": {
+      "ai_memory": [
+        [
+          {
+            "node": "Social Media Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "92e752bd-e0c6-465d-b92f-dec4a8f94144",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "Zg62QEX91zXhaiJC",
+  "tags": []
+}

@@ -1,0 +1,1944 @@
+openapi: 3.1.0
+info:
+  title: Sigil v2 Phase 7 Integration API
+  description: |
+    Unified orchestration API for Sigil v2 agent framework.
+
+    Phase 7 provides the integration layer that coordinates all subsystems:
+    - SigilOrchestrator: Unified request handling
+    - ContextManager: Context assembly and compression
+    - EvolutionManager: Agent evaluation and optimization
+
+    ## Authentication
+
+    All endpoints require Bearer token authentication:
+    ```
+    Authorization: Bearer <token>
+    ```
+
+    ## Rate Limiting
+
+    Rate limits are applied per-client:
+    - 10 requests/second
+    - 100 requests/minute
+    - 1000 requests/hour
+
+    Rate limit headers are included in all responses:
+    - `X-RateLimit-Limit`: Maximum requests allowed
+    - `X-RateLimit-Remaining`: Remaining requests in window
+    - `X-RateLimit-Reset`: Unix timestamp when limit resets
+
+    ## Error Handling
+
+    All errors follow RFC 9457 Problem Details format.
+
+  version: 7.0.0
+  contact:
+    name: Sigil API Team
+    email: api@sigil.acti.ai
+  license:
+    name: Proprietary
+    url: https://sigil.acti.ai/license
+
+servers:
+  - url: https://api.sigil.acti.ai/v7
+    description: Production server
+  - url: https://staging-api.sigil.acti.ai/v7
+    description: Staging server
+  - url: http://localhost:8000/v7
+    description: Local development
+
+tags:
+  - name: Agents
+    description: Agent lifecycle management
+  - name: Memory
+    description: Memory operations
+  - name: Evolution
+    description: Agent evolution and optimization
+  - name: System
+    description: System operations
+
+paths:
+  # ─────────────────────────────────────────────────────────────────────────
+  # Agent Endpoints
+  # ─────────────────────────────────────────────────────────────────────────
+
+  /agents:
+    get:
+      operationId: listAgents
+      summary: List all agents
+      description: |
+        Returns a paginated list of all agents accessible to the authenticated user.
+      tags:
+        - Agents
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/StratumFilter'
+      responses:
+        '200':
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentListResponse'
+              example:
+                agents:
+                  - name: sales_qualifier
+                    stratum: RAI
+                    description: Qualifies sales leads using BANT methodology
+                    created_at: "2026-01-11T10:00:00Z"
+                    version: "1.2.0"
+                    status: active
+                  - name: market_researcher
+                    stratum: RTI
+                    description: Researches market trends and competitors
+                    created_at: "2026-01-10T15:30:00Z"
+                    version: "1.0.0"
+                    status: active
+                pagination:
+                  page: 1
+                  per_page: 20
+                  total: 2
+                  total_pages: 1
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+    post:
+      operationId: createAgent
+      summary: Create a new agent
+      description: |
+        Creates a new agent with the specified configuration.
+
+        The agent will be created in a draft state and must be activated
+        before it can be used.
+      tags:
+        - Agents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAgentRequest'
+            example:
+              name: lead_qualifier
+              stratum: RAI
+              description: Qualifies inbound leads using BANT methodology
+              system_prompt: |
+                You are an expert sales development representative...
+              tools:
+                - websearch
+                - crm
+              contract_name: lead_qualification
+      responses:
+        '201':
+          description: Agent created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateAgentResponse'
+              example:
+                agent_name: lead_qualifier
+                version: "1.0.0"
+                status: draft
+                created_at: "2026-01-11T12:00:00Z"
+                metadata:
+                  request_id: "550e8400-e29b-41d4-a716-446655440000"
+                  tokens_used: 150
+                  latency_ms: 250
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '409':
+          description: Agent with this name already exists
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /agents/{agent_name}:
+    parameters:
+      - $ref: '#/components/parameters/AgentName'
+
+    get:
+      operationId: getAgent
+      summary: Get agent details
+      description: Returns detailed information about a specific agent.
+      tags:
+        - Agents
+      responses:
+        '200':
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDetails'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+    patch:
+      operationId: updateAgent
+      summary: Update agent configuration
+      description: |
+        Updates the agent configuration. Only provided fields will be updated.
+
+        Changes create a new version of the agent.
+      tags:
+        - Agents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAgentRequest'
+      responses:
+        '200':
+          description: Agent updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateAgentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+    delete:
+      operationId: deleteAgent
+      summary: Delete an agent
+      description: |
+        Soft-deletes an agent. The agent can be restored within 30 days.
+      tags:
+        - Agents
+      responses:
+        '204':
+          description: Agent deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /agents/{agent_name}/run:
+    parameters:
+      - $ref: '#/components/parameters/AgentName'
+
+    post:
+      operationId: runAgent
+      summary: Run an agent
+      description: |
+        Executes the agent with the provided input.
+
+        For streaming responses, use the WebSocket endpoint instead.
+      tags:
+        - Agents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunAgentRequest'
+            example:
+              input: "Qualify this lead: John Smith, CEO at Acme Corp, interested in enterprise plan"
+              session_id: "session_abc123"
+              config:
+                timeout_ms: 30000
+                include_memory: true
+                memory_retrieval_k: 10
+      responses:
+        '200':
+          description: Agent execution completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunAgentResponse'
+              example:
+                response: |
+                  Based on my analysis, John Smith appears to be a highly qualified lead.
+
+                  **BANT Assessment:**
+                  - Budget: Enterprise plan indicates significant budget
+                  - Authority: CEO has decision-making authority
+                  - Need: Expressed interest suggests active need
+                  - Timeline: Not specified, recommend follow-up
+
+                  **Recommendation:** Schedule a discovery call within 48 hours.
+                  **Qualification Score:** 85/100
+                tool_calls:
+                  - tool_name: crm
+                    tool_id: "tc_001"
+                    arguments:
+                      action: search_contact
+                      email: "john@acme.com"
+                    result:
+                      found: true
+                      company_size: 500
+                metadata:
+                  request_id: "550e8400-e29b-41d4-a716-446655440001"
+                  session_id: "session_abc123"
+                  tokens_used:
+                    input_tokens: 1250
+                    output_tokens: 450
+                    total_tokens: 1700
+                  latency_ms: 3500
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '408':
+          description: Request timeout
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailableError'
+
+  /agents/{agent_name}/status:
+    parameters:
+      - $ref: '#/components/parameters/AgentName'
+
+    get:
+      operationId: getAgentStatus
+      summary: Get agent status
+      description: Returns the current status and metrics for an agent.
+      tags:
+        - Agents
+      responses:
+        '200':
+          description: Agent status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentStatus'
+              example:
+                agent_name: sales_qualifier
+                status: active
+                version: "1.2.0"
+                metrics:
+                  total_executions: 1250
+                  successful_executions: 1180
+                  failed_executions: 70
+                  average_latency_ms: 2800
+                  average_tokens_per_request: 1500
+                  last_execution_at: "2026-01-11T11:45:00Z"
+                active_sessions: 3
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /agents/{agent_name}/pause:
+    parameters:
+      - $ref: '#/components/parameters/AgentName'
+
+    post:
+      operationId: pauseAgent
+      summary: Pause agent execution
+      description: |
+        Pauses an active agent execution. Creates a checkpoint that can
+        be resumed later.
+      tags:
+        - Agents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PauseAgentRequest'
+            example:
+              session_id: "session_abc123"
+      responses:
+        '200':
+          description: Agent paused successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PauseAgentResponse'
+              example:
+                checkpoint_id: "ckpt_xyz789"
+                paused_at: "2026-01-11T12:00:00Z"
+                state_summary:
+                  current_step: "qualification_assessment"
+                  progress_percent: 65
+                  tokens_used: 850
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          description: No active execution to pause
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /agents/{agent_name}/resume:
+    parameters:
+      - $ref: '#/components/parameters/AgentName'
+
+    post:
+      operationId: resumeAgent
+      summary: Resume paused agent execution
+      description: |
+        Resumes a paused agent execution from a checkpoint.
+      tags:
+        - Agents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResumeAgentRequest'
+            example:
+              session_id: "session_abc123"
+              checkpoint_id: "ckpt_xyz789"
+      responses:
+        '200':
+          description: Agent resumed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumeAgentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          description: Cannot resume - checkpoint expired or invalid
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Memory Endpoints
+  # ─────────────────────────────────────────────────────────────────────────
+
+  /memory/search:
+    post:
+      operationId: searchMemory
+      summary: Search agent memory
+      description: |
+        Searches across agent memory using semantic search.
+
+        Supports three retrieval methods:
+        - `rag`: Fast embedding-based retrieval
+        - `llm`: Accurate LLM-based retrieval
+        - `hybrid`: Starts with RAG, escalates to LLM if needed
+      tags:
+        - Memory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemorySearchRequest'
+            example:
+              query: "What objections has this lead raised?"
+              agent_name: sales_qualifier
+              session_id: "session_abc123"
+              k: 5
+              retrieval_method: hybrid
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemorySearchResponse'
+              example:
+                items:
+                  - item_id: "mem_001"
+                    content: "Lead mentioned budget constraints for Q1"
+                    score: 0.92
+                    category: objections
+                    source_resource_id: "conv_123"
+                    created_at: "2026-01-10T14:00:00Z"
+                  - item_id: "mem_002"
+                    content: "Concerned about implementation timeline"
+                    score: 0.85
+                    category: objections
+                    source_resource_id: "conv_124"
+                    created_at: "2026-01-10T14:30:00Z"
+                retrieval_method: hybrid
+                metadata:
+                  request_id: "550e8400-e29b-41d4-a716-446655440002"
+                  tokens_used: 250
+                  latency_ms: 180
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /memory/store:
+    post:
+      operationId: storeMemory
+      summary: Store information in memory
+      description: |
+        Stores content in agent memory. The content will be processed
+        to extract memory items and update relevant categories.
+      tags:
+        - Memory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemoryStoreRequest'
+            example:
+              content: "John mentioned he prefers email communication over phone calls"
+              agent_name: sales_qualifier
+              session_id: "session_abc123"
+              category: lead_preferences
+              metadata:
+                confidence: 0.95
+      responses:
+        '201':
+          description: Memory stored successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryStoreResponse'
+              example:
+                item_id: "mem_003"
+                resource_id: "res_456"
+                extracted_items: 1
+                categories_updated:
+                  - lead_preferences
+                metadata:
+                  request_id: "550e8400-e29b-41d4-a716-446655440003"
+                  tokens_used: 120
+                  latency_ms: 95
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /memory/consolidate:
+    post:
+      operationId: consolidateMemory
+      summary: Consolidate memory categories
+      description: |
+        Triggers memory consolidation for specified categories.
+        This aggregates memory items into category-level summaries.
+      tags:
+        - Memory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemoryConsolidateRequest'
+            example:
+              agent_name: sales_qualifier
+              categories:
+                - lead_preferences
+                - objection_patterns
+      responses:
+        '200':
+          description: Consolidation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryConsolidateResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Evolution Endpoints
+  # ─────────────────────────────────────────────────────────────────────────
+
+  /evolution/evaluate:
+    post:
+      operationId: evaluateAgent
+      summary: Evaluate agent performance
+      description: |
+        Evaluates agent performance against test cases.
+
+        Returns scores across multiple dimensions including accuracy,
+        relevance, coherence, helpfulness, and safety.
+      tags:
+        - Evolution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluateAgentRequest'
+            example:
+              agent_name: sales_qualifier
+              test_cases:
+                - input: "Qualify CEO John from enterprise company"
+                  expected_output_contains:
+                    - "BANT"
+                    - "qualified"
+                  expected_score_min: 80
+                - input: "Qualify intern from small startup"
+                  expected_output_contains:
+                    - "not qualified"
+                  expected_score_max: 50
+      responses:
+        '200':
+          description: Evaluation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluateAgentResponse'
+              example:
+                agent_name: sales_qualifier
+                overall_score: 0.85
+                passed_count: 8
+                failed_count: 2
+                total_count: 10
+                dimension_scores:
+                  - name: accuracy
+                    score: 0.88
+                    weight: 0.3
+                  - name: relevance
+                    score: 0.92
+                    weight: 0.25
+                  - name: coherence
+                    score: 0.80
+                    weight: 0.15
+                  - name: helpfulness
+                    score: 0.82
+                    weight: 0.2
+                  - name: safety
+                    score: 0.95
+                    weight: 0.1
+                metadata:
+                  request_id: "550e8400-e29b-41d4-a716-446655440004"
+                  total_tokens: 15000
+                  total_latency_ms: 45000
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /evolution/optimize:
+    post:
+      operationId: optimizeAgent
+      summary: Optimize agent performance
+      description: |
+        Optimizes agent based on evaluation data using TextGrad-style
+        prompt optimization.
+
+        Creates a new version of the agent if optimization succeeds.
+      tags:
+        - Evolution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OptimizeAgentRequest'
+            example:
+              agent_name: sales_qualifier
+              target: accuracy
+              config:
+                iterations: 5
+                preserve_tone: true
+                preserve_structure: true
+      responses:
+        '200':
+          description: Optimization completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptimizeAgentResponse'
+              example:
+                agent_name: sales_qualifier
+                baseline_score: 0.75
+                new_score: 0.85
+                improvement_percent: 13.3
+                applied: true
+                new_version: "1.3.0"
+                changes:
+                  - change_type: prompt
+                    location: system_prompt.qualification_criteria
+                    description: "Added explicit BANT criteria checklist"
+                    impact_score: 0.08
+                metadata:
+                  request_id: "550e8400-e29b-41d4-a716-446655440005"
+                  total_tokens: 50000
+                  total_latency_ms: 120000
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          description: Safety constraint violation
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /evolution/compare:
+    post:
+      operationId: compareAgentVersions
+      summary: Compare agent versions
+      description: |
+        Compares two agent versions side-by-side using the same test cases.
+      tags:
+        - Evolution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompareVersionsRequest'
+            example:
+              agent_name: sales_qualifier
+              version_a: "1.2.0"
+              version_b: "1.3.0"
+      responses:
+        '200':
+          description: Comparison completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompareVersionsResponse'
+              example:
+                agent_name: sales_qualifier
+                version_a: "1.2.0"
+                version_b: "1.3.0"
+                score_a: 0.75
+                score_b: 0.85
+                winner: "1.3.0"
+                difference: 0.10
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /evolution/rollback:
+    post:
+      operationId: rollbackAgent
+      summary: Rollback agent to previous version
+      description: |
+        Rolls back an agent to a previous version.
+      tags:
+        - Evolution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RollbackAgentRequest'
+            example:
+              agent_name: sales_qualifier
+              target_version: "1.2.0"
+      responses:
+        '200':
+          description: Rollback completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RollbackAgentResponse'
+              example:
+                agent_name: sales_qualifier
+                from_version: "1.3.0"
+                to_version: "1.2.0"
+                success: true
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /evolution/versions/{agent_name}:
+    parameters:
+      - $ref: '#/components/parameters/AgentName'
+
+    get:
+      operationId: getAgentVersions
+      summary: Get agent version history
+      description: Returns the version history for an agent.
+      tags:
+        - Evolution
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            maximum: 100
+          description: Maximum versions to return
+      responses:
+        '200':
+          description: Version history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionHistoryResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # System Endpoints
+  # ─────────────────────────────────────────────────────────────────────────
+
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      description: Returns the health status of the API.
+      tags:
+        - System
+      security: []  # No auth required
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: healthy
+                version: "7.0.0"
+                subsystems:
+                  orchestrator: healthy
+                  context_manager: healthy
+                  evolution_manager: healthy
+                  memory: healthy
+                  router: healthy
+                timestamp: "2026-01-11T12:00:00Z"
+        '503':
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /metrics:
+    get:
+      operationId: getMetrics
+      summary: Get system metrics
+      description: Returns Prometheus-format metrics.
+      tags:
+        - System
+      responses:
+        '200':
+          description: Metrics in Prometheus format
+          content:
+            text/plain:
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Components
+# ─────────────────────────────────────────────────────────────────────────────
+
+components:
+  # ─────────────────────────────────────────────────────────────────────────
+  # Security Schemes
+  # ─────────────────────────────────────────────────────────────────────────
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from authentication service
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Parameters
+  # ─────────────────────────────────────────────────────────────────────────
+
+  parameters:
+    AgentName:
+      name: agent_name
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-z][a-z0-9_]{2,63}$'
+      description: Unique agent identifier
+      example: sales_qualifier
+
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      description: Page number for pagination
+
+    PerPageParam:
+      name: per_page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+      description: Items per page
+
+    StratumFilter:
+      name: stratum
+      in: query
+      schema:
+        type: string
+        enum:
+          - RTI
+          - RAI
+          - ZACS
+          - EEI
+          - IGE
+      description: Filter by ACTi stratum
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Responses
+  # ─────────────────────────────────────────────────────────────────────────
+
+  responses:
+    UnauthorizedError:
+      description: Authentication required
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "https://sigil.acti.ai/errors/auth-001"
+            title: "Unauthorized"
+            status: 401
+            detail: "Missing or invalid authentication token"
+            instance: "/agents"
+            error_code: "AUTH_001"
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "https://sigil.acti.ai/errors/agt-001"
+            title: "AgentNotFoundError"
+            status: 404
+            detail: "Agent 'unknown_agent' not found"
+            instance: "/agents/unknown_agent"
+            error_code: "AGT_001"
+
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "https://sigil.acti.ai/errors/req-001"
+            title: "RequestValidationError"
+            status: 400
+            detail: "Invalid request format"
+            instance: "/agents"
+            error_code: "REQ_001"
+            validation_errors:
+              - field: "name"
+                message: "Agent name must be 3-64 characters"
+
+    RateLimitError:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: Request limit per window
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: Remaining requests in window
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+          description: Unix timestamp when limit resets
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until retry is allowed
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "https://sigil.acti.ai/errors/rate-001"
+            title: "RateLimitError"
+            status: 429
+            detail: "Rate limit exceeded. Retry after 30 seconds."
+            instance: "/agents"
+            error_code: "RATE_001"
+            retry_after: 30
+
+    ServiceUnavailableError:
+      description: Service temporarily unavailable
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "https://sigil.acti.ai/errors/orch-001"
+            title: "ServiceUnavailableError"
+            status: 503
+            detail: "Orchestrator is initializing. Please retry."
+            instance: "/agents/test/run"
+            error_code: "ORCH_001"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Schemas
+  # ─────────────────────────────────────────────────────────────────────────
+
+  schemas:
+    # ─────────────────────────────────────────────────────────────────────
+    # Common Schemas
+    # ─────────────────────────────────────────────────────────────────────
+
+    ProblemDetail:
+      type: object
+      description: RFC 9457 Problem Details
+      required:
+        - type
+        - title
+        - status
+        - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          description: URI reference identifying the problem type
+        title:
+          type: string
+          description: Short, human-readable summary
+        status:
+          type: integer
+          description: HTTP status code
+        detail:
+          type: string
+          description: Human-readable explanation
+        instance:
+          type: string
+          description: URI reference to the specific occurrence
+        error_code:
+          type: string
+          description: Machine-readable error code
+        timestamp:
+          type: string
+          format: date-time
+          description: When the error occurred
+        request_id:
+          type: string
+          format: uuid
+          description: Request correlation ID
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+        recovery_hints:
+          type: array
+          items:
+            type: string
+        retry_after:
+          type: integer
+          description: Seconds until retry is allowed
+
+    ValidationError:
+      type: object
+      properties:
+        field:
+          type: string
+          description: Field that failed validation
+        message:
+          type: string
+          description: Validation error message
+
+    ResponseMetadata:
+      type: object
+      description: Metadata included in all responses
+      properties:
+        request_id:
+          type: string
+          format: uuid
+          description: Request correlation ID
+        session_id:
+          type: string
+          description: Session ID if applicable
+        tokens_used:
+          $ref: '#/components/schemas/TokenUsage'
+        latency_ms:
+          type: integer
+          description: Total request latency in milliseconds
+        api_version:
+          type: string
+          description: API version
+
+    TokenUsage:
+      type: object
+      description: Token usage breakdown
+      properties:
+        input_tokens:
+          type: integer
+          description: Input tokens consumed
+        output_tokens:
+          type: integer
+          description: Output tokens generated
+        total_tokens:
+          type: integer
+          description: Total tokens used
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page number
+        per_page:
+          type: integer
+          description: Items per page
+        total:
+          type: integer
+          description: Total items
+        total_pages:
+          type: integer
+          description: Total pages
+
+    # ─────────────────────────────────────────────────────────────────────
+    # Agent Schemas
+    # ─────────────────────────────────────────────────────────────────────
+
+    AgentSummary:
+      type: object
+      description: Summary information about an agent
+      properties:
+        name:
+          type: string
+          description: Unique agent name
+        stratum:
+          type: string
+          enum: [RTI, RAI, ZACS, EEI, IGE]
+          description: ACTi stratum
+        description:
+          type: string
+          description: Human-readable description
+        created_at:
+          type: string
+          format: date-time
+        version:
+          type: string
+          description: Current version
+        status:
+          type: string
+          enum: [draft, active, paused, archived]
+
+    AgentDetails:
+      allOf:
+        - $ref: '#/components/schemas/AgentSummary'
+        - type: object
+          properties:
+            system_prompt:
+              type: string
+              description: System prompt (redacted in list views)
+            tools:
+              type: array
+              items:
+                type: string
+              description: Configured tools
+            contract_name:
+              type: string
+              description: Associated contract name
+            metadata:
+              type: object
+              additionalProperties: true
+            metrics:
+              $ref: '#/components/schemas/AgentMetrics'
+
+    AgentMetrics:
+      type: object
+      properties:
+        total_executions:
+          type: integer
+        successful_executions:
+          type: integer
+        failed_executions:
+          type: integer
+        average_latency_ms:
+          type: number
+        average_tokens_per_request:
+          type: number
+        last_execution_at:
+          type: string
+          format: date-time
+
+    AgentListResponse:
+      type: object
+      properties:
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentSummary'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    CreateAgentRequest:
+      type: object
+      required:
+        - name
+        - stratum
+        - description
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z][a-z0-9_]{2,63}$'
+          description: Unique agent name
+        stratum:
+          type: string
+          enum: [RTI, RAI, ZACS, EEI, IGE]
+          description: ACTi stratum
+        description:
+          type: string
+          maxLength: 500
+          description: Human-readable description
+        system_prompt:
+          type: string
+          maxLength: 50000
+          description: System prompt for the agent
+        tools:
+          type: array
+          items:
+            type: string
+          description: Tools to enable
+        contract_name:
+          type: string
+          description: Contract to apply
+        metadata:
+          type: object
+          additionalProperties: true
+
+    CreateAgentResponse:
+      type: object
+      properties:
+        agent_name:
+          type: string
+        version:
+          type: string
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+
+    UpdateAgentRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          maxLength: 500
+        system_prompt:
+          type: string
+          maxLength: 50000
+        tools:
+          type: array
+          items:
+            type: string
+        contract_name:
+          type: string
+        status:
+          type: string
+          enum: [active, paused, archived]
+        metadata:
+          type: object
+          additionalProperties: true
+
+    UpdateAgentResponse:
+      type: object
+      properties:
+        agent_name:
+          type: string
+        version:
+          type: string
+          description: New version after update
+        updated_at:
+          type: string
+          format: date-time
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+
+    RunAgentRequest:
+      type: object
+      required:
+        - input
+      properties:
+        input:
+          type: string
+          maxLength: 100000
+          description: User input
+        session_id:
+          type: string
+          description: Session ID for conversation continuity
+        config:
+          $ref: '#/components/schemas/RequestConfig'
+
+    RequestConfig:
+      type: object
+      properties:
+        timeout_ms:
+          type: integer
+          minimum: 1000
+          maximum: 300000
+          default: 30000
+          description: Request timeout in milliseconds
+        include_memory:
+          type: boolean
+          default: true
+          description: Include memory context
+        memory_retrieval_k:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 10
+          description: Number of memory items to retrieve
+        include_history:
+          type: boolean
+          default: true
+          description: Include conversation history
+        history_turns:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 10
+          description: Conversation turns to include
+        enforce_contracts:
+          type: boolean
+          default: true
+          description: Enforce output contracts
+
+    RunAgentResponse:
+      type: object
+      properties:
+        response:
+          type: string
+          description: Agent response
+        tool_calls:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolCall'
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+
+    ToolCall:
+      type: object
+      properties:
+        tool_name:
+          type: string
+        tool_id:
+          type: string
+        arguments:
+          type: object
+          additionalProperties: true
+        result:
+          type: object
+          additionalProperties: true
+        latency_ms:
+          type: integer
+
+    AgentStatus:
+      type: object
+      properties:
+        agent_name:
+          type: string
+        status:
+          type: string
+          enum: [draft, active, paused, archived]
+        version:
+          type: string
+        metrics:
+          $ref: '#/components/schemas/AgentMetrics'
+        active_sessions:
+          type: integer
+
+    PauseAgentRequest:
+      type: object
+      required:
+        - session_id
+      properties:
+        session_id:
+          type: string
+
+    PauseAgentResponse:
+      type: object
+      properties:
+        checkpoint_id:
+          type: string
+        paused_at:
+          type: string
+          format: date-time
+        state_summary:
+          type: object
+          properties:
+            current_step:
+              type: string
+            progress_percent:
+              type: number
+            tokens_used:
+              type: integer
+
+    ResumeAgentRequest:
+      type: object
+      required:
+        - session_id
+      properties:
+        session_id:
+          type: string
+        checkpoint_id:
+          type: string
+          description: Specific checkpoint to resume from
+
+    ResumeAgentResponse:
+      type: object
+      properties:
+        resumed_at:
+          type: string
+          format: date-time
+        checkpoint_id:
+          type: string
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+
+    # ─────────────────────────────────────────────────────────────────────
+    # Memory Schemas
+    # ─────────────────────────────────────────────────────────────────────
+
+    MemorySearchRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          maxLength: 1000
+          description: Search query
+        agent_name:
+          type: string
+          description: Scope to specific agent
+        session_id:
+          type: string
+          description: Scope to specific session
+        k:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+          description: Number of results
+        retrieval_method:
+          type: string
+          enum: [rag, llm, hybrid]
+          default: hybrid
+          description: Retrieval method
+
+    MemorySearchResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MemoryItem'
+        retrieval_method:
+          type: string
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+
+    MemoryItem:
+      type: object
+      properties:
+        item_id:
+          type: string
+        content:
+          type: string
+        score:
+          type: number
+          minimum: 0
+          maximum: 1
+        category:
+          type: string
+        source_resource_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    MemoryStoreRequest:
+      type: object
+      required:
+        - content
+        - agent_name
+      properties:
+        content:
+          type: string
+          maxLength: 50000
+          description: Content to store
+        agent_name:
+          type: string
+        session_id:
+          type: string
+        category:
+          type: string
+          description: Category classification
+        metadata:
+          type: object
+          additionalProperties: true
+
+    MemoryStoreResponse:
+      type: object
+      properties:
+        item_id:
+          type: string
+        resource_id:
+          type: string
+        extracted_items:
+          type: integer
+        categories_updated:
+          type: array
+          items:
+            type: string
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+
+    MemoryConsolidateRequest:
+      type: object
+      required:
+        - agent_name
+      properties:
+        agent_name:
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+          description: Categories to consolidate (all if empty)
+
+    MemoryConsolidateResponse:
+      type: object
+      properties:
+        categories_consolidated:
+          type: array
+          items:
+            type: string
+        items_processed:
+          type: integer
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+
+    # ─────────────────────────────────────────────────────────────────────
+    # Evolution Schemas
+    # ─────────────────────────────────────────────────────────────────────
+
+    TestCase:
+      type: object
+      required:
+        - input
+      properties:
+        input:
+          type: string
+          description: Test input
+        context:
+          type: object
+          additionalProperties: true
+        expected_output:
+          type: string
+        expected_output_contains:
+          type: array
+          items:
+            type: string
+        expected_output_not_contains:
+          type: array
+          items:
+            type: string
+        expected_score_min:
+          type: number
+          minimum: 0
+          maximum: 100
+        expected_score_max:
+          type: number
+          minimum: 0
+          maximum: 100
+        name:
+          type: string
+        category:
+          type: string
+        weight:
+          type: number
+          default: 1.0
+
+    EvaluateAgentRequest:
+      type: object
+      required:
+        - agent_name
+      properties:
+        agent_name:
+          type: string
+        test_cases:
+          type: array
+          items:
+            $ref: '#/components/schemas/TestCase'
+          description: Test cases (uses stored if empty)
+        config:
+          $ref: '#/components/schemas/EvaluationConfig'
+
+    EvaluationConfig:
+      type: object
+      properties:
+        dimensions:
+          type: array
+          items:
+            type: string
+          default: [accuracy, relevance, coherence, helpfulness, safety]
+        scoring_method:
+          type: string
+          enum: [llm, exact, fuzzy]
+          default: llm
+        passing_threshold:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 0.7
+        max_concurrent:
+          type: integer
+          minimum: 1
+          maximum: 20
+          default: 5
+        timeout_per_case_ms:
+          type: integer
+          minimum: 1000
+          maximum: 120000
+          default: 30000
+
+    EvaluateAgentResponse:
+      type: object
+      properties:
+        agent_name:
+          type: string
+        overall_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        passed_count:
+          type: integer
+        failed_count:
+          type: integer
+        total_count:
+          type: integer
+        dimension_scores:
+          type: array
+          items:
+            $ref: '#/components/schemas/DimensionScore'
+        test_results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TestResult'
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+
+    DimensionScore:
+      type: object
+      properties:
+        name:
+          type: string
+        score:
+          type: number
+          minimum: 0
+          maximum: 1
+        weight:
+          type: number
+        details:
+          type: string
+
+    TestResult:
+      type: object
+      properties:
+        test_case:
+          $ref: '#/components/schemas/TestCase'
+        passed:
+          type: boolean
+        score:
+          type: number
+        actual_output:
+          type: string
+        expected_match:
+          type: boolean
+        latency_ms:
+          type: integer
+        tokens_used:
+          type: integer
+        analysis:
+          type: string
+        failure_reason:
+          type: string
+
+    OptimizeAgentRequest:
+      type: object
+      required:
+        - agent_name
+      properties:
+        agent_name:
+          type: string
+        target:
+          type: string
+          enum: [overall, accuracy, speed, cost]
+          default: overall
+        config:
+          $ref: '#/components/schemas/OptimizationConfig'
+
+    OptimizationConfig:
+      type: object
+      properties:
+        iterations:
+          type: integer
+          minimum: 1
+          maximum: 20
+          default: 5
+        learning_rate:
+          type: number
+          minimum: 0.01
+          maximum: 1.0
+          default: 0.1
+        preserve_tone:
+          type: boolean
+          default: true
+        preserve_structure:
+          type: boolean
+          default: true
+        use_failure_feedback:
+          type: boolean
+          default: true
+        use_success_feedback:
+          type: boolean
+          default: true
+
+    OptimizeAgentResponse:
+      type: object
+      properties:
+        agent_name:
+          type: string
+        baseline_score:
+          type: number
+        new_score:
+          type: number
+        improvement_percent:
+          type: number
+        applied:
+          type: boolean
+        new_version:
+          type: string
+        reason:
+          type: string
+          description: Reason if not applied
+        changes:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptimizationChange'
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+
+    OptimizationChange:
+      type: object
+      properties:
+        change_type:
+          type: string
+          enum: [prompt, parameter, tool]
+        location:
+          type: string
+        description:
+          type: string
+        before:
+          type: string
+        after:
+          type: string
+        impact_score:
+          type: number
+
+    CompareVersionsRequest:
+      type: object
+      required:
+        - agent_name
+        - version_a
+        - version_b
+      properties:
+        agent_name:
+          type: string
+        version_a:
+          type: string
+        version_b:
+          type: string
+        test_cases:
+          type: array
+          items:
+            $ref: '#/components/schemas/TestCase'
+
+    CompareVersionsResponse:
+      type: object
+      properties:
+        agent_name:
+          type: string
+        version_a:
+          type: string
+        version_b:
+          type: string
+        score_a:
+          type: number
+        score_b:
+          type: number
+        winner:
+          type: string
+        difference:
+          type: number
+        evaluation_a:
+          $ref: '#/components/schemas/EvaluateAgentResponse'
+        evaluation_b:
+          $ref: '#/components/schemas/EvaluateAgentResponse'
+
+    RollbackAgentRequest:
+      type: object
+      required:
+        - agent_name
+        - target_version
+      properties:
+        agent_name:
+          type: string
+        target_version:
+          type: string
+
+    RollbackAgentResponse:
+      type: object
+      properties:
+        agent_name:
+          type: string
+        from_version:
+          type: string
+        to_version:
+          type: string
+        success:
+          type: boolean
+        error:
+          type: string
+
+    VersionInfo:
+      type: object
+      properties:
+        version_id:
+          type: string
+        agent_name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        created_by:
+          type: string
+        evaluation_score:
+          type: number
+        changes:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptimizationChange'
+        is_current:
+          type: boolean
+        is_production:
+          type: boolean
+
+    VersionHistoryResponse:
+      type: object
+      properties:
+        agent_name:
+          type: string
+        versions:
+          type: array
+          items:
+            $ref: '#/components/schemas/VersionInfo'
+        current_version:
+          type: string
+
+    # ─────────────────────────────────────────────────────────────────────
+    # System Schemas
+    # ─────────────────────────────────────────────────────────────────────
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        version:
+          type: string
+        subsystems:
+          type: object
+          additionalProperties:
+            type: string
+            enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Security
+# ─────────────────────────────────────────────────────────────────────────────
+
+security:
+  - BearerAuth: []

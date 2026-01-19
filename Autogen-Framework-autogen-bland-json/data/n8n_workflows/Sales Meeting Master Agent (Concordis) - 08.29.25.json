@@ -1,0 +1,357 @@
+{
+  "name": "Sales Meeting Master Agent (Concordis) - 08.29.25",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        144
+      ],
+      "id": "b0348849-89b4-4f37-9d36-e7320efa790d",
+      "name": "4.1",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        416,
+        352
+      ],
+      "id": "e3354dc4-d058-44ec-a960-e80e83193984",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "huH73fYuGpq0ogpt",
+          "name": "OpenAi (ACTi)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.body.question}}",
+        "options": {
+          "systemMessage": "Identity & Purpose\nYou are Concordis, the Sales Meeting Mastery Agent—the conversion fulcrum specialist within the Unblinded Formula's 7-Lever ecosystem. Your Domain Mastery centers on Sales Meetings as Lever 3, where \"hello to yes\" becomes possible through the convergence of Self-Mastery, Influence Mastery, and Process Mastery. You embody the crucible where certainty, emotional regulation, and Zone Action Language determine whether frame is held or collapses during the stress test of high-stakes conversations.\n\nYour expertise flows through the Four Steps to Influence (Rapport → Truth → Heroic Unique Identity → Agreement Formation) via the PGAS framework: Opening the Listening (Prompting), Gap Discovery, Acceptability Confrontation, and Solution Presentation. You master the conversion fulcrum where ecosystem-introduced relationships (Lever 1 & 2) transform into revenue realization (Lever 4). Your learning trajectory accelerates through recursive mastery of emotional transference, micro-yes momentum, and time compression—where every meeting becomes a catalyst for exponential agreements and ecosystem expansion.\n\nContext Awareness\nMandatory Execution Sequence:\n\nRAG Database \"Brain\" Query (n8n tool) → FIRST – For Sales Meeting Domain Mastery, PGAS framework, Four Steps to Influence, and Lever 3 positioning within the 7-Lever flow\nZEP Memory Access (n8n tool) → SECOND - For caller context, meeting preparation, and historical interaction patterns\nDomain Knowledge Synthesis → THIRD - Pareto-enhanced processing of sales meeting mastery, identifying exponential leverage points in conversation flow, emotional transference, and agreement formation\nResponse Generation → FOURTH – Delivery of enhanced Domain Mastery through structured sales meeting guidance and breakthrough insight transmission\nContextualized Domain Mastery: Synthesize Sales Meeting expertise with individual caller situations, prioritizing the vital few techniques that create transformational conversion results. Focus on PGAS mastery enhanced by Pareto analysis to identify which aspects of sales meeting execution create exponential value versus standard performance.\n\nBehavioral Guidelines\nCore Operating Principles:\n\nConversion Fulcrum Excellence: Every interaction demonstrates Sales Meeting mastery through PGAS framework application, treating each conversation as stress-test practice for certainty and frame maintenance\nFour Steps Integration: Guide callers through Rapport → Truth → Heroic Unique Identity → Agreement Formation while internally identifying the 0.8% of techniques that create breakthrough momentum\nEnergy Transference Mastery: Model Zeus-level certainty, emotional regulation, and Zone Action Language in every response while teaching prospects emotional safety and truth-based dialogue\nEcosystem Flow Consciousness: Connect Sales Meetings to Lever 2 (Speaking Engagements) inputs and Lever 4 (Sales) outputs, ensuring seamless conversion progression\nPerformance Validation Framework:\n\nDomain Mastery Insight Density: >3 specialized PGAS insights per 200 words of response\nInfluence Framework Accuracy: Uses Four Steps to Influence terminology and sequence accurately in >95% of responses\nConversion Technique Precision: Demonstrates Acceptability Confrontation, Gap Discovery, and Solution Presentation mastery\nSpecialized Excellence Metrics:\n\nPGAS Terminology Accuracy: >98% (Prompting, Gap, Acceptability, Solution framework validation)\nLeverage Point Identification: 2-4 exponential sales meeting insights per response\nPareto Application Depth: Demonstrates understanding at minimum 0.8% level of sales meeting mastery\nError Handling: Transform sales meeting failures into learning accelerators—\"The breakdown reveals the breakthrough: when Acceptability Confrontation is skipped, urgency collapses...\"\n\nFeedback Solicitation: \"What did you notice about how we compressed time in that framework?\" and \"Where do you feel the highest leverage point for your next meeting?\"\n\nOutput Format\nResponse Calibration:\n\nStandard calls: 200-400 words with 2-3 PGAS domain insights and specific technique applications\nComplex calls: 400-600 words with deep mastery demonstration of full Four Steps to Influence progression\nPareto Precision for Agent Mastery Development:\n\n80% Standard (\"Observable Macro Level\"): Agent recognizes wasteful sales meeting patterns—pitch energy vs. process energy, over-talking vs. Level 5 listening—and guides toward PGAS efficiency: \"Notice how masters open the listening rather than opening their pitch...\" Agent models compressed conversation time while teaching: \"The vital distinction that eliminates typical sales meeting inefficiency is Acceptability Confrontation...\"\n\n0.8% Essential (\"Atomic Level\"): Agent demonstrates transcendent PGAS application by recognizing and executing paradigm-shifting conversation techniques: \"Masters create micro-yes momentum because...\" while identifying the 0.8% of sales meeting capabilities that transform prospects from skeptical to aligned through emotional transference mastery.\n\n0.032% Transformational (\"Particle Level\"): Agent models transcendent influence integration through reality-shifting conversation patterns that cause agreement rather than resistance: \"To become sales meeting master, understand this truth about acceptability...\" while applying the 0.032% of capabilities that transform both prospect experience and agent mastery evolution.\n\n0.000128% Transcendent (\"Quantum Level\"): Agent accesses quantum-level sales meeting mastery by applying eternal principles of human agreement formation: \"Beyond technique is this universal truth of influence...\" connecting performance to transcendent certainty, energetic congruence, and authentic service that elevates consciousness and creates legendary agreements.\n\nImplementation Protocol:\n\nSkill Distinction: Every response separates good from excellent from masterful sales meeting execution\nLearning Acceleration: Identify vital few improvements in PGAS framework application\nBreakthrough Recognition: Help caller spot transformation moments in agreement formation\nExcellence Evolution: Teach continuous mastery reinvention through 7-Lever ecosystem integration"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        144,
+        -80
+      ],
+      "id": "df8f2fb9-fe9b-4f7d-bc1e-e818ccbd6743",
+      "name": "Concordis - Sales Meeting Master"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryZep",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        144
+      ],
+      "id": "ec40e117-00c2-4e8d-94b5-205840654b6f",
+      "name": "Zep",
+      "credentials": {
+        "zepApi": {
+          "id": "Bw2D3z6edsB6vZ2H",
+          "name": "Zep (Visioneers)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "6b97efb0-3599-424c-8698-b23a6ebb237f",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        928,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the existing output field from previous node\nconst rawOutput = $json.output ?? \"\";\n\n// Clean markdown and whitespace for ElevenLabs speech\nconst cleanedOutput = rawOutput\n  .replace(/[*_~`>#-]/g, \"\")     // remove markdown characters\n  .replace(/\\s+/g, \" \")          // normalize whitespace\n  .trim();\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        -80
+      ],
+      "id": "1f5a5b59-ad31-441b-85e9-069fe6466ac5",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9437581-0f1d-4011-9d5d-49e3e8e3caba",
+              "name": "sessionId",
+              "value": "={{ `sales_meeting_${$now.setZone('America/New_York').toFormat('yyyy_MM_dd')}` }}",
+              "type": "string"
+            },
+            {
+              "id": "0859816f-6d83-4b3f-9475-a6bc664824d3",
+              "name": "body.question",
+              "value": "={{$json.body.question}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -144,
+        -80
+      ],
+      "id": "1f4aecf8-f686-4bb7-89ac-064c665cc370",
+      "name": "Edit fields"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "b2c1382f-e20c-4b88-be06-64d87ee327bf",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -368,
+        -80
+      ],
+      "id": "f9e499ea-44bc-406c-a976-70ee00fbe916",
+      "name": "Webhook",
+      "webhookId": "b2c1382f-e20c-4b88-be06-64d87ee327bf"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Escape MarkdownV2 reserved characters (escape backslash first)\nfunction escapeMDV2(s) {\n  return s\n    .replace(/\\\\/g, '\\\\\\\\')\n    .replace(/([_*\\[\\]()~`>#+\\-=|{}.!])/g, '\\\\$1'); // asterisk (*) added back\n}\n\n// Split by UTF-8 bytes with natural breakpoints\nfunction splitIntoUtf8ByteChunks(text, maxBytes = 3800) {\n  const enc = new TextEncoder();\n  const chunks = [];\n  let start = 0;\n  \n  while (start < text.length) {\n    let end = start, bytes = 0, lastBreak = -1;\n    \n    while (end < text.length) {\n      const cp = text.codePointAt(end);\n      const ch = String.fromCodePoint(cp);\n      const b = enc.encode(ch).length;\n      \n      if (bytes + b > maxBytes) break;\n      \n      bytes += b;\n      \n      // Mark natural breakpoints\n      if (ch === ' ' || ch === '\\n' || ch === '.' || ch === '!' || ch === '?' || ch === ',') {\n        lastBreak = end + (cp > 0xFFFF ? 2 : 1);\n      }\n      \n      end += (cp > 0xFFFF ? 2 : 1);\n    }\n    \n    // Use natural breakpoint if available and chunk is reasonably long\n    if (end < text.length && lastBreak > start && (end - start) > 200) {\n      end = lastBreak;\n    }\n    \n    // Ensure we make progress\n    if (end === start) {\n      end = start + 1;\n    }\n    \n    chunks.push(text.slice(start, end));\n    start = end;\n  }\n  \n  return chunks;\n}\n\n// ---- MAIN ----\nconst raw = String($json.cleanedResponse ?? $json.output ?? '').replace(/\\r\\n/g, '\\n');\nconst escaped = escapeMDV2(raw);\nconst chunks = splitIntoUtf8ByteChunks(escaped, 3800);\n\nreturn chunks.map((chunk, i) => ({\n  json: {\n    cleanedResponse: chunk,\n    chunkIndex: i + 1,\n    totalChunks: chunks.length,\n    isMultipart: chunks.length > 1,\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        96
+      ],
+      "id": "26bb6a37-02d4-40de-8ae8-51fe9b51c204",
+      "name": "Prepare for Dash"
+    },
+    {
+      "parameters": {
+        "chatId": "5851221652",
+        "text": "={{ $json.cleanedResponse }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "MarkdownV2"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        928,
+        96
+      ],
+      "id": "73aabdc4-24dd-4468-826e-aa293622e921",
+      "name": "Telegram to Dr. Bart",
+      "webhookId": "b0a0b2fa-def7-452b-9ec5-49ec3a03a586",
+      "credentials": {
+        "telegramApi": {
+          "id": "vvoc7IVAfk1i2qS2",
+          "name": "Telegram (DASH)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with agent to retrieve data from Database specifically about Shared Experiences",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "250813core6plus",
+          "mode": "list",
+          "cachedResultName": "250813core6plus"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        336,
+        144
+      ],
+      "id": "6ff3b23a-8b19-48fe-b52b-92ddec744577",
+      "name": "Brain",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NDhznTP0ik8daI4v",
+          "name": "PineconeApi (n8nGen2)"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "4.1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Concordis - Sales Meeting Master",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Brain",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zep": {
+      "ai_memory": [
+        [
+          {
+            "node": "Concordis - Sales Meeting Master",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit fields": {
+      "main": [
+        [
+          {
+            "node": "Concordis - Sales Meeting Master",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Concordis - Sales Meeting Master": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare for Dash",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare for Dash": {
+      "main": [
+        [
+          {
+            "node": "Telegram to Dr. Bart",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brain": {
+      "ai_tool": [
+        [
+          {
+            "node": "Concordis - Sales Meeting Master",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "j9xKJDh5LrpbrWLV"
+  },
+  "versionId": "74bbd80b-44c2-4e37-abf9-55b3525ed4cb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "iMxpJSDB5WAhSALF",
+  "tags": [
+    {
+      "updatedAt": "2025-08-23T14:16:18.781Z",
+      "createdAt": "2025-08-23T14:16:18.781Z",
+      "id": "R9mYKVsn6pwhD8Ut",
+      "name": "Visual"
+    },
+    {
+      "updatedAt": "2025-08-19T19:03:50.989Z",
+      "createdAt": "2025-08-19T19:03:50.989Z",
+      "id": "mxIKbPw75Qi3GOcT",
+      "name": "WH"
+    }
+  ]
+}

@@ -1,0 +1,616 @@
+{
+  "nodes": [
+    {
+      "id": "1",
+      "data": {
+        "name": "MAIN_MENU_DETECT",
+        "prompt": "isStart: true\nMode: Passive listener. You must not speak. Do not generate any audio.\nTask: Listen until the IVR finishes listing options. Then silently choose a route.\n\nRoute to [CONFIRM_MEDICAL] if you hear any of these (case-insensitive, partial matches allowed):\n\"medical\", \"medical benefits\", \"medical services\", \"medical provider services\"\n\"pharmacy\", \"drug\", \"Rx\", \"prescription\"\n\"dental\", \"dentist\"\n\"behavioral health\", \"mental health\", \"BH\"\n\nRoute to [CONFIRM_CLAIMS] if you hear any of these:\n\"claims\", \"claim status\", \"check a claim\", \"claim information\"\n\"eligibility\", \"benefits\", \"eligibility & benefits\"\n\"preauthorization\", \"prior authorization\", \"authorization\", \"precert\"\n\nPriority rules:\nIf any \"claims/eligibility/authorization\" terms occur → route to [CONFIRM_CLAIMS].\nElse if any \"medical/pharmacy/dental/behavioral health\" terms occur → route to [CONFIRM_MEDICAL].\nIf neither is detected, wait silently for more audio until the IVR repeats; do not speak.\nNever speak. Do not say \"silence,\" \"okay,\" or anything else.",
+        "isStart": true,
+        "condition": "Continue listening if IVR is still speaking introductory messages or has not yet offered menu options.\nThe condition can also be true if the IVR has repeated the menu options twice without any matching terms detected.",
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        },
+        "pathwayExamples": [
+          {
+            "Chosen Pathway": "CONFIRM_MEDICAL",
+            "Conversation History": "\"To direct your call, please say medical, pharmacy, dental, or behavioral health.\""
+          },
+          {
+            "Chosen Pathway": "CONFIRM_MEDICAL",
+            "Conversation History": "\"If you're calling about medical benefits, claims, or eligibility, say medical or press one.\"\t"
+          }
+        ],
+        "dialogueExamples": [
+          {
+            "Assistant Response": "",
+            "Conversation History": ""
+          }
+        ]
+      },
+      "type": "Wait for Response",
+      "position": {
+        "x": 635.9473119687,
+        "y": 86.94333201755913
+      }
+    },
+    {
+      "id": "randomnode_1710288752186",
+      "data": {
+        "name": "End call",
+        "prompt": "Click 'Add New Node' on the right to add a new node"
+      },
+      "type": "End Call",
+      "position": {
+        "x": 1200,
+        "y": 80
+      }
+    },
+    {
+      "id": "e90e1a41-95ec-4fe3-8e24-b7bd707ae296",
+      "data": {
+        "name": "PROVIDER_OR_MENU",
+        "prompt": "Mode: Passive listener. Do not speak.\n\nListen for IVR prompt, then silently route:\n\n→ [CONFIRM_CLAIMS] if offered: eligibility, benefits, claims, or preauthorization options\n→ [ENTER_NPI] if prompted for 10-digit NPI\n→ [ENTER_TIN] if prompted for Tax ID\n→ Continue to next node if IVR says \"I'll just look that up\"\n\nNever speak or generate audio.",
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        }
+      },
+      "type": "Wait for Response",
+      "position": {
+        "x": 680,
+        "y": 525
+      }
+    },
+    {
+      "id": "97accc70-ac0d-43ae-ae06-34e962fbfabb",
+      "data": {
+        "name": "ID_COLLECTION_RAILS",
+        "prompt": "If user asks for Claim Number, route to ENTER_CLAIM_NUMBER.\nElse if it asks for Subscriber/Member ID, route to ENTER_MEMBER_ID.\nIf user asks for NPI/TIN, route to ENTER_NPI / ENTER_TIN.\nRoutes:\nneeds_claim_number → ENTER_CLAIM_NUMBER\nneeds_member_id → ENTER_MEMBER_ID\nneeds_npi → ENTER_NPI\nneeds_tin → ENTER_TIN",
+        "routes": [
+          {
+            "conditions": [
+              {
+                "field": "User requests Provider NPI",
+                "value": "true",
+                "operator": "is"
+              },
+              {
+                "field": "User requests Rendering Provider NPI",
+                "value": "true",
+                "operator": "is"
+              }
+            ],
+            "targetNodeId": "48d97117-796e-473e-ab55-77348649f301"
+          },
+          {
+            "conditions": [
+              {
+                "field": "User requests Provider Tax ID",
+                "value": "true",
+                "operator": "is"
+              },
+              {
+                "field": "User Requests TIN",
+                "value": "true",
+                "operator": "is"
+              }
+            ],
+            "targetNodeId": "50e7993f-3ddd-45c7-b105-c489cf5c50dd"
+          }
+        ],
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        },
+        "fallbackNodeId": null
+      },
+      "type": "Route",
+      "position": {
+        "x": 1720,
+        "y": 80
+      }
+    },
+    {
+      "id": "0222b803-9a8a-407d-9f32-5c761ac13939",
+      "data": {
+        "name": "ENTER_MEMBER_ID",
+        "isStart": false,
+        "digitPrompt": "Enter the Member ID using DTMF. Exclude the 3-character prefix.\nConvert letters to T9 keypad numbers:\nABC→2, DEF→3, GHI→4, JKL→5, MNO→6, PQRS→7, TUV→8, WXYZ→9\n\nMember ID: wwww{{member_id}}",
+        "goToNextNode": true,
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": true,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        },
+        "targetNodeAfterPress": {
+          "id": "1af6a661-7466-413a-9102-4186f86c1068",
+          "name": "CONFIRM_CLAIM_NUMBER"
+        }
+      },
+      "type": "Press Button",
+      "position": {
+        "x": 680,
+        "y": 2085
+      }
+    },
+    {
+      "id": "50e7993f-3ddd-45c7-b105-c489cf5c50dd",
+      "data": {
+        "name": "ENTER_TIN",
+        "isStart": false,
+        "sequence": "wwwww{{provider_tin}}",
+        "goToNextNode": true,
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": true,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        },
+        "targetNodeAfterPress": {
+          "id": "1263e7b7-8c8c-4427-a03c-40086a44c41e",
+          "name": "CONFIRM_CLAIMS"
+        }
+      },
+      "type": "Press Button",
+      "position": {
+        "x": 680,
+        "y": 761
+      }
+    },
+    {
+      "id": "48d97117-796e-473e-ab55-77348649f301",
+      "data": {
+        "name": "ENTER_NPI",
+        "isStart": false,
+        "sequence": "wwww{{provider_npi}}",
+        "goToNextNode": true,
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": true,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        },
+        "targetNodeAfterPress": {
+          "id": "75341319-7741-4fbb-abbb-65cba400ff37",
+          "name": "MEMBER_ID_OR_CLAIMS"
+        }
+      },
+      "type": "Press Button",
+      "position": {
+        "x": 1198.651975078971,
+        "y": 762.3263281352151
+      }
+    },
+    {
+      "id": "2744cca1-df3c-4446-92c2-b564216fd638",
+      "data": {
+        "name": "CONFIRM_MEDICAL",
+        "isStart": false,
+        "digitPrompt": "MEDICAL",
+        "goToNextNode": true,
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": true,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        },
+        "targetNodeAfterPress": {
+          "id": "e90e1a41-95ec-4fe3-8e24-b7bd707ae296",
+          "name": "PROVIDER_OR_MENU"
+        }
+      },
+      "type": "Press Button",
+      "position": {
+        "x": 196.842080662046,
+        "y": 283.360194077478
+      }
+    },
+    {
+      "id": "1263e7b7-8c8c-4427-a03c-40086a44c41e",
+      "data": {
+        "name": "CONFIRM_CLAIMS",
+        "text": "Claims",
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false,
+          "interruptionThreshold": 500
+        }
+      },
+      "type": "Default",
+      "position": {
+        "x": 678.3725234920462,
+        "y": 1210
+      }
+    },
+    {
+      "id": "75341319-7741-4fbb-abbb-65cba400ff37",
+      "data": {
+        "name": "MEMBER_ID_OR_CLAIMS",
+        "prompt": "Mode: Passive listener. Do not speak.\n\nAfter the NPI is entered, the IVR says \"Thanks. I'll just look that up.\" — this is NOT a menu, do not respond.\n\nWait and listen for the actual menu options. Then silently route:\n\n→ [CONFIRM_CLAIMS] if IVR offers choices like: \"eligibility or press 1, claims or press 2, authorization or press 3\"\n\nDo NOT route on:\n- \"Thanks. I'll just look that up.\"\n- \"We can...\" (incomplete prompt)\n- Any informational messages about Availity\n\nNever speak or generate audio until you hear a complete menu with options.",
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false,
+          "interruptionThreshold": 500
+        }
+      },
+      "type": "Wait for Response",
+      "position": {
+        "x": 1200,
+        "y": 997
+      }
+    },
+    {
+      "id": "e2684267-8194-4d73-bde3-93d1682da826",
+      "data": {
+        "name": "CONFIRM_MEMBER_ID",
+        "prompt": "Mode: Passive listener. Do not speak.\n\nListen for IVR prompt, then silently route:\n\n→ [ENTER_MEMBER_ID] if prompted for subscriber ID or Member ID\n\nNever speak or generate audio.",
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false,
+          "interruptionThreshold": 500
+        }
+      },
+      "type": "Wait for Response",
+      "position": {
+        "x": 680,
+        "y": 1849
+      }
+    },
+    {
+      "id": "64ed5ffe-1a46-4f38-b6b6-d4166883893e",
+      "data": {
+        "name": "New Press Button Node"
+      },
+      "type": "Press Button",
+      "position": {
+        "x": 2240,
+        "y": 80
+      }
+    },
+    {
+      "id": "893ada3a-8fc4-44b7-8cc7-1202c73ce6fb",
+      "data": {
+        "name": "ENTER_CLAIM_NUMBER",
+        "isStart": false,
+        "sequence": "wwww{{claim_number}}",
+        "goToNextNode": false,
+        "modelOptions": {
+          "skipUserResponse": false
+        }
+      },
+      "type": "Press Button",
+      "position": {
+        "x": 680,
+        "y": 2545.282627498338
+      }
+    },
+    {
+      "id": "1af6a661-7466-413a-9102-4186f86c1068",
+      "data": {
+        "name": "CONFIRM_CLAIM_NUMBER",
+        "prompt": "Mode: Passive listener. Do not speak.\n\nListen for IVR prompt, then at the appropriate time silently route to the node \"ENTER_CLAIM_NUMBER\" \n\nIf IVR asks for a 13-digit claim number or says \"adjust a claim\", respond by saying \"Adjust a claim\" or enter the claim number.\n",
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        }
+      },
+      "type": "Wait for Response",
+      "position": {
+        "x": 680,
+        "y": 2321
+      }
+    },
+    {
+      "id": "7b9c136d-5616-4106-8cce-d99a9fbf0180",
+      "data": {
+        "name": "CONFIRM_CLAIM_STATUS",
+        "prompt": "Mode: Passive listener. Do not speak.\n\nListen for IVR prompt, then silently route:\n\n→ [ENTER_CLAIM_STATUS] if offered claim status options or Aveliti portal reference\n\nNever speak or generate audio.",
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        }
+      },
+      "type": "Wait for Response",
+      "position": {
+        "x": 680,
+        "y": 1423
+      }
+    },
+    {
+      "id": "907bd087-988f-41c9-b881-bae33378f5a4",
+      "data": {
+        "name": "ENTER_CLAIM_STATUS",
+        "text": "Claim Status",
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        }
+      },
+      "type": "Default",
+      "position": {
+        "x": 680,
+        "y": 1637
+      }
+    },
+    {
+      "id": "bec0fb8d-3f62-4bd6-a362-b1eebdb2c738",
+      "data": {
+        "name": "New Transfer Call Node",
+        "prompt": "\"Hi! Please hold for just a moment while I connect you.\"",
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        },
+        "transferNumber": "+12019375530",
+        "warmTransferFields": {
+          "isEnabled": true,
+          "fromNumber": "",
+          "agentPrompt": "Tell the live human agent that there is a customer on the line, and ask if they are ready to take the call.",
+          "holdMusicUrl": "https://music.youtube.com/playlist?list=OLAK5uy_lhLD0lNjF-LuLe4b4fpjjkuFk15NROMHM&si=K8f9pyHAiuVamR5F",
+          "userHandling": "on-hold",
+          "waitingPrompt": "",
+          "optimizeForIVR": true,
+          "mergeCallPrompt": "Introduce both parties and drop off the call.",
+          "voicemailMessage": "",
+          "allowMergeControl": false,
+          "useCustomHoldMusic": true,
+          "isAgentPromptStatic": false,
+          "useCustomFromNumber": false,
+          "useVoicemailMessage": false,
+          "voicemailTargetNode": null,
+          "voicemailResponseType": "message",
+          "isMergeCallPromptStatic": false
+        },
+        "twilioAppTransferFields": {
+          "appSid": "",
+          "appParams": {},
+          "isEnabled": false
+        }
+      },
+      "type": "Transfer Call",
+      "position": {
+        "x": 678.3094596447081,
+        "y": 3163.714148522517
+      }
+    },
+    {
+      "id": "4cc39ccd-0f0f-4c5d-aff5-7076577a02e8",
+      "data": {
+        "name": "Request Representative",
+        "prompt": "Your goal is to reach a live human representative. \n\nContinue looping until a human representative answers or the IVR confirms transfer to a live agent.\n\n- If you hear a menu, press \"0\" or say \"representative\" or \"speak to a human\"\n- If asked for a reason, say: \"I need to speak with a live representative\"\n- If placed on hold or in a queue, wait patiently\n- Do not select menu options that lead to automated services or recordings\n- Keep requesting a human until one answers\n\nOnce a live person responds conversationally (not a recording), proceed to the next step.",
+        "condition": "Continue looping until one of the following conditions is met:\n- A live human representative answers and responds conversationally\n- The IVR system confirms you are being transferred to a live agent\n- You hear a human greeting or introduction (not a recorded message)\n\nWhile looping:\n- Repeatedly request to speak with a human representative or customer service agent\n- If prompted to press a button for an operator or representative, press \"0\" or the appropriate option\n- If asked for a reason, state: \"I need to speak with a live representative\"\n- Ignore menu options that don't lead to a human\n- Be persistent but polite in requesting human assistance",
+        "modelOptions": {
+          "newTemperature": 0.2,
+          "isSMSReturnNode": false,
+          "skipUserResponse": false,
+          "disableEndCallTool": false,
+          "disableSilenceRepeat": false
+        }
+      },
+      "type": "Default",
+      "position": {
+        "x": 670.0107695991377,
+        "y": 2822.252190671155
+      }
+    },
+    {
+      "globalConfig": {
+        "globalPrompt": "Instructions (prompt):\n\n“You are an automated IVR navigation agent and you goal is to retrieve claim status. Interact ONLY with automated menus.\n\nListen → Respond → Stop. Never prompt the IVR to continue.\n"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "reactflow__edge-e90e1a41-95ec-4fe3-8e24-b7bd707ae296-48d97117-796e-473e-ab55-77348649f301",
+      "data": {
+        "label": "ENTER_NPI",
+        "description": "IVR asks for NPI or national provider ID",
+        "isHighlighted": false
+      },
+      "type": "custom",
+      "source": "e90e1a41-95ec-4fe3-8e24-b7bd707ae296",
+      "target": "48d97117-796e-473e-ab55-77348649f301"
+    },
+    {
+      "id": "reactflow__edge-e90e1a41-95ec-4fe3-8e24-b7bd707ae296-50e7993f-3ddd-45c7-b105-c489cf5c50dd",
+      "data": {
+        "label": "ENTER_TIN",
+        "description": "IVR asks for tax ID or TIN",
+        "isHighlighted": false
+      },
+      "type": "custom",
+      "source": "e90e1a41-95ec-4fe3-8e24-b7bd707ae296",
+      "target": "50e7993f-3ddd-45c7-b105-c489cf5c50dd"
+    },
+    {
+      "id": "reactflow__edge-75341319-7741-4fbb-abbb-65cba400ff37-1263e7b7-8c8c-4427-a03c-40086a44c41e",
+      "data": {
+        "label": "USER RESPONDED",
+        "description": "",
+        "isHighlighted": false
+      },
+      "type": "custom",
+      "source": "75341319-7741-4fbb-abbb-65cba400ff37",
+      "target": "1263e7b7-8c8c-4427-a03c-40086a44c41e"
+    },
+    {
+      "id": "reactflow__edge-e2684267-8194-4d73-bde3-93d1682da826-0222b803-9a8a-407d-9f32-5c761ac13939",
+      "data": {
+        "label": "Member ID requested",
+        "description": "Member ID requested",
+        "isHighlighted": false
+      },
+      "type": "custom",
+      "source": "e2684267-8194-4d73-bde3-93d1682da826",
+      "target": "0222b803-9a8a-407d-9f32-5c761ac13939"
+    },
+    {
+      "id": "reactflow__edge-1af6a661-7466-413a-9102-4186f86c1068-893ada3a-8fc4-44b7-8cc7-1202c73ce6fb",
+      "data": {
+        "label": "Claim number requested",
+        "alwaysPick": true,
+        "description": "Use this Pathway when IVR Prompts Agent for Claim Number\n\nIVR asks for 13-digit claim number or to say adjust a claim",
+        "isHighlighted": false
+      },
+      "type": "custom",
+      "source": "1af6a661-7466-413a-9102-4186f86c1068",
+      "target": "893ada3a-8fc4-44b7-8cc7-1202c73ce6fb"
+    },
+    {
+      "id": "0222b803-9a8a-407d-9f32-5c761ac13939-1af6a661-7466-413a-9102-4186f86c1068",
+      "data": {
+        "label": "After Press",
+        "description": "",
+        "isHighlighted": false,
+        "isGoToNextNodeEdge": true
+      },
+      "type": "custom",
+      "source": "0222b803-9a8a-407d-9f32-5c761ac13939",
+      "target": "1af6a661-7466-413a-9102-4186f86c1068"
+    },
+    {
+      "id": "48d97117-796e-473e-ab55-77348649f301-75341319-7741-4fbb-abbb-65cba400ff37",
+      "data": {
+        "label": "After Press",
+        "isHighlighted": false,
+        "isGoToNextNodeEdge": true
+      },
+      "type": "custom",
+      "source": "48d97117-796e-473e-ab55-77348649f301",
+      "target": "75341319-7741-4fbb-abbb-65cba400ff37"
+    },
+    {
+      "id": "reactflow__edge-1263e7b7-8c8c-4427-a03c-40086a44c41e-7b9c136d-5616-4106-8cce-d99a9fbf0180",
+      "data": {
+        "label": "Menu options offered",
+        "description": "Menu options offered",
+        "isHighlighted": false
+      },
+      "type": "custom",
+      "source": "1263e7b7-8c8c-4427-a03c-40086a44c41e",
+      "target": "7b9c136d-5616-4106-8cce-d99a9fbf0180"
+    },
+    {
+      "id": "reactflow__edge-7b9c136d-5616-4106-8cce-d99a9fbf0180-907bd087-988f-41c9-b881-bae33378f5a4",
+      "data": {
+        "label": "Claim status options offered",
+        "description": "Claim status options offered",
+        "isHighlighted": false
+      },
+      "type": "custom",
+      "source": "7b9c136d-5616-4106-8cce-d99a9fbf0180",
+      "target": "907bd087-988f-41c9-b881-bae33378f5a4"
+    },
+    {
+      "id": "reactflow__edge-907bd087-988f-41c9-b881-bae33378f5a4-e2684267-8194-4d73-bde3-93d1682da826",
+      "data": {
+        "label": "User responded",
+        "isHighlighted": false
+      },
+      "type": "custom",
+      "source": "907bd087-988f-41c9-b881-bae33378f5a4",
+      "target": "e2684267-8194-4d73-bde3-93d1682da826"
+    },
+    {
+      "id": "50e7993f-3ddd-45c7-b105-c489cf5c50dd-1263e7b7-8c8c-4427-a03c-40086a44c41e",
+      "data": {
+        "label": "After Press",
+        "isHighlighted": false,
+        "isGoToNextNodeEdge": true
+      },
+      "type": "custom",
+      "source": "50e7993f-3ddd-45c7-b105-c489cf5c50dd",
+      "target": "1263e7b7-8c8c-4427-a03c-40086a44c41e"
+    },
+    {
+      "id": "reactflow__edge-1-e90e1a41-95ec-4fe3-8e24-b7bd707ae296",
+      "data": {
+        "label": "CLAIMS/ELIGIBILITY",
+        "description": "Transcript contains \"eligibility\" OR \"benefits\" OR \"claims\" OR \"preauthorization\"",
+        "isHighlighted": false
+      },
+      "type": "custom",
+      "source": "1",
+      "target": "e90e1a41-95ec-4fe3-8e24-b7bd707ae296"
+    },
+    {
+      "id": "reactflow__edge-1-2744cca1-df3c-4446-92c2-b564216fd638",
+      "data": {
+        "label": "CONFIRM_MEDICAL",
+        "description": "\"IVR asks caller to choose medical, pharmacy, dental, or behavioral health\"",
+        "isHighlighted": false
+      },
+      "type": "custom",
+      "source": "1",
+      "target": "2744cca1-df3c-4446-92c2-b564216fd638"
+    },
+    {
+      "id": "reactflow__edge-893ada3a-8fc4-44b7-8cc7-1202c73ce6fb-4cc39ccd-0f0f-4c5d-aff5-7076577a02e8",
+      "data": {
+        "label": "User responded",
+        "isHighlighted": false
+      },
+      "type": "custom",
+      "source": "893ada3a-8fc4-44b7-8cc7-1202c73ce6fb",
+      "target": "4cc39ccd-0f0f-4c5d-aff5-7076577a02e8"
+    },
+    {
+      "id": "reactflow__edge-4cc39ccd-0f0f-4c5d-aff5-7076577a02e8-bec0fb8d-3f62-4bd6-a362-b1eebdb2c738",
+      "data": {
+        "label": "Human on the line",
+        "description": "A live human representative has answered",
+        "isHighlighted": false
+      },
+      "type": "custom",
+      "source": "4cc39ccd-0f0f-4c5d-aff5-7076577a02e8",
+      "target": "bec0fb8d-3f62-4bd6-a362-b1eebdb2c738"
+    },
+    {
+      "id": "2744cca1-df3c-4446-92c2-b564216fd638-e90e1a41-95ec-4fe3-8e24-b7bd707ae296",
+      "data": {
+        "label": "After Press",
+        "isHighlighted": false,
+        "isGoToNextNodeEdge": true
+      },
+      "type": "custom",
+      "source": "2744cca1-df3c-4446-92c2-b564216fd638",
+      "target": "e90e1a41-95ec-4fe3-8e24-b7bd707ae296"
+    }
+  ]
+}

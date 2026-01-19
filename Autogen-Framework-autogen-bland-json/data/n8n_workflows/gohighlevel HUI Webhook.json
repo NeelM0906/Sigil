@@ -1,0 +1,277 @@
+{
+  "name": "gohighlevel HUI Webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "9e7c2330-faff-42b9-90d1-c810818c58a7",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -32,
+        80
+      ],
+      "id": "f58de55b-af94-4e1e-87ab-9bf72fb84b8c",
+      "name": "gohighlevel Webhook",
+      "webhookId": "9e7c2330-faff-42b9-90d1-c810818c58a7"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1hJZ9n0BQ4GtCMgFIV6Rs8ilGBjkBRVaC1Ne6WKRIKJI",
+          "mode": "list",
+          "cachedResultName": "Yes-Agent Trainer",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1hJZ9n0BQ4GtCMgFIV6Rs8ilGBjkBRVaC1Ne6WKRIKJI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 957245390,
+          "mode": "list",
+          "cachedResultName": "HUI Output (Arius)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1hJZ9n0BQ4GtCMgFIV6Rs8ilGBjkBRVaC1Ne6WKRIKJI/edit#gid=957245390"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Name",
+              "lookupValue": "={{ $json.body.referral_name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        80
+      ],
+      "id": "305e97b4-5045-4be4-8d04-ecd1daa7bc44",
+      "name": "HUI Grabber",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pGG9vHkc60ZLCVd8",
+          "name": "Nick - Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://services.leadconnectorhq.com/contacts/{{ $('gohighlevel Webhook').item.json.body.contact_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer pit-ffc7c845-c0af-4238-bde3-0561bee9a932"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Version",
+              "value": "2021-07-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "JSON",
+        "body": "={\n  \"id\": \"{{ $('gohighlevel Webhook').item.json.body.contact_id }}\",\n  \"customFields\": [\n    {\n      \"id\": \"8WYdtydRs9gnTUczC5gN\",\n      \"value\": \"{{ $node['HUI Assistant'].json }}\"\n    }\n  ]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -64,
+        -304
+      ],
+      "id": "ce662a62-399b-4dd8-b961-daa73d320152",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://services.leadconnectorhq.com/contacts/{{ $('gohighlevel Webhook').item.json.body.contact_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer pit-21e31efc-7dfd-402e-a758-b6f0753d78a8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Version",
+              "value": "2021-07-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "JSON",
+        "body": "={\n  \"customFields\": [\n    {\n      \"id\": \"8WYdtydRs9gnTUczC5gN\",\n   \"value\": \"{{ $json['HUI Assistant'] }}\"\n    }\n  ]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        160,
+        -336
+      ],
+      "id": "64ad15c6-bdd4-4414-8a3f-bc391935eb3a",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "contactId": "={{ $('gohighlevel Webhook').item.json.body.contact_id }}",
+        "updateFields": {
+          "customFields": {
+            "values": [
+              {
+                "fieldId": {
+                  "__rl": true,
+                  "value": "{{ contact.visioneerhui }}",
+                  "mode": "id"
+                },
+                "fieldValue": "={{ $json['HUI Assistant'] }}"
+              }
+            ]
+          }
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.highLevel",
+      "typeVersion": 2,
+      "position": [
+        512,
+        -304
+      ],
+      "id": "60f23faf-853c-4715-a5ef-dbc1d4415cc9",
+      "name": "HUI Uploader",
+      "credentials": {
+        "highLevelOAuth2Api": {
+          "id": "Nz3JgTjMvWsF4FZi",
+          "name": "SubAgency HighLevel Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://services.leadconnectorhq.com/contacts/{{ $('gohighlevel Webhook').item.json.body.contact_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer pit-21e31efc-7dfd-402e-a758-b6f0753d78a8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Version",
+              "value": "2021-07-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "JSON",
+        "body": "={\n  \"customFields\": [\n    {\n      \"id\": \"8WYdtydRs9gnTUczC5gN\",\n   \"value\": \"{{ $json['HUI Assistant'] }}\"\n    }\n  ]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        -304
+      ],
+      "id": "ad68380e-ff47-42f2-9e37-ac6aefcc9e1e",
+      "name": "Nick's HTTP Tester"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"hui_assistant\": $json[\"HUI Assistant\"] } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        464,
+        80
+      ],
+      "id": "7a358f04-3fa9-46dd-9bb8-03c6021c9ae3",
+      "name": "HUI Uploader1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "gohighlevel Webhook": {
+      "main": [
+        [
+          {
+            "node": "HUI Grabber",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HUI Grabber": {
+      "main": [
+        [
+          {
+            "node": "HUI Uploader1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        []
+      ]
+    },
+    "HUI Uploader": {
+      "main": [
+        []
+      ]
+    },
+    "Nick's HTTP Tester": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e90295f4-3864-48cd-b15c-a650fdf16ff1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0aed448db8bea3d866d9d07faa7651fc87999403a92df7fc5038094cffa1e1fe"
+  },
+  "id": "oFJcA8ncHPksZslz",
+  "tags": []
+}
