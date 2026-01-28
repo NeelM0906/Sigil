@@ -9,7 +9,7 @@ summary: "Community-built projects and integrations powered by Moltbot"
 Real projects from the community. See what people are building with Moltbot.
 
 <Info>
-**Want to be featured?** Share your project in [#showcase on Discord](https://discord.gg/clawd) or [tag @moltbot on X](https://x.com/moltbot).
+**Want to be featured?** Share your project in [#showcase on Discord](#community-coming-soon) or [tag @moltbot on X](https://x.com/moltbot).
 </Info>
 
 ## 🎥 Moltbot in Action
@@ -405,7 +405,7 @@ Have something to share? We'd love to feature it!
 
 <Steps>
   <Step title="Share It">
-    Post in [#showcase on Discord](https://discord.gg/clawd) or [tweet @moltbot](https://x.com/moltbot)
+    Post in [#showcase on Discord](#community-coming-soon) or [tweet @moltbot](https://x.com/moltbot)
   </Step>
   <Step title="Include Details">
     Tell us what it does, link to the repo/demo, share a screenshot if you have one
