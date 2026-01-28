@@ -1,35 +1,35 @@
-import type { MoltbotConfig, HumanDelayConfig, IdentityConfig } from "../config/config.js";
+import type { SigilConfig, HumanDelayConfig, IdentityConfig } from "../config/config.js";
 import { resolveAgentConfig } from "./agent-scope.js";
 
 const DEFAULT_ACK_REACTION = "👀";
 
 export function resolveAgentIdentity(
-  cfg: MoltbotConfig,
+  cfg: SigilConfig,
   agentId: string,
 ): IdentityConfig | undefined {
   return resolveAgentConfig(cfg, agentId)?.identity;
 }
 
-export function resolveAckReaction(cfg: MoltbotConfig, agentId: string): string {
+export function resolveAckReaction(cfg: SigilConfig, agentId: string): string {
   const configured = cfg.messages?.ackReaction;
   if (configured !== undefined) return configured.trim();
   const emoji = resolveAgentIdentity(cfg, agentId)?.emoji?.trim();
   return emoji || DEFAULT_ACK_REACTION;
 }
 
-export function resolveIdentityNamePrefix(cfg: MoltbotConfig, agentId: string): string | undefined {
+export function resolveIdentityNamePrefix(cfg: SigilConfig, agentId: string): string | undefined {
   const name = resolveAgentIdentity(cfg, agentId)?.name?.trim();
   if (!name) return undefined;
   return `[${name}]`;
 }
 
 /** Returns just the identity name (without brackets) for template context. */
-export function resolveIdentityName(cfg: MoltbotConfig, agentId: string): string | undefined {
+export function resolveIdentityName(cfg: SigilConfig, agentId: string): string | undefined {
   return resolveAgentIdentity(cfg, agentId)?.name?.trim() || undefined;
 }
 
 export function resolveMessagePrefix(
-  cfg: MoltbotConfig,
+  cfg: SigilConfig,
   agentId: string,
   opts?: { configured?: string; hasAllowFrom?: boolean; fallback?: string },
 ): string {
@@ -39,10 +39,10 @@ export function resolveMessagePrefix(
   const hasAllowFrom = opts?.hasAllowFrom === true;
   if (hasAllowFrom) return "";
 
-  return resolveIdentityNamePrefix(cfg, agentId) ?? opts?.fallback ?? "[moltbot]";
+  return resolveIdentityNamePrefix(cfg, agentId) ?? opts?.fallback ?? "[sigil]";
 }
 
-export function resolveResponsePrefix(cfg: MoltbotConfig, agentId: string): string | undefined {
+export function resolveResponsePrefix(cfg: SigilConfig, agentId: string): string | undefined {
   const configured = cfg.messages?.responsePrefix;
   if (configured !== undefined) {
     if (configured === "auto") {
@@ -54,7 +54,7 @@ export function resolveResponsePrefix(cfg: MoltbotConfig, agentId: string): stri
 }
 
 export function resolveEffectiveMessagesConfig(
-  cfg: MoltbotConfig,
+  cfg: SigilConfig,
   agentId: string,
   opts?: { hasAllowFrom?: boolean; fallbackMessagePrefix?: string },
 ): { messagePrefix: string; responsePrefix?: string } {
@@ -68,7 +68,7 @@ export function resolveEffectiveMessagesConfig(
 }
 
 export function resolveHumanDelayConfig(
-  cfg: MoltbotConfig,
+  cfg: SigilConfig,
   agentId: string,
 ): HumanDelayConfig | undefined {
   const defaults = cfg.agents?.defaults?.humanDelay;

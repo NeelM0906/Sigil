@@ -1,9 +1,9 @@
 {
-  "name": "@moltbot/signal",
+  "name": "@sigil/signal",
   "version": "2026.1.26",
   "type": "module",
-  "description": "Moltbot Signal channel plugin",
-  "moltbot": {
+  "description": "Sigil Signal channel plugin",
+  "sigil": {
     "extensions": [
       "./index.ts"
     ]

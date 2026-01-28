@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { MoltbotConfig } from "../config/config.js";
+import type { SigilConfig } from "../config/config.js";
 
 const mocks = vi.hoisted(() => ({
   clackIntro: vi.fn(),
@@ -30,7 +30,7 @@ vi.mock("@clack/prompts", () => ({
 }));
 
 vi.mock("../config/config.js", () => ({
-  CONFIG_PATH: "~/.clawdbot/moltbot.json",
+  CONFIG_PATH: "~/.sigil/sigil.json",
   readConfigFileSnapshot: mocks.readConfigFileSnapshot,
   writeConfigFile: mocks.writeConfigFile,
   resolveGatewayPort: mocks.resolveGatewayPort,
@@ -49,8 +49,8 @@ vi.mock("../terminal/note.js", () => ({
 }));
 
 vi.mock("./onboard-helpers.js", () => ({
-  DEFAULT_WORKSPACE: "~/.clawdbot/workspace",
-  applyWizardMetadata: (cfg: MoltbotConfig) => cfg,
+  DEFAULT_WORKSPACE: "~/.sigil/workspace",
+  applyWizardMetadata: (cfg: SigilConfig) => cfg,
   ensureWorkspaceAndSessions: vi.fn(),
   guardCancel: <T>(value: T) => value,
   printWizardHeader: mocks.printWizardHeader,

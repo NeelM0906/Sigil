@@ -9,7 +9,7 @@ read_when:
 The workspace is the agent's home. It is the only working directory used for
 file tools and for workspace context. Keep it private and treat it as memory.
 
-This is separate from `~/.clawdbot/`, which stores config, credentials, and
+This is separate from `~/.sigil/`, which stores config, credentials, and
 sessions.
 
 **Important:** the workspace is the **default cwd**, not a hard sandbox. Tools
@@ -17,24 +17,24 @@ resolve relative paths against the workspace, but absolute paths can still reach
 elsewhere on the host unless sandboxing is enabled. If you need isolation, use
 [`agents.defaults.sandbox`](/gateway/sandboxing) (and/or per‑agent sandbox config).
 When sandboxing is enabled and `workspaceAccess` is not `"rw"`, tools operate
-inside a sandbox workspace under `~/.clawdbot/sandboxes`, not your host workspace.
+inside a sandbox workspace under `~/.sigil/sandboxes`, not your host workspace.
 
 ## Default location
 
-- Default: `~/clawd`
-- If `CLAWDBOT_PROFILE` is set and not `"default"`, the default becomes
-  `~/clawd-<profile>`.
-- Override in `~/.clawdbot/moltbot.json`:
+- Default: `~/sigil`
+- If `SIGIL_PROFILE` is set and not `"default"`, the default becomes
+  `~/sigil-<profile>`.
+- Override in `~/.sigil/sigil.json`:
 
 ```json5
 {
   agent: {
-    workspace: "~/clawd"
+    workspace: "~/sigil"
   }
 }
 ```
 
-`moltbot onboard`, `moltbot configure`, or `moltbot setup` will create the
+`sigil onboard`, `sigil configure`, or `sigil setup` will create the
 workspace and seed the bootstrap files if they are missing.
 
 If you already manage the workspace files yourself, you can disable bootstrap
@@ -46,20 +46,20 @@ file creation:
 
 ## Extra workspace folders
 
-Older installs may have created `~/moltbot`. Keeping multiple workspace
+Older installs may have created `~/sigil`. Keeping multiple workspace
 directories around can cause confusing auth or state drift, because only one
 workspace is active at a time.
 
 **Recommendation:** keep a single active workspace. If you no longer use the
-extra folders, archive or move them to Trash (for example `trash ~/moltbot`).
+extra folders, archive or move them to Trash (for example `trash ~/sigil`).
 If you intentionally keep multiple workspaces, make sure
 `agents.defaults.workspace` points to the active one.
 
-`moltbot doctor` warns when it detects extra workspace directories.
+`sigil doctor` warns when it detects extra workspace directories.
 
 ## Workspace file map (what each file means)
 
-These are the standard files Moltbot expects inside the workspace:
+These are the standard files Sigil expects inside the workspace:
 
 - `AGENTS.md`
   - Operating instructions for the agent and how it should use memory.
@@ -112,20 +112,20 @@ See [Memory](/concepts/memory) for the workflow and automatic memory flush.
 - `canvas/` (optional)
   - Canvas UI files for node displays (for example `canvas/index.html`).
 
-If any bootstrap file is missing, Moltbot injects a "missing file" marker into
+If any bootstrap file is missing, Sigil injects a "missing file" marker into
 the session and continues. Large bootstrap files are truncated when injected;
 adjust the limit with `agents.defaults.bootstrapMaxChars` (default: 20000).
-`moltbot setup` can recreate missing defaults without overwriting existing
+`sigil setup` can recreate missing defaults without overwriting existing
 files.
 
 ## What is NOT in the workspace
 
-These live under `~/.clawdbot/` and should NOT be committed to the workspace repo:
+These live under `~/.sigil/` and should NOT be committed to the workspace repo:
 
-- `~/.clawdbot/moltbot.json` (config)
-- `~/.clawdbot/credentials/` (OAuth tokens, API keys)
-- `~/.clawdbot/agents/<agentId>/sessions/` (session transcripts + metadata)
-- `~/.clawdbot/skills/` (managed skills)
+- `~/.sigil/sigil.json` (config)
+- `~/.sigil/credentials/` (OAuth tokens, API keys)
+- `~/.sigil/agents/<agentId>/sessions/` (session transcripts + metadata)
+- `~/.sigil/skills/` (managed skills)
 
 If you need to migrate sessions or config, copy them separately and keep them
 out of version control.
@@ -144,7 +144,7 @@ If git is installed, brand-new workspaces are initialized automatically. If this
 workspace is not already a repo, run:
 
 ```bash
-cd ~/clawd
+cd ~/sigil
 git init
 git add AGENTS.md SOUL.md TOOLS.md IDENTITY.md USER.md HEARTBEAT.md memory/
 git commit -m "Add agent workspace"
@@ -199,11 +199,11 @@ git push
 Even in a private repo, avoid storing secrets in the workspace:
 
 - API keys, OAuth tokens, passwords, or private credentials.
-- Anything under `~/.clawdbot/`.
+- Anything under `~/.sigil/`.
 - Raw dumps of chats or sensitive attachments.
 
 If you must store sensitive references, use placeholders and keep the real
-secret elsewhere (password manager, environment variables, or `~/.clawdbot/`).
+secret elsewhere (password manager, environment variables, or `~/.sigil/`).
 
 Suggested `.gitignore` starter:
 
@@ -217,10 +217,10 @@ Suggested `.gitignore` starter:
 
 ## Moving the workspace to a new machine
 
-1. Clone the repo to the desired path (default `~/clawd`).
-2. Set `agents.defaults.workspace` to that path in `~/.clawdbot/moltbot.json`.
-3. Run `moltbot setup --workspace <path>` to seed any missing files.
-4. If you need sessions, copy `~/.clawdbot/agents/<agentId>/sessions/` from the
+1. Clone the repo to the desired path (default `~/sigil`).
+2. Set `agents.defaults.workspace` to that path in `~/.sigil/sigil.json`.
+3. Run `sigil setup --workspace <path>` to seed any missing files.
+4. If you need sessions, copy `~/.sigil/agents/<agentId>/sessions/` from the
    old machine separately.
 
 ## Advanced notes

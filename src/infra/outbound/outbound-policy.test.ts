@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { MoltbotConfig } from "../../config/config.js";
+import type { SigilConfig } from "../../config/config.js";
 import {
   applyCrossContextDecoration,
   buildCrossContextDecoration,
@@ -14,13 +14,13 @@ const slackConfig = {
       appToken: "xapp-test",
     },
   },
-} as MoltbotConfig;
+} as SigilConfig;
 
 const discordConfig = {
   channels: {
     discord: {},
   },
-} as MoltbotConfig;
+} as SigilConfig;
 
 describe("outbound policy", () => {
   it("blocks cross-provider sends by default", () => {
@@ -41,7 +41,7 @@ describe("outbound policy", () => {
       tools: {
         message: { crossContext: { allowAcrossProviders: true } },
       },
-    } as MoltbotConfig;
+    } as SigilConfig;
 
     expect(() =>
       enforceCrossContextPolicy({
@@ -58,7 +58,7 @@ describe("outbound policy", () => {
     const cfg = {
       ...slackConfig,
       tools: { message: { crossContext: { allowWithinProvider: false } } },
-    } as MoltbotConfig;
+    } as SigilConfig;
 
     expect(() =>
       enforceCrossContextPolicy({

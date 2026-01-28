@@ -1,17 +1,17 @@
-import MoltbotKit
+import SigilKit
 import Network
 import Testing
-@testable import Moltbot
+@testable import Sigil
 
 @Suite struct GatewayEndpointIDTests {
     @Test func stableIDForServiceDecodesAndNormalizesName() {
         let endpoint = NWEndpoint.service(
-            name: "Moltbot\\032Gateway   \\032  Node\n",
-            type: "_moltbot-gw._tcp",
+            name: "Sigil\\032Gateway   \\032  Node\n",
+            type: "_sigil-gw._tcp",
             domain: "local.",
             interface: nil)
 
-        #expect(GatewayEndpointID.stableID(endpoint) == "_moltbot-gw._tcp|local.|Moltbot Gateway Node")
+        #expect(GatewayEndpointID.stableID(endpoint) == "_sigil-gw._tcp|local.|Sigil Gateway Node")
     }
 
     @Test func stableIDForNonServiceUsesEndpointDescription() {
@@ -21,8 +21,8 @@ import Testing
 
     @Test func prettyDescriptionDecodesBonjourEscapes() {
         let endpoint = NWEndpoint.service(
-            name: "Moltbot\\032Gateway",
-            type: "_moltbot-gw._tcp",
+            name: "Sigil\\032Gateway",
+            type: "_sigil-gw._tcp",
             domain: "local.",
             interface: nil)
 

@@ -1,9 +1,9 @@
 {
-  "name": "@moltbot/copilot-proxy",
+  "name": "@sigil/copilot-proxy",
   "version": "2026.1.26",
   "type": "module",
-  "description": "Moltbot Copilot Proxy provider plugin",
-  "moltbot": {
+  "description": "Sigil Copilot Proxy provider plugin",
+  "sigil": {
     "extensions": [
       "./index.ts"
     ]

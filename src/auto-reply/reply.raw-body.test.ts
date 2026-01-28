@@ -24,10 +24,10 @@ async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise<T> {
     },
     {
       env: {
-        CLAWDBOT_AGENT_DIR: (home) => path.join(home, ".clawdbot", "agent"),
-        PI_CODING_AGENT_DIR: (home) => path.join(home, ".clawdbot", "agent"),
+        SIGIL_AGENT_DIR: (home) => path.join(home, ".sigil", "agent"),
+        PI_CODING_AGENT_DIR: (home) => path.join(home, ".sigil", "agent"),
       },
-      prefix: "moltbot-rawbody-",
+      prefix: "sigil-rawbody-",
     },
   );
 }
@@ -64,7 +64,7 @@ describe("RawBody directive parsing", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "clawd"),
+              workspace: path.join(home, "sigil"),
             },
           },
           channels: { whatsapp: { allowFrom: ["*"] } },
@@ -98,7 +98,7 @@ describe("RawBody directive parsing", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "clawd"),
+              workspace: path.join(home, "sigil"),
               models: {
                 "anthropic/claude-opus-4-5": {},
               },
@@ -135,7 +135,7 @@ describe("RawBody directive parsing", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "clawd"),
+              workspace: path.join(home, "sigil"),
             },
           },
           channels: { whatsapp: { allowFrom: ["*"] } },
@@ -173,7 +173,7 @@ describe("RawBody directive parsing", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "clawd"),
+              workspace: path.join(home, "sigil"),
             },
           },
           channels: { whatsapp: { allowFrom: ["+1222"] } },
@@ -221,7 +221,7 @@ describe("RawBody directive parsing", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "clawd"),
+              workspace: path.join(home, "sigil"),
             },
           },
           channels: { whatsapp: { allowFrom: ["*"] } },

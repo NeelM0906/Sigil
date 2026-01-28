@@ -1,5 +1,5 @@
 import { detectBinary } from "../../../commands/onboard-helpers.js";
-import type { MoltbotConfig } from "../../../config/config.js";
+import type { SigilConfig } from "../../../config/config.js";
 import type { DmPolicy } from "../../../config/types.js";
 import {
   listIMessageAccountIds,
@@ -15,7 +15,7 @@ import { addWildcardAllowFrom, promptAccountId } from "./helpers.js";
 
 const channel = "imessage" as const;
 
-function setIMessageDmPolicy(cfg: MoltbotConfig, dmPolicy: DmPolicy) {
+function setIMessageDmPolicy(cfg: SigilConfig, dmPolicy: DmPolicy) {
   const allowFrom =
     dmPolicy === "open" ? addWildcardAllowFrom(cfg.channels?.imessage?.allowFrom) : undefined;
   return {
@@ -32,10 +32,10 @@ function setIMessageDmPolicy(cfg: MoltbotConfig, dmPolicy: DmPolicy) {
 }
 
 function setIMessageAllowFrom(
-  cfg: MoltbotConfig,
+  cfg: SigilConfig,
   accountId: string,
   allowFrom: string[],
-): MoltbotConfig {
+): SigilConfig {
   if (accountId === DEFAULT_ACCOUNT_ID) {
     return {
       ...cfg,
@@ -74,10 +74,10 @@ function parseIMessageAllowFromInput(raw: string): string[] {
 }
 
 async function promptIMessageAllowFrom(params: {
-  cfg: MoltbotConfig;
+  cfg: SigilConfig;
   prompter: WizardPrompter;
   accountId?: string;
-}): Promise<MoltbotConfig> {
+}): Promise<SigilConfig> {
   const accountId =
     params.accountId && normalizeAccountId(params.accountId)
       ? (normalizeAccountId(params.accountId) ?? DEFAULT_ACCOUNT_ID)
@@ -240,7 +240,7 @@ export const imessageOnboardingAdapter: ChannelOnboardingAdapter = {
     await prompter.note(
       [
         "This is still a work in progress.",
-        "Ensure Moltbot has Full Disk Access to Messages DB.",
+        "Ensure Sigil has Full Disk Access to Messages DB.",
         "Grant Automation permission for Messages when prompted.",
         "List chats with: imsg chats --limit 20",
         `Docs: ${formatDocsLink("/imessage", "imessage")}`,

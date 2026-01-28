@@ -2,10 +2,10 @@ import WebSocket from "ws";
 
 import type {
   ChannelAccountSnapshot,
-  MoltbotConfig,
+  SigilConfig,
   ReplyPayload,
   RuntimeEnv,
-} from "clawdbot/plugin-sdk";
+} from "sigil/plugin-sdk";
 import {
   createReplyPrefixContext,
   createTypingCallbacks,
@@ -18,7 +18,7 @@ import {
   resolveControlCommandGate,
   resolveChannelMediaMaxBytes,
   type HistoryEntry,
-} from "clawdbot/plugin-sdk";
+} from "sigil/plugin-sdk";
 
 import { getMattermostRuntime } from "../runtime.js";
 import { resolveMattermostAccount } from "./accounts.js";
@@ -45,7 +45,7 @@ export type MonitorMattermostOpts = {
   botToken?: string;
   baseUrl?: string;
   accountId?: string;
-  config?: MoltbotConfig;
+  config?: SigilConfig;
   runtime?: RuntimeEnv;
   abortSignal?: AbortSignal;
   statusSink?: (patch: Partial<ChannelAccountSnapshot>) => void;

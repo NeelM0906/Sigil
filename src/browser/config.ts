@@ -1,4 +1,4 @@
-import type { BrowserConfig, BrowserProfileConfig, MoltbotConfig } from "../config/config.js";
+import type { BrowserConfig, BrowserProfileConfig, SigilConfig } from "../config/config.js";
 import {
   deriveDefaultBrowserCdpPortRange,
   deriveDefaultBrowserControlPort,
@@ -6,11 +6,11 @@ import {
 } from "../config/port-defaults.js";
 import { resolveGatewayPort } from "../config/paths.js";
 import {
-  DEFAULT_CLAWD_BROWSER_COLOR,
-  DEFAULT_CLAWD_BROWSER_ENABLED,
+  DEFAULT_SIGIL_BROWSER_COLOR,
+  DEFAULT_SIGIL_BROWSER_ENABLED,
   DEFAULT_BROWSER_EVALUATE_ENABLED,
   DEFAULT_BROWSER_DEFAULT_PROFILE_NAME,
-  DEFAULT_CLAWD_BROWSER_PROFILE_NAME,
+  DEFAULT_SIGIL_BROWSER_PROFILE_NAME,
 } from "./constants.js";
 import { CDP_PORT_RANGE_START, getUsedPorts } from "./profiles.js";
 
@@ -39,7 +39,7 @@ export type ResolvedBrowserProfile = {
   cdpHost: string;
   cdpIsLoopback: boolean;
   color: string;
-  driver: "clawd" | "extension";
+  driver: "sigil" | "extension";
 };
 
 function isLoopbackHost(host: string) {
@@ -57,9 +57,9 @@ function isLoopbackHost(host: string) {
 
 function normalizeHexColor(raw: string | undefined) {
   const value = (raw ?? "").trim();
-  if (!value) return DEFAULT_CLAWD_BROWSER_COLOR;
+  if (!value) return DEFAULT_SIGIL_BROWSER_COLOR;
   const normalized = value.startsWith("#") ? value : `#${value}`;
-  if (!/^#[0-9a-fA-F]{6}$/.test(normalized)) return DEFAULT_CLAWD_BROWSER_COLOR;
+  if (!/^#[0-9a-fA-F]{6}$/.test(normalized)) return DEFAULT_SIGIL_BROWSER_COLOR;
   return normalized.toUpperCase();
 }
 
@@ -94,7 +94,7 @@ export function parseHttpUrl(raw: string, label: string) {
 }
 
 /**
- * Ensure the default "clawd" profile exists in the profiles map.
+ * Ensure the default "sigil" profile exists in the profiles map.
  * Auto-creates it with the legacy CDP port (from browser.cdpUrl) or first port if missing.
  */
 function ensureDefaultProfile(
@@ -104,8 +104,8 @@ function ensureDefaultProfile(
   derivedDefaultCdpPort?: number,
 ): Record<string, BrowserProfileConfig> {
   const result = { ...profiles };
-  if (!result[DEFAULT_CLAWD_BROWSER_PROFILE_NAME]) {
-    result[DEFAULT_CLAWD_BROWSER_PROFILE_NAME] = {
+  if (!result[DEFAULT_SIGIL_BROWSER_PROFILE_NAME]) {
+    result[DEFAULT_SIGIL_BROWSER_PROFILE_NAME] = {
       cdpPort: legacyCdpPort ?? derivedDefaultCdpPort ?? CDP_PORT_RANGE_START,
       color: defaultColor,
     };
@@ -116,7 +116,7 @@ function ensureDefaultProfile(
 /**
  * Ensure a built-in "chrome" profile exists for the Chrome extension relay.
  *
- * Note: this is a Moltbot browser profile (routing config), not a Chrome user profile.
+ * Note: this is a Sigil browser profile (routing config), not a Chrome user profile.
  * It points at the local relay CDP endpoint (controlPort + 1).
  */
 function ensureDefaultChromeExtensionProfile(
@@ -139,9 +139,9 @@ function ensureDefaultChromeExtensionProfile(
 }
 export function resolveBrowserConfig(
   cfg: BrowserConfig | undefined,
-  rootConfig?: MoltbotConfig,
+  rootConfig?: SigilConfig,
 ): ResolvedBrowserConfig {
-  const enabled = cfg?.enabled ?? DEFAULT_CLAWD_BROWSER_ENABLED;
+  const enabled = cfg?.enabled ?? DEFAULT_SIGIL_BROWSER_ENABLED;
   const evaluateEnabled = cfg?.evaluateEnabled ?? DEFAULT_BROWSER_EVALUATE_ENABLED;
   const gatewayPort = resolveGatewayPort(rootConfig);
   const controlPort = deriveDefaultBrowserControlPort(gatewayPort ?? DEFAULT_BROWSER_CONTROL_PORT);
@@ -196,7 +196,7 @@ export function resolveBrowserConfig(
     defaultProfileFromConfig ??
     (profiles[DEFAULT_BROWSER_DEFAULT_PROFILE_NAME]
       ? DEFAULT_BROWSER_DEFAULT_PROFILE_NAME
-      : DEFAULT_CLAWD_BROWSER_PROFILE_NAME);
+      : DEFAULT_SIGIL_BROWSER_PROFILE_NAME);
 
   return {
     enabled,
@@ -232,7 +232,7 @@ export function resolveProfile(
   let cdpHost = resolved.cdpHost;
   let cdpPort = profile.cdpPort ?? 0;
   let cdpUrl = "";
-  const driver = profile.driver === "extension" ? "extension" : "clawd";
+  const driver = profile.driver === "extension" ? "extension" : "sigil";
 
   if (rawProfileUrl) {
     const parsed = parseHttpUrl(rawProfileUrl, `browser.profiles.${profileName}.cdpUrl`);

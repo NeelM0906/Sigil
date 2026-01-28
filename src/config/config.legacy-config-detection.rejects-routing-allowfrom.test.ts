@@ -198,7 +198,7 @@ describe("legacy config detection", () => {
         list: [
           {
             id: "work",
-            workspace: "~/clawd-work",
+            workspace: "~/sigil-work",
             tools: {
               elevated: {
                 enabled: false,

@@ -97,13 +97,13 @@ export function extractMSTeamsPollVote(
   const value = activity?.value;
   if (!value || !isRecord(value)) return null;
   const pollId =
-    readNestedString(value, ["moltbotPollId"]) ??
+    readNestedString(value, ["sigilPollId"]) ??
     readNestedString(value, ["pollId"]) ??
-    readNestedString(value, ["moltbot", "pollId"]) ??
-    readNestedString(value, ["moltbot", "poll", "id"]) ??
-    readNestedString(value, ["data", "moltbotPollId"]) ??
+    readNestedString(value, ["sigil", "pollId"]) ??
+    readNestedString(value, ["sigil", "poll", "id"]) ??
+    readNestedString(value, ["data", "sigilPollId"]) ??
     readNestedString(value, ["data", "pollId"]) ??
-    readNestedString(value, ["data", "moltbot", "pollId"]);
+    readNestedString(value, ["data", "sigil", "pollId"]);
   if (!pollId) return null;
 
   const directSelections = extractSelections(value.choices);
@@ -176,13 +176,13 @@ export function buildMSTeamsPollCard(params: {
         type: "Action.Submit",
         title: "Vote",
         data: {
-          moltbotPollId: pollId,
+          sigilPollId: pollId,
         },
         msteams: {
           type: "messageBack",
-          text: "moltbot poll vote",
+          text: "sigil poll vote",
           displayText: "Vote recorded",
-          value: { moltbotPollId: pollId },
+          value: { sigilPollId: pollId },
         },
       },
     ],

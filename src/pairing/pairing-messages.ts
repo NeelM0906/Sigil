@@ -8,13 +8,13 @@ export function buildPairingReply(params: {
 }): string {
   const { channel, idLine, code } = params;
   return [
-    "Moltbot: access not configured.",
+    "Sigil: access not configured.",
     "",
     idLine,
     "",
     `Pairing code: ${code}`,
     "",
     "Ask the bot owner to approve with:",
-    formatCliCommand(`moltbot pairing approve ${channel} <code>`),
+    formatCliCommand(`sigil pairing approve ${channel} <code>`),
   ].join("\n");
 }

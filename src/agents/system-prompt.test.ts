@@ -32,7 +32,7 @@ describe("buildAgentSystemPrompt", () => {
         "<available_skills>\n  <skill>\n    <name>demo</name>\n  </skill>\n</available_skills>",
       heartbeatPrompt: "ping",
       toolNames: ["message", "memory_search"],
-      docsPath: "/tmp/clawd/docs",
+      docsPath: "/tmp/sigil/docs",
       extraSystemPrompt: "Subagent details",
       ttsHint: "Voice (TTS) is enabled.",
     });
@@ -77,8 +77,8 @@ describe("buildAgentSystemPrompt", () => {
       workspaceDir: "/tmp/clawd",
     });
 
-    expect(prompt).toContain("## Moltbot CLI Quick Reference");
-    expect(prompt).toContain("moltbot gateway restart");
+    expect(prompt).toContain("## Sigil CLI Quick Reference");
+    expect(prompt).toContain("sigil gateway restart");
     expect(prompt).toContain("Do not invent commands");
   });
 
@@ -100,7 +100,7 @@ describe("buildAgentSystemPrompt", () => {
       toolNames: ["Read", "Exec", "process"],
       skillsPrompt:
         "<available_skills>\n  <skill>\n    <name>demo</name>\n  </skill>\n</available_skills>",
-      docsPath: "/tmp/clawd/docs",
+      docsPath: "/tmp/sigil/docs",
     });
 
     expect(prompt).toContain("- Read: Read file contents");
@@ -108,22 +108,22 @@ describe("buildAgentSystemPrompt", () => {
     expect(prompt).toContain(
       "- If exactly one skill clearly applies: read its SKILL.md at <location> with `Read`, then follow it.",
     );
-    expect(prompt).toContain("Moltbot docs: /tmp/clawd/docs");
+    expect(prompt).toContain("Sigil docs: /tmp/sigil/docs");
     expect(prompt).toContain(
-      "For Moltbot behavior, commands, config, or architecture: consult local docs first.",
+      "For Sigil behavior, commands, config, or architecture: consult local docs first.",
     );
   });
 
   it("includes docs guidance when docsPath is provided", () => {
     const prompt = buildAgentSystemPrompt({
       workspaceDir: "/tmp/clawd",
-      docsPath: "/tmp/clawd/docs",
+      docsPath: "/tmp/sigil/docs",
     });
 
     expect(prompt).toContain("## Documentation");
-    expect(prompt).toContain("Moltbot docs: /tmp/clawd/docs");
+    expect(prompt).toContain("Sigil docs: /tmp/sigil/docs");
     expect(prompt).toContain(
-      "For Moltbot behavior, commands, config, or architecture: consult local docs first.",
+      "For Sigil behavior, commands, config, or architecture: consult local docs first.",
     );
   });
 
@@ -191,7 +191,7 @@ describe("buildAgentSystemPrompt", () => {
       toolNames: ["gateway", "exec"],
     });
 
-    expect(prompt).toContain("## Moltbot Self-Update");
+    expect(prompt).toContain("## Sigil Self-Update");
     expect(prompt).toContain("config.apply");
     expect(prompt).toContain("update.run");
   });

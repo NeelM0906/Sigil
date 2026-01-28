@@ -1,4 +1,4 @@
-import type { MoltbotConfig } from "../config/config.js";
+import type { SigilConfig } from "../config/config.js";
 import {
   type AuthProfileCredential,
   type AuthProfileStore,
@@ -76,7 +76,7 @@ function buildProfileHealth(params: {
   profileId: string;
   credential: AuthProfileCredential;
   store: AuthProfileStore;
-  cfg?: MoltbotConfig;
+  cfg?: SigilConfig;
   now: number;
   warnAfterMs: number;
 }): AuthProfileHealth {
@@ -138,7 +138,7 @@ function buildProfileHealth(params: {
 
 export function buildAuthHealthSummary(params: {
   store: AuthProfileStore;
-  cfg?: MoltbotConfig;
+  cfg?: SigilConfig;
   warnAfterMs?: number;
   providers?: string[];
 }): AuthHealthSummary {

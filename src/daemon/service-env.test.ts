@@ -223,25 +223,25 @@ describe("buildServiceEnvironment", () => {
     } else {
       expect(env.PATH).toContain("/usr/bin");
     }
-    expect(env.CLAWDBOT_GATEWAY_PORT).toBe("18789");
-    expect(env.CLAWDBOT_GATEWAY_TOKEN).toBe("secret");
-    expect(env.CLAWDBOT_SERVICE_MARKER).toBe("moltbot");
-    expect(env.CLAWDBOT_SERVICE_KIND).toBe("gateway");
-    expect(typeof env.CLAWDBOT_SERVICE_VERSION).toBe("string");
-    expect(env.CLAWDBOT_SYSTEMD_UNIT).toBe("moltbot-gateway.service");
+    expect(env.SIGIL_GATEWAY_PORT).toBe("18789");
+    expect(env.SIGIL_GATEWAY_TOKEN).toBe("secret");
+    expect(env.SIGIL_SERVICE_MARKER).toBe("sigil");
+    expect(env.SIGIL_SERVICE_KIND).toBe("gateway");
+    expect(typeof env.SIGIL_SERVICE_VERSION).toBe("string");
+    expect(env.SIGIL_SYSTEMD_UNIT).toBe("sigil-gateway.service");
     if (process.platform === "darwin") {
-      expect(env.CLAWDBOT_LAUNCHD_LABEL).toBe("com.clawdbot.gateway");
+      expect(env.SIGIL_LAUNCHD_LABEL).toBe("com.sigil.gateway");
     }
   });
 
   it("uses profile-specific unit and label", () => {
     const env = buildServiceEnvironment({
-      env: { HOME: "/home/user", CLAWDBOT_PROFILE: "work" },
+      env: { HOME: "/home/user", SIGIL_PROFILE: "work" },
       port: 18789,
     });
-    expect(env.CLAWDBOT_SYSTEMD_UNIT).toBe("moltbot-gateway-work.service");
+    expect(env.SIGIL_SYSTEMD_UNIT).toBe("sigil-gateway-work.service");
     if (process.platform === "darwin") {
-      expect(env.CLAWDBOT_LAUNCHD_LABEL).toBe("com.clawdbot.work");
+      expect(env.SIGIL_LAUNCHD_LABEL).toBe("com.sigil.work");
     }
   });
 });

@@ -1,7 +1,7 @@
-# 🦞 Clawdbot — Personal AI Assistant
+# 🦞 Sigil — Personal AI Assistant
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/clawdbot/clawdbot/main/docs/whatsapp-clawd.jpg" alt="Clawdbot" width="400">
+  <img src="https://raw.githubusercontent.com/sigil/sigil/main/docs/whatsapp-clawd.jpg" alt="Sigil" width="400">
 </p>
 
 <p align="center">
@@ -9,21 +9,21 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/NeelM0906/Bomboclat/actions/workflows/ci.yml?branch=main"><img src="https://img.shields.io/github/actions/workflow/status/clawdbot/clawdbot/ci.yml?branch=main&style=for-the-badge" alt="CI status"></a>
-  <a href="https://github.com/NeelM0906/Bomboclat/releases"><img src="https://img.shields.io/github/v/release/clawdbot/clawdbot?include_prereleases&style=for-the-badge" alt="GitHub release"></a>
-  <a href="https://deepwiki.com/clawdbot/clawdbot"><img src="https://img.shields.io/badge/DeepWiki-clawdbot-111111?style=for-the-badge" alt="DeepWiki"></a>
+  <a href="https://github.com/NeelM0906/Bomboclat/actions/workflows/ci.yml?branch=main"><img src="https://img.shields.io/github/actions/workflow/status/sigil/sigil/ci.yml?branch=main&style=for-the-badge" alt="CI status"></a>
+  <a href="https://github.com/NeelM0906/Bomboclat/releases"><img src="https://img.shields.io/github/v/release/sigil/sigil?include_prereleases&style=for-the-badge" alt="GitHub release"></a>
+  <a href="https://deepwiki.com/sigil/sigil"><img src="https://img.shields.io/badge/DeepWiki-sigil-111111?style=for-the-badge" alt="DeepWiki"></a>
   <a href="#community-coming-soon"><img src="https://img.shields.io/discord/1456350064065904867?label=Discord&logo=discord&logoColor=white&color=5865F2&style=for-the-badge" alt="Discord"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="MIT License"></a>
 </p>
 
-**Clawdbot** is a *personal AI assistant* you run on your own devices.
+**Sigil** is a *personal AI assistant* you run on your own devices.
 It answers you on the channels you already use (WhatsApp, Telegram, Slack, Discord, Google Chat, Signal, iMessage, Microsoft Teams, WebChat), plus extension channels like BlueBubbles, Matrix, Zalo, and Zalo Personal. It can speak and listen on macOS/iOS/Android, and can render a live Canvas you control. The Gateway is just the control plane — the product is the assistant.
 
 If you want a personal, single-user assistant that feels local, fast, and always-on, this is it.
 
-[Website](https://your-domain.com) · [Docs](#docs-coming-soon) · [Getting Started](#docs-coming-soon) · [Updating](#docs-coming-soon) · [Showcase](#docs-coming-soon) · [FAQ](#docs-coming-soon) · [Wizard](#docs-coming-soon) · [Nix](https://github.com/clawdbot/nix-clawdbot) · [Docker](#docs-coming-soon) · [Discord](#community-coming-soon)
+[Website](https://your-domain.com) · [Docs](#docs-coming-soon) · [Getting Started](#docs-coming-soon) · [Updating](#docs-coming-soon) · [Showcase](#docs-coming-soon) · [FAQ](#docs-coming-soon) · [Wizard](#docs-coming-soon) · [Nix](https://github.com/sigil/nix-sigil) · [Docker](#docs-coming-soon) · [Discord](#community-coming-soon)
 
-Preferred setup: run the onboarding wizard (`clawdbot onboard`). It walks through gateway, workspace, channels, and skills. The CLI wizard is the recommended path and works on **macOS, Linux, and Windows (via WSL2; strongly recommended)**.
+Preferred setup: run the onboarding wizard (`sigil onboard`). It walks through gateway, workspace, channels, and skills. The CLI wizard is the recommended path and works on **macOS, Linux, and Windows (via WSL2; strongly recommended)**.
 Works with npm, pnpm, or bun.
 New install? Start here: [Getting started](#docs-coming-soon)
 
@@ -43,14 +43,14 @@ Model note: while any model is supported, I strongly recommend **Anthropic Pro/M
 Runtime: **Node ≥22**.
 
 ```bash
-npm install -g moltbot@latest
-# or: pnpm add -g moltbot@latest
+npm install -g sigil@latest
+# or: pnpm add -g sigil@latest
 
-moltbot onboard --install-daemon
+sigil onboard --install-daemon
 ```
 
 The wizard installs the Gateway daemon (launchd/systemd user service) so it stays running.
-Legacy note: `clawdbot` remains available as a compatibility shim.
+Legacy note: `sigil` remains available as a compatibility shim.
 
 ## Quick start (TL;DR)
 
@@ -59,18 +59,18 @@ Runtime: **Node ≥22**.
 Full beginner guide (auth, pairing, channels): [Getting started](#docs-coming-soon)
 
 ```bash
-moltbot onboard --install-daemon
+sigil onboard --install-daemon
 
-moltbot gateway --port 18789 --verbose
+sigil gateway --port 18789 --verbose
 
 # Send a message
-moltbot message send --to +1234567890 --message "Hello from Moltbot"
+sigil message send --to +1234567890 --message "Hello from Sigil"
 
 # Talk to the assistant (optionally deliver back to any connected channel: WhatsApp/Telegram/Slack/Discord/Google Chat/Signal/iMessage/BlueBubbles/Microsoft Teams/Matrix/Zalo/Zalo Personal/WebChat)
-moltbot agent --message "Ship checklist" --thinking high
+sigil agent --message "Ship checklist" --thinking high
 ```
 
-Upgrading? [Updating guide](#docs-coming-soon) (and run `moltbot doctor`).
+Upgrading? [Updating guide](#docs-coming-soon) (and run `sigil doctor`).
 
 ## Development channels
 
@@ -78,7 +78,7 @@ Upgrading? [Updating guide](#docs-coming-soon) (and run `moltbot doctor`).
 - **beta**: prerelease tags (`vYYYY.M.D-beta.N`), npm dist-tag `beta` (macOS app may be missing).
 - **dev**: moving head of `main`, npm dist-tag `dev` (when published).
 
-Switch channels (git + npm): `clawdbot update --channel stable|beta|dev`.
+Switch channels (git + npm): `sigil update --channel stable|beta|dev`.
 Details: [Development channels](#docs-coming-soon).
 
 ## From source (development)
@@ -87,32 +87,32 @@ Prefer `pnpm` for builds from source. Bun is optional for running TypeScript dir
 
 ```bash
 git clone https://github.com/NeelM0906/Bomboclat.git
-cd clawdbot
+cd sigil
 
 pnpm install
 pnpm ui:build # auto-installs UI deps on first run
 pnpm build
 
-pnpm moltbot onboard --install-daemon
+pnpm sigil onboard --install-daemon
 
 # Dev loop (auto-reload on TS changes)
 pnpm gateway:watch
 ```
 
-Note: `pnpm moltbot ...` runs TypeScript directly (via `tsx`). `pnpm build` produces `dist/` for running via Node / the packaged `moltbot` binary.
+Note: `pnpm sigil ...` runs TypeScript directly (via `tsx`). `pnpm build` produces `dist/` for running via Node / the packaged `sigil` binary.
 
 ## Security defaults (DM access)
 
-Clawdbot connects to real messaging surfaces. Treat inbound DMs as **untrusted input**.
+Sigil connects to real messaging surfaces. Treat inbound DMs as **untrusted input**.
 
 Full security guide: [Security](#docs-coming-soon)
 
 Default behavior on Telegram/WhatsApp/Signal/iMessage/Microsoft Teams/Discord/Google Chat/Slack:
 - **DM pairing** (`dmPolicy="pairing"` / `channels.discord.dm.policy="pairing"` / `channels.slack.dm.policy="pairing"`): unknown senders receive a short pairing code and the bot does not process their message.
-- Approve with: `clawdbot pairing approve <channel> <code>` (then the sender is added to a local allowlist store).
+- Approve with: `sigil pairing approve <channel> <code>` (then the sender is added to a local allowlist store).
 - Public inbound DMs require an explicit opt-in: set `dmPolicy="open"` and include `"*"` in the channel allowlist (`allowFrom` / `channels.discord.dm.allowFrom` / `channels.slack.dm.allowFrom`).
 
-Run `clawdbot doctor` to surface risky/misconfigured DM policies.
+Run `sigil doctor` to surface risky/misconfigured DM policies.
 
 ## Highlights
 
@@ -177,7 +177,7 @@ WhatsApp / Telegram / Slack / Discord / Google Chat / Signal / iMessage / BlueBu
 └──────────────┬────────────────┘
                │
                ├─ Pi agent (RPC)
-               ├─ CLI (clawdbot …)
+               ├─ CLI (sigil …)
                ├─ WebChat UI
                ├─ macOS app
                └─ iOS / Android nodes
@@ -194,14 +194,14 @@ WhatsApp / Telegram / Slack / Discord / Google Chat / Signal / iMessage / BlueBu
 
 ## Tailscale access (Gateway dashboard)
 
-Clawdbot can auto-configure Tailscale **Serve** (tailnet-only) or **Funnel** (public) while the Gateway stays bound to loopback. Configure `gateway.tailscale.mode`:
+Sigil can auto-configure Tailscale **Serve** (tailnet-only) or **Funnel** (public) while the Gateway stays bound to loopback. Configure `gateway.tailscale.mode`:
 
 - `off`: no Tailscale automation (default).
 - `serve`: tailnet-only HTTPS via `tailscale serve` (uses Tailscale identity headers by default).
 - `funnel`: public HTTPS via `tailscale funnel` (requires shared password auth).
 
 Notes:
-- `gateway.bind` must stay `loopback` when Serve/Funnel is enabled (Clawdbot enforces this).
+- `gateway.bind` must stay `loopback` when Serve/Funnel is enabled (Sigil enforces this).
 - Serve can be forced to require a password by setting `gateway.auth.mode: "password"` or `gateway.auth.allowTailscale: false`.
 - Funnel refuses to start unless `gateway.auth.mode: "password"` is set.
 - Optional: `gateway.tailscale.resetOnExit` to undo Serve/Funnel on shutdown.
@@ -267,7 +267,7 @@ The Gateway alone delivers a great experience. All apps are optional and add ext
 
 If you plan to build/run companion apps, follow the platform runbooks below.
 
-### macOS (Clawdbot.app) (optional)
+### macOS (Sigil.app) (optional)
 
 - Menu bar control for the Gateway and health.
 - Voice Wake + push-to-talk overlay.
@@ -280,7 +280,7 @@ Note: signed builds required for macOS permissions to stick across rebuilds (see
 
 - Pairs as a node via the Bridge.
 - Voice trigger forwarding + Canvas surface.
-- Controlled via `clawdbot nodes …`.
+- Controlled via `sigil nodes …`.
 
 Runbook: [iOS connect](#docs-coming-soon).
 
@@ -298,7 +298,7 @@ Runbook: [iOS connect](#docs-coming-soon).
 
 ## Configuration
 
-Minimal `~/.clawdbot/clawdbot.json` (model + defaults):
+Minimal `~/.sigil/sigil.json` (model + defaults):
 
 ```json5
 {
@@ -320,7 +320,7 @@ Details: [Security guide](#docs-coming-soon) · [Docker + sandboxing](#docs-comi
 
 ### [WhatsApp](#docs-coming-soon)
 
-- Link the device: `pnpm clawdbot channels login` (stores creds in `~/.clawdbot/credentials`).
+- Link the device: `pnpm sigil channels login` (stores creds in `~/.sigil/credentials`).
 - Allowlist who can talk to the assistant via `channels.whatsapp.allowFrom`.
 - If `channels.whatsapp.groups` is set, it becomes a group allowlist; include `"*"` to allow all.
 
@@ -456,7 +456,7 @@ Use these when you’re past the onboarding flow and want the deeper reference.
 
 ## Clawd
 
-Clawdbot was built for **Clawd**, a space lobster AI assistant. 🦞
+Sigil was built for **Clawd**, a space lobster AI assistant. 🦞
 by Peter Steinberger and the community.
 
 - [clawd.me](https://clawd.me)

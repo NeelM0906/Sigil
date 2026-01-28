@@ -1,4 +1,4 @@
-import MoltbotKit
+import SigilKit
 import Darwin
 import Foundation
 import Network
@@ -283,7 +283,7 @@ final class GatewayConnectionController {
             caps: self.currentCaps(),
             commands: self.currentCommands(),
             permissions: [:],
-            clientId: "moltbot-ios",
+            clientId: "sigil-ios",
             clientMode: "node",
             clientDisplayName: displayName)
     }
@@ -304,51 +304,51 @@ final class GatewayConnectionController {
     }
 
     private func currentCaps() -> [String] {
-        var caps = [MoltbotCapability.canvas.rawValue, MoltbotCapability.screen.rawValue]
+        var caps = [SigilCapability.canvas.rawValue, SigilCapability.screen.rawValue]
 
         // Default-on: if the key doesn't exist yet, treat it as enabled.
         let cameraEnabled =
             UserDefaults.standard.object(forKey: "camera.enabled") == nil
                 ? true
                 : UserDefaults.standard.bool(forKey: "camera.enabled")
-        if cameraEnabled { caps.append(MoltbotCapability.camera.rawValue) }
+        if cameraEnabled { caps.append(SigilCapability.camera.rawValue) }
 
         let voiceWakeEnabled = UserDefaults.standard.bool(forKey: VoiceWakePreferences.enabledKey)
-        if voiceWakeEnabled { caps.append(MoltbotCapability.voiceWake.rawValue) }
+        if voiceWakeEnabled { caps.append(SigilCapability.voiceWake.rawValue) }
 
         let locationModeRaw = UserDefaults.standard.string(forKey: "location.enabledMode") ?? "off"
-        let locationMode = MoltbotLocationMode(rawValue: locationModeRaw) ?? .off
-        if locationMode != .off { caps.append(MoltbotCapability.location.rawValue) }
+        let locationMode = SigilLocationMode(rawValue: locationModeRaw) ?? .off
+        if locationMode != .off { caps.append(SigilCapability.location.rawValue) }
 
         return caps
     }
 
     private func currentCommands() -> [String] {
         var commands: [String] = [
-            MoltbotCanvasCommand.present.rawValue,
-            MoltbotCanvasCommand.hide.rawValue,
-            MoltbotCanvasCommand.navigate.rawValue,
-            MoltbotCanvasCommand.evalJS.rawValue,
-            MoltbotCanvasCommand.snapshot.rawValue,
-            MoltbotCanvasA2UICommand.push.rawValue,
-            MoltbotCanvasA2UICommand.pushJSONL.rawValue,
-            MoltbotCanvasA2UICommand.reset.rawValue,
-            MoltbotScreenCommand.record.rawValue,
-            MoltbotSystemCommand.notify.rawValue,
-            MoltbotSystemCommand.which.rawValue,
-            MoltbotSystemCommand.run.rawValue,
-            MoltbotSystemCommand.execApprovalsGet.rawValue,
-            MoltbotSystemCommand.execApprovalsSet.rawValue,
+            SigilCanvasCommand.present.rawValue,
+            SigilCanvasCommand.hide.rawValue,
+            SigilCanvasCommand.navigate.rawValue,
+            SigilCanvasCommand.evalJS.rawValue,
+            SigilCanvasCommand.snapshot.rawValue,
+            SigilCanvasA2UICommand.push.rawValue,
+            SigilCanvasA2UICommand.pushJSONL.rawValue,
+            SigilCanvasA2UICommand.reset.rawValue,
+            SigilScreenCommand.record.rawValue,
+            SigilSystemCommand.notify.rawValue,
+            SigilSystemCommand.which.rawValue,
+            SigilSystemCommand.run.rawValue,
+            SigilSystemCommand.execApprovalsGet.rawValue,
+            SigilSystemCommand.execApprovalsSet.rawValue,
         ]
 
         let caps = Set(self.currentCaps())
-        if caps.contains(MoltbotCapability.camera.rawValue) {
-            commands.append(MoltbotCameraCommand.list.rawValue)
-            commands.append(MoltbotCameraCommand.snap.rawValue)
-            commands.append(MoltbotCameraCommand.clip.rawValue)
+        if caps.contains(SigilCapability.camera.rawValue) {
+            commands.append(SigilCameraCommand.list.rawValue)
+            commands.append(SigilCameraCommand.snap.rawValue)
+            commands.append(SigilCameraCommand.clip.rawValue)
         }
-        if caps.contains(MoltbotCapability.location.rawValue) {
-            commands.append(MoltbotLocationCommand.get.rawValue)
+        if caps.contains(SigilCapability.location.rawValue) {
+            commands.append(SigilLocationCommand.get.rawValue)
         }
 
         return commands

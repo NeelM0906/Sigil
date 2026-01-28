@@ -51,13 +51,13 @@ export function pickProbeHostForBind(
 }
 
 const SAFE_DAEMON_ENV_KEYS = [
-  "MOLTBOT_STATE_DIR",
-  "MOLTBOT_CONFIG_PATH",
-  "CLAWDBOT_PROFILE",
-  "CLAWDBOT_STATE_DIR",
-  "CLAWDBOT_CONFIG_PATH",
-  "CLAWDBOT_GATEWAY_PORT",
-  "CLAWDBOT_NIX_MODE",
+  "SIGIL_STATE_DIR",
+  "SIGIL_CONFIG_PATH",
+  "SIGIL_PROFILE",
+  "SIGIL_STATE_DIR",
+  "SIGIL_CONFIG_PATH",
+  "SIGIL_GATEWAY_PORT",
+  "SIGIL_NIX_MODE",
 ];
 
 export function filterDaemonEnv(env: Record<string, string> | undefined): Record<string, string> {
@@ -131,7 +131,7 @@ export function renderRuntimeHints(
     }
   })();
   if (runtime.missingUnit) {
-    hints.push(`Service not installed. Run: ${formatCliCommand("moltbot gateway install", env)}`);
+    hints.push(`Service not installed. Run: ${formatCliCommand("sigil gateway install", env)}`);
     if (fileLog) hints.push(`File logs: ${fileLog}`);
     return hints;
   }
@@ -142,10 +142,10 @@ export function renderRuntimeHints(
       hints.push(`Launchd stdout (if installed): ${logs.stdoutPath}`);
       hints.push(`Launchd stderr (if installed): ${logs.stderrPath}`);
     } else if (process.platform === "linux") {
-      const unit = resolveGatewaySystemdServiceName(env.CLAWDBOT_PROFILE);
+      const unit = resolveGatewaySystemdServiceName(env.SIGIL_PROFILE);
       hints.push(`Logs: journalctl --user -u ${unit}.service -n 200 --no-pager`);
     } else if (process.platform === "win32") {
-      const task = resolveGatewayWindowsTaskName(env.CLAWDBOT_PROFILE);
+      const task = resolveGatewayWindowsTaskName(env.SIGIL_PROFILE);
       hints.push(`Logs: schtasks /Query /TN "${task}" /V /FO LIST`);
     }
   }
@@ -154,10 +154,10 @@ export function renderRuntimeHints(
 
 export function renderGatewayServiceStartHints(env: NodeJS.ProcessEnv = process.env): string[] {
   const base = [
-    formatCliCommand("moltbot gateway install", env),
-    formatCliCommand("moltbot gateway", env),
+    formatCliCommand("sigil gateway install", env),
+    formatCliCommand("sigil gateway", env),
   ];
-  const profile = env.CLAWDBOT_PROFILE;
+  const profile = env.SIGIL_PROFILE;
   switch (process.platform) {
     case "darwin": {
       const label = resolveGatewayLaunchAgentLabel(profile);

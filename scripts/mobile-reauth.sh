@@ -32,7 +32,7 @@ case "$AUTH_STATUS" in
         "$SCRIPT_DIR/claude-auth-status.sh" full
         exit 0
         ;;
-    CLAUDE_EXPIRING|CLAWDBOT_EXPIRING)
+    CLAUDE_EXPIRING|SIGIL_EXPIRING)
         echo -e "${YELLOW}Auth is expiring soon.${NC}"
         echo ""
         ;;
@@ -69,11 +69,11 @@ if claude setup-token; then
     echo ""
     "$SCRIPT_DIR/claude-auth-status.sh" full
 
-    # Restart moltbot service if running
-    if systemctl --user is-active moltbot >/dev/null 2>&1; then
+    # Restart sigil service if running
+    if systemctl --user is-active sigil >/dev/null 2>&1; then
         echo ""
-        echo "Restarting moltbot service..."
-        systemctl --user restart moltbot
+        echo "Restarting sigil service..."
+        systemctl --user restart sigil
         echo -e "${GREEN}Service restarted.${NC}"
     fi
 else

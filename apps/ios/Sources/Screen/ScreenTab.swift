@@ -1,4 +1,4 @@
-import MoltbotKit
+import SigilKit
 import SwiftUI
 
 struct ScreenTab: View {

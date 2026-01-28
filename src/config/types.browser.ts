@@ -4,7 +4,7 @@ export type BrowserProfileConfig = {
   /** CDP URL for this profile (use for remote Chrome). */
   cdpUrl?: string;
   /** Profile driver (default: clawd). */
-  driver?: "clawd" | "extension";
+  driver?: "sigil" | "extension";
   /** Profile color (hex). Auto-assigned at creation. */
   color: string;
 };

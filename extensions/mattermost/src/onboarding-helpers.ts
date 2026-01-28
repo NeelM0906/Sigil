@@ -1,12 +1,12 @@
-import type { MoltbotConfig, WizardPrompter } from "clawdbot/plugin-sdk";
-import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "clawdbot/plugin-sdk";
+import type { SigilConfig, WizardPrompter } from "sigil/plugin-sdk";
+import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "sigil/plugin-sdk";
 
 type PromptAccountIdParams = {
-  cfg: MoltbotConfig;
+  cfg: SigilConfig;
   prompter: WizardPrompter;
   label: string;
   currentId?: string;
-  listAccountIds: (cfg: MoltbotConfig) => string[];
+  listAccountIds: (cfg: SigilConfig) => string[];
   defaultAccountId: string;
 };
 

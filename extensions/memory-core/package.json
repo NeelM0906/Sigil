@@ -1,14 +1,14 @@
 {
-  "name": "@moltbot/memory-core",
+  "name": "@sigil/memory-core",
   "version": "2026.1.26",
   "type": "module",
-  "description": "Moltbot core memory search plugin",
-  "moltbot": {
+  "description": "Sigil core memory search plugin",
+  "sigil": {
     "extensions": [
       "./index.ts"
     ]
   },
   "peerDependencies": {
-    "moltbot": ">=2026.1.26"
+    "sigil": "workspace:*"
   }
 }

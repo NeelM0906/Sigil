@@ -1,16 +1,16 @@
-import MoltbotChatUI
-import MoltbotKit
+import SigilChatUI
+import SigilKit
 import SwiftUI
 
 struct ChatSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var viewModel: MoltbotChatViewModel
+    @State private var viewModel: SigilChatViewModel
     private let userAccent: Color?
 
     init(gateway: GatewayNodeSession, sessionKey: String, userAccent: Color? = nil) {
         let transport = IOSGatewayChatTransport(gateway: gateway)
         self._viewModel = State(
-            initialValue: MoltbotChatViewModel(
+            initialValue: SigilChatViewModel(
                 sessionKey: sessionKey,
                 transport: transport))
         self.userAccent = userAccent
@@ -18,7 +18,7 @@ struct ChatSheet: View {
 
     var body: some View {
         NavigationStack {
-            MoltbotChatView(
+            SigilChatView(
                 viewModel: self.viewModel,
                 showsSessionSwitcher: true,
                 userAccent: self.userAccent)

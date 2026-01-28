@@ -1,9 +1,9 @@
 {
-  "name": "@moltbot/llm-task",
+  "name": "@sigil/llm-task",
   "version": "2026.1.26",
   "type": "module",
-  "description": "Moltbot JSON-only LLM task plugin",
-  "moltbot": {
+  "description": "Sigil JSON-only LLM task plugin",
+  "sigil": {
     "extensions": [
       "./index.ts"
     ]

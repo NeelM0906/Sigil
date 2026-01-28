@@ -82,7 +82,7 @@ export function parseCliProfileArgs(argv: string[]): CliProfileParseResult {
 
 function resolveProfileStateDir(profile: string, homedir: () => string): string {
   const suffix = profile.toLowerCase() === "default" ? "" : `-${profile}`;
-  return path.join(homedir(), `.clawdbot${suffix}`);
+  return path.join(homedir(), `.sigil${suffix}`);
 }
 
 export function applyCliProfileEnv(params: {
@@ -96,16 +96,16 @@ export function applyCliProfileEnv(params: {
   if (!profile) return;
 
   // Convenience only: fill defaults, never override explicit env values.
-  env.CLAWDBOT_PROFILE = profile;
+  env.SIGIL_PROFILE = profile;
 
-  const stateDir = env.CLAWDBOT_STATE_DIR?.trim() || resolveProfileStateDir(profile, homedir);
-  if (!env.CLAWDBOT_STATE_DIR?.trim()) env.CLAWDBOT_STATE_DIR = stateDir;
+  const stateDir = env.SIGIL_STATE_DIR?.trim() || resolveProfileStateDir(profile, homedir);
+  if (!env.SIGIL_STATE_DIR?.trim()) env.SIGIL_STATE_DIR = stateDir;
 
-  if (!env.CLAWDBOT_CONFIG_PATH?.trim()) {
-    env.CLAWDBOT_CONFIG_PATH = path.join(stateDir, "moltbot.json");
+  if (!env.SIGIL_CONFIG_PATH?.trim()) {
+    env.SIGIL_CONFIG_PATH = path.join(stateDir, "sigil.json");
   }
 
-  if (profile === "dev" && !env.CLAWDBOT_GATEWAY_PORT?.trim()) {
-    env.CLAWDBOT_GATEWAY_PORT = "19001";
+  if (profile === "dev" && !env.SIGIL_GATEWAY_PORT?.trim()) {
+    env.SIGIL_GATEWAY_PORT = "19001";
   }
 }

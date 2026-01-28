@@ -1,13 +1,13 @@
 {
-  "name": "@moltbot/zalouser",
+  "name": "@sigil/zalouser",
   "version": "2026.1.26",
   "type": "module",
-  "description": "Moltbot Zalo Personal Account plugin via zca-cli",
+  "description": "Sigil Zalo Personal Account plugin via zca-cli",
   "dependencies": {
-    "moltbot": "workspace:*",
+    "sigil": "workspace:*",
     "@sinclair/typebox": "0.34.47"
   },
-  "moltbot": {
+  "sigil": {
     "extensions": [
       "./index.ts"
     ],
@@ -25,7 +25,7 @@
       "quickstartAllowFrom": true
     },
     "install": {
-      "npmSpec": "@moltbot/zalouser",
+      "npmSpec": "@sigil/zalouser",
       "localPath": "extensions/zalouser",
       "defaultChoice": "npm"
     }

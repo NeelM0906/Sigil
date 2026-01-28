@@ -1,4 +1,4 @@
-import type { MoltbotConfig } from "../../config/config.js";
+import type { SigilConfig } from "../../config/config.js";
 import { resolveSessionAgentId } from "../../agents/agent-scope.js";
 import { loadSessionStore, resolveStorePath } from "../../config/sessions.js";
 import { logVerbose } from "../../globals.js";
@@ -47,10 +47,7 @@ const isInboundAudioContext = (ctx: FinalizedMsgContext): boolean => {
   return AUDIO_HEADER_RE.test(trimmed);
 };
 
-const resolveSessionTtsAuto = (
-  ctx: FinalizedMsgContext,
-  cfg: MoltbotConfig,
-): string | undefined => {
+const resolveSessionTtsAuto = (ctx: FinalizedMsgContext, cfg: SigilConfig): string | undefined => {
   const targetSessionKey =
     ctx.CommandSource === "native" ? ctx.CommandTargetSessionKey?.trim() : undefined;
   const sessionKey = (targetSessionKey ?? ctx.SessionKey)?.trim();
@@ -73,7 +70,7 @@ export type DispatchFromConfigResult = {
 
 export async function dispatchReplyFromConfig(params: {
   ctx: FinalizedMsgContext;
-  cfg: MoltbotConfig;
+  cfg: SigilConfig;
   dispatcher: ReplyDispatcher;
   replyOptions?: Omit<GetReplyOptions, "onToolResult" | "onBlockReply">;
   replyResolver?: typeof getReplyFromConfig;

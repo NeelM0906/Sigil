@@ -5,15 +5,15 @@
  * These commands are processed before built-in commands and before agent invocation.
  */
 
-import type { MoltbotConfig } from "../config/config.js";
+import type { SigilConfig } from "../config/config.js";
 import type {
-  MoltbotPluginCommandDefinition,
+  SigilPluginCommandDefinition,
   PluginCommandContext,
   PluginCommandResult,
 } from "./types.js";
 import { logVerbose } from "../globals.js";
 
-type RegisteredPluginCommand = MoltbotPluginCommandDefinition & {
+type RegisteredPluginCommand = SigilPluginCommandDefinition & {
   pluginId: string;
 };
 
@@ -104,7 +104,7 @@ export type CommandRegistrationResult = {
  */
 export function registerPluginCommand(
   pluginId: string,
-  command: MoltbotPluginCommandDefinition,
+  command: SigilPluginCommandDefinition,
 ): CommandRegistrationResult {
   // Prevent registration while commands are being processed
   if (registryLocked) {
@@ -221,7 +221,7 @@ export async function executePluginCommand(params: {
   channel: string;
   isAuthorizedSender: boolean;
   commandBody: string;
-  config: MoltbotConfig;
+  config: SigilConfig;
 }): Promise<PluginCommandResult> {
   const { command, args, senderId, channel, isAuthorizedSender, commandBody, config } = params;
 

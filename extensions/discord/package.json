@@ -1,9 +1,9 @@
 {
-  "name": "@moltbot/discord",
+  "name": "@sigil/discord",
   "version": "2026.1.26",
   "type": "module",
-  "description": "Moltbot Discord channel plugin",
-  "moltbot": {
+  "description": "Sigil Discord channel plugin",
+  "sigil": {
     "extensions": [
       "./index.ts"
     ]

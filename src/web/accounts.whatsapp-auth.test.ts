@@ -15,16 +15,16 @@ describe("hasAnyWhatsAppAuth", () => {
   };
 
   beforeEach(() => {
-    previousOauthDir = process.env.CLAWDBOT_OAUTH_DIR;
-    tempOauthDir = fs.mkdtempSync(path.join(os.tmpdir(), "moltbot-oauth-"));
-    process.env.CLAWDBOT_OAUTH_DIR = tempOauthDir;
+    previousOauthDir = process.env.SIGIL_OAUTH_DIR;
+    tempOauthDir = fs.mkdtempSync(path.join(os.tmpdir(), "sigil-oauth-"));
+    process.env.SIGIL_OAUTH_DIR = tempOauthDir;
   });
 
   afterEach(() => {
     if (previousOauthDir === undefined) {
-      delete process.env.CLAWDBOT_OAUTH_DIR;
+      delete process.env.SIGIL_OAUTH_DIR;
     } else {
-      process.env.CLAWDBOT_OAUTH_DIR = previousOauthDir;
+      process.env.SIGIL_OAUTH_DIR = previousOauthDir;
     }
     if (tempOauthDir) {
       fs.rmSync(tempOauthDir, { recursive: true, force: true });
@@ -47,7 +47,7 @@ describe("hasAnyWhatsAppAuth", () => {
   });
 
   it("includes authDir overrides", () => {
-    const customDir = fs.mkdtempSync(path.join(os.tmpdir(), "moltbot-wa-auth-"));
+    const customDir = fs.mkdtempSync(path.join(os.tmpdir(), "sigil-wa-auth-"));
     try {
       writeCreds(customDir);
       const cfg = {

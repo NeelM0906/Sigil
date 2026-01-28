@@ -9,10 +9,10 @@ import {
 } from "./paths.js";
 
 describe("oauth paths", () => {
-  it("prefers CLAWDBOT_OAUTH_DIR over CLAWDBOT_STATE_DIR", () => {
+  it("prefers SIGIL_OAUTH_DIR over SIGIL_STATE_DIR", () => {
     const env = {
-      CLAWDBOT_OAUTH_DIR: "/custom/oauth",
-      CLAWDBOT_STATE_DIR: "/custom/state",
+      SIGIL_OAUTH_DIR: "/custom/oauth",
+      SIGIL_STATE_DIR: "/custom/state",
     } as NodeJS.ProcessEnv;
 
     expect(resolveOAuthDir(env, "/custom/state")).toBe(path.resolve("/custom/oauth"));
@@ -21,9 +21,9 @@ describe("oauth paths", () => {
     );
   });
 
-  it("derives oauth path from CLAWDBOT_STATE_DIR when unset", () => {
+  it("derives oauth path from SIGIL_STATE_DIR when unset", () => {
     const env = {
-      CLAWDBOT_STATE_DIR: "/custom/state",
+      SIGIL_STATE_DIR: "/custom/state",
     } as NodeJS.ProcessEnv;
 
     expect(resolveOAuthDir(env, "/custom/state")).toBe(path.join("/custom/state", "credentials"));
@@ -34,9 +34,9 @@ describe("oauth paths", () => {
 });
 
 describe("state + config path candidates", () => {
-  it("prefers MOLTBOT_STATE_DIR over legacy state dir env", () => {
+  it("prefers SIGIL_STATE_DIR over legacy state dir env", () => {
     const env = {
-      MOLTBOT_STATE_DIR: "/new/state",
+      SIGIL_STATE_DIR: "/new/state",
       CLAWDBOT_STATE_DIR: "/legacy/state",
     } as NodeJS.ProcessEnv;
 
@@ -46,7 +46,7 @@ describe("state + config path candidates", () => {
   it("orders default config candidates as new then legacy", () => {
     const home = "/home/test";
     const candidates = resolveDefaultConfigCandidates({} as NodeJS.ProcessEnv, () => home);
-    expect(candidates[0]).toBe(path.join(home, ".moltbot", "moltbot.json"));
-    expect(candidates[1]).toBe(path.join(home, ".clawdbot", "moltbot.json"));
+    expect(candidates[0]).toBe(path.join(home, ".sigil", "sigil.json"));
+    expect(candidates[1]).toBe(path.join(home, ".clawdbot", "sigil.json"));
   });
 });

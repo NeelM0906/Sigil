@@ -1,6 +1,6 @@
-import MoltbotKit
+import SigilKit
 import Testing
-@testable import Moltbot
+@testable import Sigil
 
 @Suite struct IOSGatewayChatTransportTests {
     @Test func requestsFailFastWhenGatewayNotConnected() async {

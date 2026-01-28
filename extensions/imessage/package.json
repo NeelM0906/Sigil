@@ -1,9 +1,9 @@
 {
-  "name": "@moltbot/imessage",
+  "name": "@sigil/imessage",
   "version": "2026.1.26",
   "type": "module",
-  "description": "Moltbot iMessage channel plugin",
-  "moltbot": {
+  "description": "Sigil iMessage channel plugin",
+  "sigil": {
     "extensions": [
       "./index.ts"
     ]

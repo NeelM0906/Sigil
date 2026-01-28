@@ -25,7 +25,7 @@ vi.mock("../agents/model-catalog.js", () => ({
 }));
 
 async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise<T> {
-  return withTempHomeBase(fn, { prefix: "moltbot-stream-" });
+  return withTempHomeBase(fn, { prefix: "sigil-stream-" });
 }
 
 describe("block streaming", () => {
@@ -89,7 +89,7 @@ describe("block streaming", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "clawd"),
+              workspace: path.join(home, "sigil"),
             },
           },
           channels: { whatsapp: { allowFrom: ["*"] } },
@@ -148,7 +148,7 @@ describe("block streaming", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "clawd"),
+              workspace: path.join(home, "sigil"),
             },
           },
           channels: { telegram: { allowFrom: ["*"] } },
@@ -197,7 +197,7 @@ describe("block streaming", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "clawd"),
+              workspace: path.join(home, "sigil"),
             },
           },
           channels: { whatsapp: { allowFrom: ["*"] } },
@@ -255,7 +255,7 @@ describe("block streaming", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "clawd"),
+              workspace: path.join(home, "sigil"),
             },
           },
           channels: { telegram: { allowFrom: ["*"] } },
@@ -297,7 +297,7 @@ describe("block streaming", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "clawd"),
+              workspace: path.join(home, "sigil"),
             },
           },
           channels: { telegram: { allowFrom: ["*"], streamMode: "block" } },

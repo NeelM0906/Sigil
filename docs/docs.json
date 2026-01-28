@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "name": "Moltbot",
+  "name": "Sigil",
   "theme": "mint",
   "logo": {
     "light": "/assets/pixel-lobster.svg",
@@ -13,11 +13,11 @@
   "topbarLinks": [
     {
       "name": "GitHub",
-      "url": "https://github.com/moltbot/moltbot"
+      "url": "https://github.com/sigil/sigil"
     },
     {
       "name": "Releases",
-      "url": "https://github.com/moltbot/moltbot/releases"
+      "url": "https://github.com/sigil/sigil/releases"
     }
   ],
   "redirects": [

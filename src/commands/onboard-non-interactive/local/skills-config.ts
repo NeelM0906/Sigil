@@ -1,9 +1,9 @@
-import type { MoltbotConfig } from "../../../config/config.js";
+import type { SigilConfig } from "../../../config/config.js";
 import type { RuntimeEnv } from "../../../runtime.js";
 import type { OnboardOptions } from "../../onboard-types.js";
 
 export function applyNonInteractiveSkillsConfig(params: {
-  nextConfig: MoltbotConfig;
+  nextConfig: SigilConfig;
   opts: OnboardOptions;
   runtime: RuntimeEnv;
 }) {

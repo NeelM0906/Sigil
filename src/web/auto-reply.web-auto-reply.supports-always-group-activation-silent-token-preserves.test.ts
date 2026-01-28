@@ -48,7 +48,7 @@ const rmDirWithRetries = async (dir: string): Promise<void> => {
 beforeEach(async () => {
   resetInboundDedupe();
   previousHome = process.env.HOME;
-  tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "moltbot-web-home-"));
+  tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "sigil-web-home-"));
   process.env.HOME = tempHome;
 });
 
@@ -63,7 +63,7 @@ afterEach(async () => {
 const makeSessionStore = async (
   entries: Record<string, unknown> = {},
 ): Promise<{ storePath: string; cleanup: () => Promise<void> }> => {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "moltbot-session-"));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "sigil-session-"));
   const storePath = path.join(dir, "sessions.json");
   await fs.writeFile(storePath, JSON.stringify(entries));
   const cleanup = async () => {
@@ -248,7 +248,7 @@ describe("web auto-reply", () => {
 
     expect(resolver).not.toHaveBeenCalled();
 
-    // Text-based mentionPatterns still work (user can type "clawd" explicitly).
+    // Text-based mentionPatterns still work (user can type "sigil" explicitly).
     await capturedOnMessage?.({
       body: "clawd ping",
       from: "123@g.us",
@@ -272,7 +272,7 @@ describe("web auto-reply", () => {
   });
   it("emits heartbeat logs with connection metadata", async () => {
     vi.useFakeTimers();
-    const logPath = `/tmp/moltbot-heartbeat-${crypto.randomUUID()}.log`;
+    const logPath = `/tmp/sigil-heartbeat-${crypto.randomUUID()}.log`;
     setLoggerOverride({ level: "trace", file: logPath });
 
     const runtime = {
@@ -313,7 +313,7 @@ describe("web auto-reply", () => {
     expect(content).toMatch(/messagesHandled/);
   });
   it("logs outbound replies to file", async () => {
-    const logPath = `/tmp/moltbot-log-test-${crypto.randomUUID()}.log`;
+    const logPath = `/tmp/sigil-log-test-${crypto.randomUUID()}.log`;
     setLoggerOverride({ level: "trace", file: logPath });
 
     let capturedOnMessage:

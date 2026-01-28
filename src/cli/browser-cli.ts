@@ -31,13 +31,13 @@ export function registerBrowserCli(program: Command) {
           true,
         )}\n\n${theme.muted("Docs:")} ${formatDocsLink(
           "/cli/browser",
-          "docs.molt.bot/cli/browser",
+          "docs.sigil.bot/cli/browser",
         )}\n`,
     )
     .action(() => {
       browser.outputHelp();
       defaultRuntime.error(
-        danger(`Missing subcommand. Try: "${formatCliCommand("moltbot browser status")}"`),
+        danger(`Missing subcommand. Try: "${formatCliCommand("sigil browser status")}"`),
       );
       defaultRuntime.exit(1);
     });

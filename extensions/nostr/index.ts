@@ -1,5 +1,5 @@
-import type { MoltbotPluginApi, MoltbotConfig } from "clawdbot/plugin-sdk";
-import { emptyPluginConfigSchema } from "clawdbot/plugin-sdk";
+import type { SigilPluginApi, SigilConfig } from "sigil/plugin-sdk";
+import { emptyPluginConfigSchema } from "sigil/plugin-sdk";
 
 import { nostrPlugin } from "./src/channel.js";
 import { setNostrRuntime, getNostrRuntime } from "./src/runtime.js";
@@ -12,7 +12,7 @@ const plugin = {
   name: "Nostr",
   description: "Nostr DM channel plugin via NIP-04",
   configSchema: emptyPluginConfigSchema(),
-  register(api: MoltbotPluginApi) {
+  register(api: SigilPluginApi) {
     setNostrRuntime(api.runtime);
     api.registerChannel({ plugin: nostrPlugin });
 
@@ -20,13 +20,13 @@ const plugin = {
     const httpHandler = createNostrProfileHttpHandler({
       getConfigProfile: (accountId: string) => {
         const runtime = getNostrRuntime();
-        const cfg = runtime.config.loadConfig() as MoltbotConfig;
+        const cfg = runtime.config.loadConfig() as SigilConfig;
         const account = resolveNostrAccount({ cfg, accountId });
         return account.profile;
       },
       updateConfigProfile: async (accountId: string, profile: NostrProfile) => {
         const runtime = getNostrRuntime();
-        const cfg = runtime.config.loadConfig() as MoltbotConfig;
+        const cfg = runtime.config.loadConfig() as SigilConfig;
 
         // Build the config patch for channels.nostr.profile
         const channels = (cfg.channels ?? {}) as Record<string, unknown>;
@@ -49,7 +49,7 @@ const plugin = {
       },
       getAccountInfo: (accountId: string) => {
         const runtime = getNostrRuntime();
-        const cfg = runtime.config.loadConfig() as MoltbotConfig;
+        const cfg = runtime.config.loadConfig() as SigilConfig;
         const account = resolveNostrAccount({ cfg, accountId });
         if (!account.configured || !account.publicKey) {
           return null;

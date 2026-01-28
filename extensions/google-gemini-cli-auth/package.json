@@ -1,9 +1,9 @@
 {
-  "name": "@moltbot/google-gemini-cli-auth",
+  "name": "@sigil/google-gemini-cli-auth",
   "version": "2026.1.26",
   "type": "module",
-  "description": "Moltbot Gemini CLI OAuth provider plugin",
-  "moltbot": {
+  "description": "Sigil Gemini CLI OAuth provider plugin",
+  "sigil": {
     "extensions": [
       "./index.ts"
     ]

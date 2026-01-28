@@ -7,7 +7,7 @@ import type { AuthProfileCredential, OAuthCredential } from "../agents/auth-prof
 import type { AnyAgentTool } from "../agents/tools/common.js";
 import type { ChannelDock } from "../channels/dock.js";
 import type { ChannelPlugin } from "../channels/plugins/types.js";
-import type { MoltbotConfig } from "../config/config.js";
+import type { SigilConfig } from "../config/config.js";
 import type { InternalHookHandler } from "../hooks/internal-hooks.js";
 import type { HookEntry } from "../hooks/types.js";
 import type { ModelProviderConfig } from "../config/types.js";
@@ -41,7 +41,7 @@ export type PluginConfigValidation =
   | { ok: true; value?: unknown }
   | { ok: false; errors: string[] };
 
-export type MoltbotPluginConfigSchema = {
+export type SigilPluginConfigSchema = {
   safeParse?: (value: unknown) => {
     success: boolean;
     data?: unknown;
@@ -55,8 +55,8 @@ export type MoltbotPluginConfigSchema = {
   jsonSchema?: Record<string, unknown>;
 };
 
-export type MoltbotPluginToolContext = {
-  config?: MoltbotConfig;
+export type SigilPluginToolContext = {
+  config?: SigilConfig;
   workspaceDir?: string;
   agentDir?: string;
   agentId?: string;
@@ -66,17 +66,17 @@ export type MoltbotPluginToolContext = {
   sandboxed?: boolean;
 };
 
-export type MoltbotPluginToolFactory = (
-  ctx: MoltbotPluginToolContext,
+export type SigilPluginToolFactory = (
+  ctx: SigilPluginToolContext,
 ) => AnyAgentTool | AnyAgentTool[] | null | undefined;
 
-export type MoltbotPluginToolOptions = {
+export type SigilPluginToolOptions = {
   name?: string;
   names?: string[];
   optional?: boolean;
 };
 
-export type MoltbotPluginHookOptions = {
+export type SigilPluginHookOptions = {
   entry?: HookEntry;
   name?: string;
   description?: string;
@@ -87,13 +87,13 @@ export type ProviderAuthKind = "oauth" | "api_key" | "token" | "device_code" | "
 
 export type ProviderAuthResult = {
   profiles: Array<{ profileId: string; credential: AuthProfileCredential }>;
-  configPatch?: Partial<MoltbotConfig>;
+  configPatch?: Partial<SigilConfig>;
   defaultModel?: string;
   notes?: string[];
 };
 
 export type ProviderAuthContext = {
-  config: MoltbotConfig;
+  config: SigilConfig;
   agentDir?: string;
   workspaceDir?: string;
   prompter: WizardPrompter;
@@ -125,7 +125,7 @@ export type ProviderPlugin = {
   refreshOAuth?: (cred: OAuthCredential) => Promise<OAuthCredential>;
 };
 
-export type MoltbotPluginGatewayMethod = {
+export type SigilPluginGatewayMethod = {
   method: string;
   handler: GatewayRequestHandler;
 };
@@ -148,8 +148,8 @@ export type PluginCommandContext = {
   args?: string;
   /** The full normalized command body */
   commandBody: string;
-  /** Current moltbot configuration */
-  config: MoltbotConfig;
+  /** Current sigil configuration */
+  config: SigilConfig;
 };
 
 /**
@@ -167,7 +167,7 @@ export type PluginCommandHandler = (
 /**
  * Definition for a plugin-registered command.
  */
-export type MoltbotPluginCommandDefinition = {
+export type SigilPluginCommandDefinition = {
   /** Command name without leading slash (e.g., "tts") */
   name: string;
   /** Description shown in /help and command menus */
@@ -180,90 +180,90 @@ export type MoltbotPluginCommandDefinition = {
   handler: PluginCommandHandler;
 };
 
-export type MoltbotPluginHttpHandler = (
+export type SigilPluginHttpHandler = (
   req: IncomingMessage,
   res: ServerResponse,
 ) => Promise<boolean> | boolean;
 
-export type MoltbotPluginHttpRouteHandler = (
+export type SigilPluginHttpRouteHandler = (
   req: IncomingMessage,
   res: ServerResponse,
 ) => Promise<void> | void;
 
-export type MoltbotPluginCliContext = {
+export type SigilPluginCliContext = {
   program: Command;
-  config: MoltbotConfig;
+  config: SigilConfig;
   workspaceDir?: string;
   logger: PluginLogger;
 };
 
-export type MoltbotPluginCliRegistrar = (ctx: MoltbotPluginCliContext) => void | Promise<void>;
+export type SigilPluginCliRegistrar = (ctx: SigilPluginCliContext) => void | Promise<void>;
 
-export type MoltbotPluginServiceContext = {
-  config: MoltbotConfig;
+export type SigilPluginServiceContext = {
+  config: SigilConfig;
   workspaceDir?: string;
   stateDir: string;
   logger: PluginLogger;
 };
 
-export type MoltbotPluginService = {
+export type SigilPluginService = {
   id: string;
-  start: (ctx: MoltbotPluginServiceContext) => void | Promise<void>;
-  stop?: (ctx: MoltbotPluginServiceContext) => void | Promise<void>;
+  start: (ctx: SigilPluginServiceContext) => void | Promise<void>;
+  stop?: (ctx: SigilPluginServiceContext) => void | Promise<void>;
 };
 
-export type MoltbotPluginChannelRegistration = {
+export type SigilPluginChannelRegistration = {
   plugin: ChannelPlugin;
   dock?: ChannelDock;
 };
 
-export type MoltbotPluginDefinition = {
+export type SigilPluginDefinition = {
   id?: string;
   name?: string;
   description?: string;
   version?: string;
   kind?: PluginKind;
-  configSchema?: MoltbotPluginConfigSchema;
-  register?: (api: MoltbotPluginApi) => void | Promise<void>;
-  activate?: (api: MoltbotPluginApi) => void | Promise<void>;
+  configSchema?: SigilPluginConfigSchema;
+  register?: (api: SigilPluginApi) => void | Promise<void>;
+  activate?: (api: SigilPluginApi) => void | Promise<void>;
 };
 
-export type MoltbotPluginModule =
-  | MoltbotPluginDefinition
-  | ((api: MoltbotPluginApi) => void | Promise<void>);
+export type SigilPluginModule =
+  | SigilPluginDefinition
+  | ((api: SigilPluginApi) => void | Promise<void>);
 
-export type MoltbotPluginApi = {
+export type SigilPluginApi = {
   id: string;
   name: string;
   version?: string;
   description?: string;
   source: string;
-  config: MoltbotConfig;
+  config: SigilConfig;
   pluginConfig?: Record<string, unknown>;
   runtime: PluginRuntime;
   logger: PluginLogger;
   registerTool: (
-    tool: AnyAgentTool | MoltbotPluginToolFactory,
-    opts?: MoltbotPluginToolOptions,
+    tool: AnyAgentTool | SigilPluginToolFactory,
+    opts?: SigilPluginToolOptions,
   ) => void;
   registerHook: (
     events: string | string[],
     handler: InternalHookHandler,
-    opts?: MoltbotPluginHookOptions,
+    opts?: SigilPluginHookOptions,
   ) => void;
-  registerHttpHandler: (handler: MoltbotPluginHttpHandler) => void;
-  registerHttpRoute: (params: { path: string; handler: MoltbotPluginHttpRouteHandler }) => void;
-  registerChannel: (registration: MoltbotPluginChannelRegistration | ChannelPlugin) => void;
+  registerHttpHandler: (handler: SigilPluginHttpHandler) => void;
+  registerHttpRoute: (params: { path: string; handler: SigilPluginHttpRouteHandler }) => void;
+  registerChannel: (registration: SigilPluginChannelRegistration | ChannelPlugin) => void;
   registerGatewayMethod: (method: string, handler: GatewayRequestHandler) => void;
-  registerCli: (registrar: MoltbotPluginCliRegistrar, opts?: { commands?: string[] }) => void;
-  registerService: (service: MoltbotPluginService) => void;
+  registerCli: (registrar: SigilPluginCliRegistrar, opts?: { commands?: string[] }) => void;
+  registerService: (service: SigilPluginService) => void;
   registerProvider: (provider: ProviderPlugin) => void;
   /**
    * Register a custom command that bypasses the LLM agent.
    * Plugin commands are processed before built-in commands and before agent invocation.
    * Use this for simple state-toggling or status commands that don't need AI reasoning.
    */
-  registerCommand: (command: MoltbotPluginCommandDefinition) => void;
+  registerCommand: (command: SigilPluginCommandDefinition) => void;
   resolvePath: (input: string) => string;
   /** Register a lifecycle hook handler */
   on: <K extends PluginHookName>(

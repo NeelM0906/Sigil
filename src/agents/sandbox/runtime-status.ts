@@ -1,4 +1,4 @@
-import type { MoltbotConfig } from "../../config/config.js";
+import type { SigilConfig } from "../../config/config.js";
 import { canonicalizeMainSessionAlias, resolveAgentMainSessionKey } from "../../config/sessions.js";
 import { resolveSessionAgentId } from "../agent-scope.js";
 import { expandToolGroups } from "../tool-policy.js";
@@ -13,7 +13,7 @@ function shouldSandboxSession(cfg: SandboxConfig, sessionKey: string, mainSessio
   return sessionKey.trim() !== mainSessionKey.trim();
 }
 
-function resolveMainSessionKeyForSandbox(params: { cfg?: MoltbotConfig; agentId: string }): string {
+function resolveMainSessionKeyForSandbox(params: { cfg?: SigilConfig; agentId: string }): string {
   if (params.cfg?.session?.scope === "global") return "global";
   return resolveAgentMainSessionKey({
     cfg: params.cfg,
@@ -22,7 +22,7 @@ function resolveMainSessionKeyForSandbox(params: { cfg?: MoltbotConfig; agentId:
 }
 
 function resolveComparableSessionKeyForSandbox(params: {
-  cfg?: MoltbotConfig;
+  cfg?: SigilConfig;
   agentId: string;
   sessionKey: string;
 }): string {
@@ -33,7 +33,7 @@ function resolveComparableSessionKeyForSandbox(params: {
   });
 }
 
-export function resolveSandboxRuntimeStatus(params: { cfg?: MoltbotConfig; sessionKey?: string }): {
+export function resolveSandboxRuntimeStatus(params: { cfg?: SigilConfig; sessionKey?: string }): {
   agentId: string;
   sessionKey: string;
   mainSessionKey: string;
@@ -67,7 +67,7 @@ export function resolveSandboxRuntimeStatus(params: { cfg?: MoltbotConfig; sessi
 }
 
 export function formatSandboxToolPolicyBlockedMessage(params: {
-  cfg?: MoltbotConfig;
+  cfg?: SigilConfig;
   sessionKey?: string;
   toolName: string;
 }): string | undefined {
@@ -110,9 +110,7 @@ export function formatSandboxToolPolicyBlockedMessage(params: {
   if (runtime.mode === "non-main") {
     lines.push(`- Use main session key (direct): ${runtime.mainSessionKey}`);
   }
-  lines.push(
-    `- See: ${formatCliCommand(`moltbot sandbox explain --session ${runtime.sessionKey}`)}`,
-  );
+  lines.push(`- See: ${formatCliCommand(`sigil sandbox explain --session ${runtime.sessionKey}`)}`);
 
   return lines.join("\n");
 }

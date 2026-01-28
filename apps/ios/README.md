@@ -1,4 +1,4 @@
-# Clawdbot (iOS)
+# Sigil (iOS)
 
 Internal-only SwiftUI app scaffold.
 
@@ -11,11 +11,11 @@ brew install swiftformat swiftlint
 ```bash
 cd apps/ios
 xcodegen generate
-open Clawdbot.xcodeproj
+open Sigil.xcodeproj
 ```
 
 ## Shared packages
-- `../shared/ClawdbotKit` — shared types/constants used by iOS (and later macOS bridge + gateway routing).
+- `../shared/SigilKit` — shared types/constants used by iOS (and later macOS bridge + gateway routing).
 
 ## fastlane
 ```bash

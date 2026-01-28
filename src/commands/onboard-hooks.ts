@@ -1,4 +1,4 @@
-import type { MoltbotConfig } from "../config/config.js";
+import type { SigilConfig } from "../config/config.js";
 import type { RuntimeEnv } from "../runtime.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
 import { buildWorkspaceHookStatus } from "../hooks/hooks-status.js";
@@ -6,16 +6,16 @@ import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent
 import { formatCliCommand } from "../cli/command-format.js";
 
 export async function setupInternalHooks(
-  cfg: MoltbotConfig,
+  cfg: SigilConfig,
   runtime: RuntimeEnv,
   prompter: WizardPrompter,
-): Promise<MoltbotConfig> {
+): Promise<SigilConfig> {
   await prompter.note(
     [
       "Hooks let you automate actions when agent commands are issued.",
       "Example: Save session context to memory when you issue /new.",
       "",
-      "Learn more: https://docs.molt.bot/hooks",
+      "Learn more: https://docs.sigil.bot/hooks",
     ].join("\n"),
     "Hooks",
   );
@@ -58,7 +58,7 @@ export async function setupInternalHooks(
     entries[name] = { enabled: true };
   }
 
-  const next: MoltbotConfig = {
+  const next: SigilConfig = {
     ...cfg,
     hooks: {
       ...cfg.hooks,
@@ -74,9 +74,9 @@ export async function setupInternalHooks(
       `Enabled ${selected.length} hook${selected.length > 1 ? "s" : ""}: ${selected.join(", ")}`,
       "",
       "You can manage hooks later with:",
-      `  ${formatCliCommand("moltbot hooks list")}`,
-      `  ${formatCliCommand("moltbot hooks enable <name>")}`,
-      `  ${formatCliCommand("moltbot hooks disable <name>")}`,
+      `  ${formatCliCommand("sigil hooks list")}`,
+      `  ${formatCliCommand("sigil hooks enable <name>")}`,
+      `  ${formatCliCommand("sigil hooks disable <name>")}`,
     ].join("\n"),
     "Hooks Configured",
   );

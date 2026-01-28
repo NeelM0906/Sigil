@@ -1,5 +1,5 @@
 ---
-summary: "Run multiple Moltbot Gateways on one host (isolation, ports, and profiles)"
+summary: "Run multiple Sigil Gateways on one host (isolation, ports, and profiles)"
 read_when:
   - Running more than one Gateway on the same machine
   - You need isolated config/state/ports per Gateway
@@ -9,8 +9,8 @@ read_when:
 Most setups should use one Gateway because a single Gateway can handle multiple messaging connections and agents. If you need stronger isolation or redundancy (e.g., a rescue bot), run separate Gateways with isolated profiles/ports.
 
 ## Isolation checklist (required)
-- `CLAWDBOT_CONFIG_PATH` — per-instance config file
-- `CLAWDBOT_STATE_DIR` — per-instance sessions, creds, caches
+- `SIGIL_CONFIG_PATH` — per-instance config file
+- `SIGIL_STATE_DIR` — per-instance sessions, creds, caches
 - `agents.defaults.workspace` — per-instance workspace root
 - `gateway.port` (or `--port`) — unique per instance
 - Derived ports (browser/canvas) must not overlap
@@ -19,22 +19,22 @@ If these are shared, you will hit config races and port conflicts.
 
 ## Recommended: profiles (`--profile`)
 
-Profiles auto-scope `CLAWDBOT_STATE_DIR` + `CLAWDBOT_CONFIG_PATH` and suffix service names.
+Profiles auto-scope `SIGIL_STATE_DIR` + `SIGIL_CONFIG_PATH` and suffix service names.
 
 ```bash
 # main
-moltbot --profile main setup
-moltbot --profile main gateway --port 18789
+sigil --profile main setup
+sigil --profile main gateway --port 18789
 
 # rescue
-moltbot --profile rescue setup
-moltbot --profile rescue gateway --port 19001
+sigil --profile rescue setup
+sigil --profile rescue gateway --port 19001
 ```
 
 Per-profile services:
 ```bash
-moltbot --profile main gateway install
-moltbot --profile rescue gateway install
+sigil --profile main gateway install
+sigil --profile rescue gateway install
 ```
 
 ## Rescue-bot guide
@@ -54,11 +54,11 @@ Port spacing: leave at least 20 ports between base ports so the derived browser/
 ```bash
 # Main bot (existing or fresh, without --profile param)
 # Runs on port 18789 + Chrome CDC/Canvas/... Ports 
-moltbot onboard
-moltbot gateway install
+sigil onboard
+sigil gateway install
 
 # Rescue bot (isolated profile + ports)
-moltbot --profile rescue onboard
+sigil --profile rescue onboard
 # Notes: 
 # - workspace name will be postfixed with -rescue per default
 # - Port should be at least 18789 + 20 Ports, 
@@ -66,12 +66,12 @@ moltbot --profile rescue onboard
 # - rest of the onboarding is the same as normal
 
 # To install the service (if not happened automatically during onboarding)
-moltbot --profile rescue gateway install
+sigil --profile rescue gateway install
 ```
 
 ## Port mapping (derived)
 
-Base port = `gateway.port` (or `CLAWDBOT_GATEWAY_PORT` / `--port`).
+Base port = `gateway.port` (or `SIGIL_GATEWAY_PORT` / `--port`).
 
 - browser control service port = base + 2 (loopback only)
 - `canvasHost.port = base + 4`
@@ -89,19 +89,19 @@ If you override any of these in config or env, you must keep them unique per ins
 ## Manual env example
 
 ```bash
-CLAWDBOT_CONFIG_PATH=~/.clawdbot/main.json \
-CLAWDBOT_STATE_DIR=~/.clawdbot-main \
-moltbot gateway --port 18789
+SIGIL_CONFIG_PATH=~/.sigil/main.json \
+SIGIL_STATE_DIR=~/.sigil-main \
+sigil gateway --port 18789
 
-CLAWDBOT_CONFIG_PATH=~/.clawdbot/rescue.json \
-CLAWDBOT_STATE_DIR=~/.clawdbot-rescue \
-moltbot gateway --port 19001
+SIGIL_CONFIG_PATH=~/.sigil/rescue.json \
+SIGIL_STATE_DIR=~/.sigil-rescue \
+sigil gateway --port 19001
 ```
 
 ## Quick checks
 
 ```bash
-moltbot --profile main status
-moltbot --profile rescue status
-moltbot --profile rescue browser status
+sigil --profile main status
+sigil --profile rescue status
+sigil --profile rescue browser status
 ```

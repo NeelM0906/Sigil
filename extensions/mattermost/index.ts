@@ -1,5 +1,5 @@
-import type { MoltbotPluginApi } from "clawdbot/plugin-sdk";
-import { emptyPluginConfigSchema } from "clawdbot/plugin-sdk";
+import type { SigilPluginApi } from "sigil/plugin-sdk";
+import { emptyPluginConfigSchema } from "sigil/plugin-sdk";
 
 import { mattermostPlugin } from "./src/channel.js";
 import { setMattermostRuntime } from "./src/runtime.js";
@@ -9,7 +9,7 @@ const plugin = {
   name: "Mattermost",
   description: "Mattermost channel plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: MoltbotPluginApi) {
+  register(api: SigilPluginApi) {
     setMattermostRuntime(api.runtime);
     api.registerChannel({ plugin: mattermostPlugin });
   },

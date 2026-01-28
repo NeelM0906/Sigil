@@ -2,8 +2,8 @@
 // the agent reports a model id. This includes custom models.json entries.
 
 import { loadConfig } from "../config/config.js";
-import { resolveMoltbotAgentDir } from "./agent-paths.js";
-import { ensureMoltbotModelsJson } from "./models-config.js";
+import { resolveSigilAgentDir } from "./agent-paths.js";
+import { ensureSigilModelsJson } from "./models-config.js";
 
 type ModelEntry = { id: string; contextWindow?: number };
 
@@ -12,8 +12,8 @@ const loadPromise = (async () => {
   try {
     const { discoverAuthStorage, discoverModels } = await import("@mariozechner/pi-coding-agent");
     const cfg = loadConfig();
-    await ensureMoltbotModelsJson(cfg);
-    const agentDir = resolveMoltbotAgentDir();
+    await ensureSigilModelsJson(cfg);
+    const agentDir = resolveSigilAgentDir();
     const authStorage = discoverAuthStorage(agentDir);
     const modelRegistry = discoverModels(authStorage, agentDir);
     const models = modelRegistry.getAll() as ModelEntry[];

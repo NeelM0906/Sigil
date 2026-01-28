@@ -1,9 +1,9 @@
 {
-  "name": "@moltbot/googlechat",
+  "name": "@sigil/googlechat",
   "version": "2026.1.26",
   "type": "module",
-  "description": "Moltbot Google Chat channel plugin",
-  "moltbot": {
+  "description": "Sigil Google Chat channel plugin",
+  "sigil": {
     "extensions": [
       "./index.ts"
     ],
@@ -22,7 +22,7 @@
       "order": 55
     },
     "install": {
-      "npmSpec": "@moltbot/googlechat",
+      "npmSpec": "@sigil/googlechat",
       "localPath": "extensions/googlechat",
       "defaultChoice": "npm"
     }
@@ -31,9 +31,9 @@
     "google-auth-library": "^10.5.0"
   },
   "devDependencies": {
-    "moltbot": "workspace:*"
+    "sigil": "workspace:*"
   },
   "peerDependencies": {
-    "moltbot": ">=2026.1.26"
+    "sigil": "workspace:*"
   }
 }

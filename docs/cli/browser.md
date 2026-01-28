@@ -1,14 +1,14 @@
 ---
-summary: "CLI reference for `moltbot browser` (profiles, tabs, actions, extension relay)"
+summary: "CLI reference for `sigil browser` (profiles, tabs, actions, extension relay)"
 read_when:
-  - You use `moltbot browser` and want examples for common tasks
+  - You use `sigil browser` and want examples for common tasks
   - You want to control a browser running on another machine via a node host
   - You want to use the Chrome extension relay (attach/detach via toolbar button)
 ---
 
-# `moltbot browser`
+# `sigil browser`
 
-Manage Moltbot’s browser control server and run browser actions (tabs, snapshots, screenshots, navigation, clicks, typing).
+Manage Sigil’s browser control server and run browser actions (tabs, snapshots, screenshots, navigation, clicks, typing).
 
 Related:
 - Browser tool + API: [Browser tool](/tools/browser)
@@ -25,37 +25,37 @@ Related:
 ## Quick start (local)
 
 ```bash
-moltbot browser --browser-profile chrome tabs
-moltbot browser --browser-profile clawd start
-moltbot browser --browser-profile clawd open https://example.com
-moltbot browser --browser-profile clawd snapshot
+sigil browser --browser-profile chrome tabs
+sigil browser --browser-profile sigil start
+sigil browser --browser-profile sigil open https://example.com
+sigil browser --browser-profile sigil snapshot
 ```
 
 ## Profiles
 
 Profiles are named browser routing configs. In practice:
-- `clawd`: launches/attaches to a dedicated Moltbot-managed Chrome instance (isolated user data dir).
+- `clawd`: launches/attaches to a dedicated Sigil-managed Chrome instance (isolated user data dir).
 - `chrome`: controls your existing Chrome tab(s) via the Chrome extension relay.
 
 ```bash
-moltbot browser profiles
-moltbot browser create-profile --name work --color "#FF5A36"
-moltbot browser delete-profile --name work
+sigil browser profiles
+sigil browser create-profile --name work --color "#FF5A36"
+sigil browser delete-profile --name work
 ```
 
 Use a specific profile:
 
 ```bash
-moltbot browser --browser-profile work tabs
+sigil browser --browser-profile work tabs
 ```
 
 ## Tabs
 
 ```bash
-moltbot browser tabs
-moltbot browser open #docs-coming-soon
-moltbot browser focus <targetId>
-moltbot browser close <targetId>
+sigil browser tabs
+sigil browser open #docs-coming-soon
+sigil browser focus <targetId>
+sigil browser close <targetId>
 ```
 
 ## Snapshot / screenshot / actions
@@ -63,21 +63,21 @@ moltbot browser close <targetId>
 Snapshot:
 
 ```bash
-moltbot browser snapshot
+sigil browser snapshot
 ```
 
 Screenshot:
 
 ```bash
-moltbot browser screenshot
+sigil browser screenshot
 ```
 
 Navigate/click/type (ref-based UI automation):
 
 ```bash
-moltbot browser navigate https://example.com
-moltbot browser click <ref>
-moltbot browser type <ref> "hello"
+sigil browser navigate https://example.com
+sigil browser click <ref>
+sigil browser type <ref> "hello"
 ```
 
 ## Chrome extension relay (attach via toolbar button)
@@ -87,8 +87,8 @@ This mode lets the agent control an existing Chrome tab that you attach manually
 Install the unpacked extension to a stable path:
 
 ```bash
-moltbot browser extension install
-moltbot browser extension path
+sigil browser extension install
+sigil browser extension path
 ```
 
 Then Chrome → `chrome://extensions` → enable “Developer mode” → “Load unpacked” → select the printed folder.

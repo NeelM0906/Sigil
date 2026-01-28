@@ -43,13 +43,9 @@ describe("agent concurrency defaults", () => {
 
   it("injects defaults on load", async () => {
     await withTempHome(async (home) => {
-      const configDir = path.join(home, ".clawdbot");
+      const configDir = path.join(home, ".sigil");
       await fs.mkdir(configDir, { recursive: true });
-      await fs.writeFile(
-        path.join(configDir, "moltbot.json"),
-        JSON.stringify({}, null, 2),
-        "utf-8",
-      );
+      await fs.writeFile(path.join(configDir, "sigil.json"), JSON.stringify({}, null, 2), "utf-8");
 
       vi.resetModules();
       const { loadConfig } = await import("./config.js");

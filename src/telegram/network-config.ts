@@ -3,9 +3,8 @@ import process from "node:process";
 import { isTruthyEnvValue } from "../infra/env.js";
 import type { TelegramNetworkConfig } from "../config/types.telegram.js";
 
-export const TELEGRAM_DISABLE_AUTO_SELECT_FAMILY_ENV =
-  "CLAWDBOT_TELEGRAM_DISABLE_AUTO_SELECT_FAMILY";
-export const TELEGRAM_ENABLE_AUTO_SELECT_FAMILY_ENV = "CLAWDBOT_TELEGRAM_ENABLE_AUTO_SELECT_FAMILY";
+export const TELEGRAM_DISABLE_AUTO_SELECT_FAMILY_ENV = "SIGIL_TELEGRAM_DISABLE_AUTO_SELECT_FAMILY";
+export const TELEGRAM_ENABLE_AUTO_SELECT_FAMILY_ENV = "SIGIL_TELEGRAM_ENABLE_AUTO_SELECT_FAMILY";
 
 export type TelegramAutoSelectFamilyDecision = {
   value: boolean | null;

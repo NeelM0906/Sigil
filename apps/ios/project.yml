@@ -1,6 +1,6 @@
-name: Moltbot
+name: Sigil
 options:
-  bundleIdPrefix: com.clawdbot
+  bundleIdPrefix: com.sigil
   deploymentTarget:
     iOS: "18.0"
   xcodeVersion: "16.0"
@@ -10,33 +10,33 @@ settings:
     SWIFT_VERSION: "6.0"
 
 packages:
-  MoltbotKit:
-    path: ../shared/ClawdbotKit
+  SigilKit:
+    path: ../shared/SigilKit
   Swabble:
     path: ../../Swabble
 
 schemes:
-  Moltbot:
+  Sigil:
     shared: true
     build:
       targets:
-        Moltbot: all
+        Sigil: all
     test:
       targets:
-        - MoltbotTests
+        - SigilTests
 
 targets:
-  Moltbot:
+  Sigil:
     type: application
     platform: iOS
     sources:
       - path: Sources
     dependencies:
-      - package: MoltbotKit
-      - package: MoltbotKit
-        product: MoltbotChatUI
-      - package: MoltbotKit
-        product: MoltbotProtocol
+      - package: SigilKit
+      - package: SigilKit
+        product: SigilChatUI
+      - package: SigilKit
+        product: SigilProtocol
       - package: Swabble
         product: SwabbleKit
       - sdk: AppIntents.framework
@@ -71,15 +71,15 @@ targets:
         CODE_SIGN_IDENTITY: "Apple Development"
         CODE_SIGN_STYLE: Manual
         DEVELOPMENT_TEAM: Y5PE65HELJ
-        PRODUCT_BUNDLE_IDENTIFIER: com.clawdbot.ios
-        PROVISIONING_PROFILE_SPECIFIER: "com.clawdbot.ios Development"
+        PRODUCT_BUNDLE_IDENTIFIER: com.sigil.ios
+        PROVISIONING_PROFILE_SPECIFIER: "com.sigil.ios Development"
         SWIFT_VERSION: "6.0"
         SWIFT_STRICT_CONCURRENCY: complete
         ENABLE_APPINTENTS_METADATA: NO
     info:
       path: Sources/Info.plist
       properties:
-        CFBundleDisplayName: Moltbot
+        CFBundleDisplayName: Sigil
         CFBundleIconName: AppIcon
         CFBundleShortVersionString: "2026.1.26"
         CFBundleVersion: "20260126"
@@ -88,16 +88,16 @@ targets:
           UIApplicationSupportsMultipleScenes: false
         UIBackgroundModes:
           - audio
-        NSLocalNetworkUsageDescription: Moltbot discovers and connects to your Moltbot gateway on the local network.
+        NSLocalNetworkUsageDescription: Sigil discovers and connects to your Sigil gateway on the local network.
         NSAppTransportSecurity:
           NSAllowsArbitraryLoadsInWebContent: true
         NSBonjourServices:
-          - _moltbot-gw._tcp
-        NSCameraUsageDescription: Moltbot can capture photos or short video clips when requested via the gateway.
-        NSLocationWhenInUseUsageDescription: Moltbot uses your location when you allow location sharing.
-        NSLocationAlwaysAndWhenInUseUsageDescription: Moltbot can share your location in the background when you enable Always.
-        NSMicrophoneUsageDescription: Moltbot needs microphone access for voice wake.
-        NSSpeechRecognitionUsageDescription: Moltbot uses on-device speech recognition for voice wake.
+          - _sigil-gw._tcp
+        NSCameraUsageDescription: Sigil can capture photos or short video clips when requested via the gateway.
+        NSLocationWhenInUseUsageDescription: Sigil uses your location when you allow location sharing.
+        NSLocationAlwaysAndWhenInUseUsageDescription: Sigil can share your location in the background when you enable Always.
+        NSMicrophoneUsageDescription: Sigil needs microphone access for voice wake.
+        NSSpeechRecognitionUsageDescription: Sigil uses on-device speech recognition for voice wake.
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationPortraitUpsideDown
@@ -109,26 +109,26 @@ targets:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
 
-  MoltbotTests:
+  SigilTests:
     type: bundle.unit-test
     platform: iOS
     sources:
       - path: Tests
     dependencies:
-      - target: Moltbot
+      - target: Sigil
       - package: Swabble
         product: SwabbleKit
       - sdk: AppIntents.framework
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.clawdbot.ios.tests
+        PRODUCT_BUNDLE_IDENTIFIER: com.sigil.ios.tests
         SWIFT_VERSION: "6.0"
         SWIFT_STRICT_CONCURRENCY: complete
-        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Moltbot.app/Moltbot"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Sigil.app/Sigil"
         BUNDLE_LOADER: "$(TEST_HOST)"
     info:
       path: Tests/Info.plist
       properties:
-        CFBundleDisplayName: MoltbotTests
+        CFBundleDisplayName: SigilTests
         CFBundleShortVersionString: "2026.1.26"
         CFBundleVersion: "20260126"

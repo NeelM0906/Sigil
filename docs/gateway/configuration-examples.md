@@ -1,9 +1,9 @@
 ---
-summary: "Schema-accurate configuration examples for common Moltbot setups"
+summary: "Schema-accurate configuration examples for common Sigil setups"
 read_when:
-  - Learning how to configure Moltbot
+  - Learning how to configure Sigil
   - Looking for configuration examples
-  - Setting up Moltbot for the first time
+  - Setting up Sigil for the first time
 ---
 # Configuration Examples
 
@@ -14,12 +14,12 @@ Examples below are aligned with the current config schema. For the exhaustive re
 ### Absolute minimum
 ```json5
 {
-  agent: { workspace: "~/clawd" },
+  agent: { workspace: "~/sigil" },
   channels: { whatsapp: { allowFrom: ["+15555550123"] } }
 }
 ```
 
-Save to `~/.clawdbot/moltbot.json` and you can DM the bot from that number.
+Save to `~/.sigil/sigil.json` and you can DM the bot from that number.
 
 ### Recommended starter
 ```json5
@@ -30,7 +30,7 @@ Save to `~/.clawdbot/moltbot.json` and you can DM the bot from that number.
     emoji: "🦞"
   },
   agent: {
-    workspace: "~/clawd",
+    workspace: "~/sigil",
     model: { primary: "anthropic/claude-sonnet-4-5" }
   },
   channels: {
@@ -85,7 +85,7 @@ Save to `~/.clawdbot/moltbot.json` and you can DM the bot from that number.
   // Logging
   logging: {
     level: "info",
-    file: "/tmp/moltbot/moltbot.log",
+    file: "/tmp/sigil/sigil.log",
     consoleLevel: "info",
     consoleStyle: "pretty",
     redactSensitive: "tools"
@@ -93,7 +93,7 @@ Save to `~/.clawdbot/moltbot.json` and you can DM the bot from that number.
 
   // Message formatting
   messages: {
-    messagePrefix: "[moltbot]",
+    messagePrefix: "[sigil]",
     responsePrefix: ">",
     ackReaction: "👀",
     ackReactionScope: "group-mentions"
@@ -102,7 +102,7 @@ Save to `~/.clawdbot/moltbot.json` and you can DM the bot from that number.
   // Routing + queue
   routing: {
     groupChat: {
-      mentionPatterns: ["@clawd", "moltbot"],
+      mentionPatterns: ["@clawd", "sigil"],
       historyLimit: 50
     },
     queue: {
@@ -155,7 +155,7 @@ Save to `~/.clawdbot/moltbot.json` and you can DM the bot from that number.
       discord: { mode: "idle", idleMinutes: 10080 }
     },
     resetTriggers: ["/new", "/reset"],
-    store: "~/.clawdbot/agents/default/sessions/sessions.json",
+    store: "~/.sigil/agents/default/sessions/sessions.json",
     typingIntervalSeconds: 5,
     sendPolicy: {
       default: "allow",
@@ -220,7 +220,7 @@ Save to `~/.clawdbot/moltbot.json` and you can DM the bot from that number.
   // Agent runtime
   agents: {
     defaults: {
-      workspace: "~/clawd",
+      workspace: "~/sigil",
       userTimezone: "America/Chicago",
       model: {
         primary: "anthropic/claude-sonnet-4-5",
@@ -272,9 +272,9 @@ Save to `~/.clawdbot/moltbot.json` and you can DM the bot from that number.
       sandbox: {
         mode: "non-main",
         perSession: true,
-        workspaceRoot: "~/.clawdbot/sandboxes",
+        workspaceRoot: "~/.sigil/sandboxes",
         docker: {
-          image: "moltbot-sandbox:bookworm-slim",
+          image: "sigil-sandbox:bookworm-slim",
           workdir: "/workspace",
           readOnlyRoot: true,
           tmpfs: ["/tmp", "/var/tmp", "/run"],
@@ -339,7 +339,7 @@ Save to `~/.clawdbot/moltbot.json` and you can DM the bot from that number.
   // Cron jobs
   cron: {
     enabled: true,
-    store: "~/.clawdbot/cron/cron.json",
+    store: "~/.sigil/cron/cron.json",
     maxConcurrentRuns: 2
   },
 
@@ -349,7 +349,7 @@ Save to `~/.clawdbot/moltbot.json` and you can DM the bot from that number.
     path: "/hooks",
     token: "shared-secret",
     presets: ["gmail"],
-    transformsDir: "~/.clawdbot/hooks",
+    transformsDir: "~/.sigil/hooks",
     mappings: [
       {
         id: "gmail-hook",
@@ -369,7 +369,7 @@ Save to `~/.clawdbot/moltbot.json` and you can DM the bot from that number.
       }
     ],
     gmail: {
-      account: "moltbot@gmail.com",
+      account: "sigil@gmail.com",
       label: "INBOX",
       topic: "projects/<project-id>/topics/gog-gmail-watch",
       subscription: "gog-gmail-watch-push",
@@ -388,7 +388,7 @@ Save to `~/.clawdbot/moltbot.json` and you can DM the bot from that number.
     mode: "local",
     port: 18789,
     bind: "loopback",
-    controlUi: { enabled: true, basePath: "/moltbot" },
+    controlUi: { enabled: true, basePath: "/sigil" },
     auth: {
       mode: "token",
       token: "gateway-token",
@@ -425,7 +425,7 @@ Save to `~/.clawdbot/moltbot.json` and you can DM the bot from that number.
 ### Multi-platform setup
 ```json5
 {
-  agent: { workspace: "~/clawd" },
+  agent: { workspace: "~/sigil" },
   channels: {
     whatsapp: { allowFrom: ["+15555550123"] },
     telegram: {
@@ -462,7 +462,7 @@ Save to `~/.clawdbot/moltbot.json` and you can DM the bot from that number.
     }
   },
   agent: {
-    workspace: "~/clawd",
+    workspace: "~/sigil",
     model: {
       primary: "anthropic/claude-sonnet-4-5",
       fallbacks: ["anthropic/claude-opus-4-5"]
@@ -500,7 +500,7 @@ Save to `~/.clawdbot/moltbot.json` and you can DM the bot from that number.
     }
   },
   agent: {
-    workspace: "~/clawd",
+    workspace: "~/sigil",
     model: {
       primary: "anthropic/claude-opus-4-5",
       fallbacks: ["minimax/MiniMax-M2.1"]
@@ -537,7 +537,7 @@ Save to `~/.clawdbot/moltbot.json` and you can DM the bot from that number.
 ```json5
 {
   agent: {
-    workspace: "~/clawd",
+    workspace: "~/sigil",
     model: { primary: "lmstudio/minimax-m2.1-gs32" }
   },
   models: {

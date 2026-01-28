@@ -1,15 +1,15 @@
 ---
-summary: "CLI reference for `moltbot docs` (search the live docs index)"
+summary: "CLI reference for `sigil docs` (search the live docs index)"
 read_when:
-  - You want to search the live Moltbot docs from the terminal
+  - You want to search the live Sigil docs from the terminal
 ---
 
-# `moltbot docs`
+# `sigil docs`
 
 Search the live docs index.
 
 ```bash
-moltbot docs browser extension
-moltbot docs sandbox allowHostControl
+sigil docs browser extension
+sigil docs sandbox allowHostControl
 ```
 

@@ -1,18 +1,18 @@
 // swift-tools-version: 6.2
-// Package manifest for the Moltbot macOS companion (menu bar app + IPC library).
+// Package manifest for the Sigil macOS companion (menu bar app + IPC library).
 
 import PackageDescription
 
 let package = Package(
-    name: "Moltbot",
+    name: "Sigil",
     platforms: [
         .macOS(.v15),
     ],
     products: [
-        .library(name: "MoltbotIPC", targets: ["MoltbotIPC"]),
-        .library(name: "MoltbotDiscovery", targets: ["MoltbotDiscovery"]),
-        .executable(name: "Moltbot", targets: ["Moltbot"]),
-        .executable(name: "moltbot-mac", targets: ["MoltbotMacCLI"]),
+        .library(name: "SigilIPC", targets: ["SigilIPC"]),
+        .library(name: "SigilDiscovery", targets: ["SigilDiscovery"]),
+        .executable(name: "Sigil", targets: ["Sigil"]),
+        .executable(name: "sigil-mac", targets: ["SigilMacCLI"]),
     ],
     dependencies: [
         .package(url: "https://github.com/orchetect/MenuBarExtraAccess", exact: "1.2.2"),
@@ -20,33 +20,33 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-log.git", from: "1.8.0"),
         .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.8.1"),
         .package(url: "https://github.com/steipete/Peekaboo.git", branch: "main"),
-        .package(path: "../shared/ClawdbotKit"),
+        .package(path: "../shared/SigilKit"),
         .package(path: "../../Swabble"),
     ],
     targets: [
         .target(
-            name: "MoltbotIPC",
+            name: "SigilIPC",
             dependencies: [],
             swiftSettings: [
                 .enableUpcomingFeature("StrictConcurrency"),
             ]),
         .target(
-            name: "MoltbotDiscovery",
+            name: "SigilDiscovery",
             dependencies: [
-                .product(name: "MoltbotKit", package: "MoltbotKit"),
+                .product(name: "SigilKit", package: "SigilKit"),
             ],
-            path: "Sources/MoltbotDiscovery",
+            path: "Sources/SigilDiscovery",
             swiftSettings: [
                 .enableUpcomingFeature("StrictConcurrency"),
             ]),
         .executableTarget(
-            name: "Moltbot",
+            name: "Sigil",
             dependencies: [
-                "MoltbotIPC",
-                "MoltbotDiscovery",
-                .product(name: "MoltbotKit", package: "MoltbotKit"),
-                .product(name: "MoltbotChatUI", package: "MoltbotKit"),
-                .product(name: "MoltbotProtocol", package: "MoltbotKit"),
+                "SigilIPC",
+                "SigilDiscovery",
+                .product(name: "SigilKit", package: "SigilKit"),
+                .product(name: "SigilChatUI", package: "SigilKit"),
+                .product(name: "SigilProtocol", package: "SigilKit"),
                 .product(name: "SwabbleKit", package: "swabble"),
                 .product(name: "MenuBarExtraAccess", package: "MenuBarExtraAccess"),
                 .product(name: "Subprocess", package: "swift-subprocess"),
@@ -59,30 +59,30 @@ let package = Package(
                 "Resources/Info.plist",
             ],
             resources: [
-                .copy("Resources/Moltbot.icns"),
+                .copy("Resources/Sigil.icns"),
                 .copy("Resources/DeviceModels"),
             ],
             swiftSettings: [
                 .enableUpcomingFeature("StrictConcurrency"),
             ]),
         .executableTarget(
-            name: "MoltbotMacCLI",
+            name: "SigilMacCLI",
             dependencies: [
-                "MoltbotDiscovery",
-                .product(name: "MoltbotKit", package: "MoltbotKit"),
-                .product(name: "MoltbotProtocol", package: "MoltbotKit"),
+                "SigilDiscovery",
+                .product(name: "SigilKit", package: "SigilKit"),
+                .product(name: "SigilProtocol", package: "SigilKit"),
             ],
-            path: "Sources/MoltbotMacCLI",
+            path: "Sources/SigilMacCLI",
             swiftSettings: [
                 .enableUpcomingFeature("StrictConcurrency"),
             ]),
         .testTarget(
-            name: "MoltbotIPCTests",
+            name: "SigilIPCTests",
             dependencies: [
-                "MoltbotIPC",
-                "Moltbot",
-                "MoltbotDiscovery",
-                .product(name: "MoltbotProtocol", package: "MoltbotKit"),
+                "SigilIPC",
+                "Sigil",
+                "SigilDiscovery",
+                .product(name: "SigilProtocol", package: "SigilKit"),
                 .product(name: "SwabbleKit", package: "swabble"),
             ],
             swiftSettings: [

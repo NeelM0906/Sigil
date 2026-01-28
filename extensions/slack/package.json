@@ -1,9 +1,9 @@
 {
-  "name": "@moltbot/slack",
+  "name": "@sigil/slack",
   "version": "2026.1.26",
   "type": "module",
-  "description": "Moltbot Slack channel plugin",
-  "moltbot": {
+  "description": "Sigil Slack channel plugin",
+  "sigil": {
     "extensions": [
       "./index.ts"
     ]
