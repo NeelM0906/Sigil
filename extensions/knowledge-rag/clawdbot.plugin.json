@@ -1,0 +1,94 @@
+{
+  "id": "knowledge-rag",
+  "name": "Knowledge RAG",
+  "description": "Hybrid RAG document retrieval and Pinecone knowledge base integration",
+  "version": "1.0.0",
+  "kind": "memory",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "documents": {
+        "type": "object",
+        "description": "Document RAG settings",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable document upload and search"
+          },
+          "storagePath": {
+            "type": "string",
+            "description": "Path to store documents"
+          },
+          "chunkSize": {
+            "type": "number",
+            "default": 500,
+            "description": "Words per chunk"
+          },
+          "chunkOverlap": {
+            "type": "number",
+            "default": 100,
+            "description": "Overlapping words between chunks"
+          }
+        }
+      },
+      "pinecone": {
+        "type": "object",
+        "description": "Pinecone knowledge base settings",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "default": true
+          },
+          "apiKey": {
+            "type": "string",
+            "description": "Pinecone API key"
+          },
+          "indexName": {
+            "type": "string",
+            "description": "Pinecone index name"
+          },
+          "namespace": {
+            "type": "string",
+            "description": "Optional namespace"
+          },
+          "topK": {
+            "type": "number",
+            "default": 5
+          },
+          "minScore": {
+            "type": "number",
+            "default": 0.3
+          },
+          "autoRecall": {
+            "type": "boolean",
+            "default": true,
+            "description": "Auto-inject KB context before agent turns"
+          }
+        },
+        "required": ["indexName"]
+      },
+      "embedding": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": ["local", "openai"],
+            "default": "local"
+          },
+          "openaiApiKey": {
+            "type": "string"
+          },
+          "openaiModel": {
+            "type": "string",
+            "default": "text-embedding-ada-002"
+          },
+          "localModel": {
+            "type": "string",
+            "default": "Xenova/all-MiniLM-L6-v2"
+          }
+        }
+      }
+    }
+  }
+}
