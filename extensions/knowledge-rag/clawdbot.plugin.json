@@ -3,7 +3,7 @@
   "name": "Knowledge RAG",
   "description": "Hybrid RAG document retrieval and Pinecone knowledge base integration",
   "version": "1.0.0",
-  "kind": "memory",
+  "kind": "tool",
   "configSchema": {
     "type": "object",
     "properties": {
