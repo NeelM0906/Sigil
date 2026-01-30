@@ -1,141 +1,94 @@
-# Unblinded Knowledge Base (Supplemental Memory)
+---
+name: unblinded_knowledge
+description: Query Pinecone ublib2 knowledge base - EXCLUSIVE MODE that ignores uploaded documents
+---
 
-Query the Pinecone ublib2 database containing Sean's teachings, medical protocols, and training materials as a **supplemental memory layer**.
+# Unblinded Knowledge Mode
 
-## Memory Architecture
+## MODE BEHAVIOR
 
-This skill implements a **3-layer memory system**:
-```
-┌──────────────────────────────────┐
-│ Layer 1: Local Memory            │ ← Per-user context
-│   - User preferences             │
-│   - Conversation history         │
-│   - Personal context             │
-└──────────────┬───────────────────┘
-               │
-┌──────────────▼───────────────────┐
-│ Layer 2: Global Memory           │ ← Bot knowledge
-│   - System instructions          │
-│   - General facts                │
-│   - Bot personality              │
-└──────────────┬───────────────────┘
-               │
-┌──────────────▼───────────────────┐
-│ Layer 3: Unblinded Knowledge     │ ← THIS SKILL
-│   - Sean's teachings (8,955 rec) │
-│   - Medical protocols            │
-│   - Training transcripts         │
-└──────────────────────────────────┘
+When this skill is activated, you enter **EXCLUSIVE PINECONE MODE**:
 
-All 3 layers work together - Pinecone is SUPPLEMENTAL
-```
+✅ DO:
+- Query Pinecone ublib2 ONLY
+- Show relevance scores
+- Cite "Pinecone ublib2 knowledge base"
+- If relevance < 0.3, say: "Pinecone has low relevance. Exit this mode to use other sources."
 
-## Usage
+❌ DO NOT:
+- Reference ANY uploaded documents (PDFs, DOCX, etc.)
+- Mention "your documents", "uploaded files", "from the documents"
+- Combine Pinecone results with document information
+- Use document knowledge unless user explicitly exits this mode
 
-### Basic Query (Pinecone Only)
+## Activation Phrases
+
+User says:
+- "activate unblinded knowledge"
+- "query pinecone"  
+- "use ublib2 mode"
+
+## Deactivation
+
+User says:
+- "exit unblinded mode"
+- "use my documents"
+- "normal mode"
+
+## Query Command
 ```bash
-python ~/clawd/skills/unblinded-knowledge/query.py "What is emotional grounding?"
+python ~/clawd/skills/unblinded-knowledge/query.py "user question"
 ```
 
-### With Context Integration
+Or use relative path:
 ```bash
-python ~/clawd/skills/unblinded-knowledge/query.py "Sean's method" --with-context
+python ./skills/unblinded-knowledge/query.py "user question"
 ```
 
-### JSON Output
-```bash
-python ~/clawd/skills/unblinded-knowledge/query.py "teaching" --json
+## Response Template
+```
+🔍 Pinecone ublib2 Query: "[user question]"
+
+📊 Results:
+Result 1 (Relevance: 0.XX): [content preview]
+Result 2 (Relevance: 0.XX): [content preview]
+Result 3 (Relevance: 0.XX): [content preview]
+
+Average Relevance: 0.XX
+
+💡 Based on Pinecone ublib2:
+[Synthesize ONLY what Pinecone returned]
+
+[If avg relevance < 0.3:]
+⚠️ Low relevance detected. These results may not directly answer your question.
+Say "exit unblinded mode" to use other knowledge sources.
 ```
 
-## Testing
-```bash
-# Run full test suite
-python ~/clawd/skills/unblinded-knowledge/test.py
+## Example: Good Response
+```
+User: "What is predictive diagnostics?"
 
-# Expected output:
-# ✅ Memory Scope Separation
-# ✅ Embedding Model
-# ✅ Supplemental Integration
-# ✅ API Key Handling
+🔍 Pinecone Query: "predictive diagnostics"
+
+📊 Results (Avg: 0.42):
+Result 1 (0.49): Predictive Diagnostic asks whether teaching 
+creates lasting installation vs temporary understanding...
+
+💡 Based on Pinecone:
+Predictive Diagnostics is a framework that evaluates whether 
+teaching creates emotional grounding that anchors information 
+to feeling, rather than just transferring information.
 ```
 
-## Integration with Bot
-
-When the bot receives a query:
-
-1. **Check local memory** (user context)
-2. **Check global memory** (bot knowledge)
-3. **Query Pinecone** (supplemental unblinded knowledge)
-4. **Combine all 3 layers** for final response
-
-Example:
+## Example: Bad Response (DON'T DO THIS)
 ```
-User: "How does Sean handle difficult clients?"
-
-Bot process:
-1. Local: "User prefers direct answers"
-2. Global: "Be helpful and professional"
-3. Pinecone: "Sean uses emotional grounding first..."
-4. Response: [Combines all 3 layers]
+❌ Combined Answer:
+❌ From your uploaded documents about Dr. Kumar...
+❌ Based on the medical intake project...
+❌ [Any mention of documents, PDFs, uploads]
 ```
 
-## Memory Scope Behavior
+## Mode Persistence
 
-### What This Skill DOES:
-- ✅ Queries Pinecone for supplemental knowledge
-- ✅ Preserves existing local/global memory
-- ✅ Returns combined context with all layers
-- ✅ Indicates relevance scores
-
-### What This Skill DOES NOT Do:
-- ❌ Replace local user memory
-- ❌ Overwrite global bot memory
-- ❌ Modify existing conversation history
-- ❌ Change user preferences
-
-## API Keys Required
-```bash
-# Windows
-set PINECONE_API_KEY=your-pinecone-key
-set OPENAI_API_KEY=your-openai-key
-
-# Linux/Mac
-export PINECONE_API_KEY=your-pinecone-key
-export OPENAI_API_KEY=your-openai-key
-```
-
-## Data Source
-
-- **Database**: Pinecone ublib2
-- **Records**: 8,955 entries
-- **Content**: Sean's teachings, Kumar's protocols, training materials
-- **Embedding Model**: text-embedding-3-small (1536 dimensions)
-
-## Performance
-
-- Query latency: ~0.5-1s
-- Embedding generation: ~200ms
-- Pinecone search: ~300ms
-- Top-K results: 5 (configurable)
-
-## Troubleshooting
-
-### "Local memory was lost"
-❌ This means the skill is replacing memory incorrectly
-✅ Use the fixed `query.py` that preserves all layers
-
-### "Wrong embedding size"
-❌ Using wrong embedding model
-✅ Use `text-embedding-3-small` (1536 dimensions)
-
-### "No results found"
-❌ Query too generic or Pinecone index empty
-✅ Try more specific queries or verify Pinecone has data
-
-## Architecture Compliance
-
-This skill follows Sigil's memory architecture:
-- **Scope**: `supplemental` (not `primary` or `global`)
-- **Mode**: `additive` (not `replacement`)
-- **Integration**: Works alongside existing memory layers
-- **Testing**: Full test suite included
+Stay in this mode until user explicitly exits.
+Track mode state across conversation turns.

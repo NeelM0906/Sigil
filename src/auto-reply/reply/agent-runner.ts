@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { getKumarAnswer, saveKumarConversation } from '../../hooks/kumar-learning.js';
 import fs from "node:fs";
 import { lookupContextTokens } from "../../agents/context.js";
 import { DEFAULT_CONTEXT_TOKENS } from "../../agents/defaults.js";
@@ -225,6 +226,28 @@ export async function runReplyAgent(params: {
     agentCfgContextTokens,
   });
 
+  // === KUMAR CHECK: Return direct answer if available ===
+  try {
+    const kumarAnswer = await getKumarAnswer(commandBody);
+
+    if (kumarAnswer) {
+      console.log('[Kumar] ✓ Returning direct answer from CSV knowledge');
+
+      const kumarPayload: ReplyPayload = {
+        text: kumarAnswer
+      };
+
+      // Save for future learning
+      saveKumarConversation(commandBody, kumarAnswer).catch(() => {});
+
+      typing.cleanup();
+      return finalizeWithFollowup(kumarPayload, queueKey, runFollowupTurn);
+    }
+  } catch (err) {
+    console.warn('[Kumar] Check failed, using normal flow');
+  }
+  // === END KUMAR CHECK ===
+
   let responseUsageLine: string | undefined;
   type SessionResetOptions = {
     failureLabel: string;
@@ -301,7 +324,7 @@ export async function runReplyAgent(params: {
   try {
     const runStartedAt = Date.now();
     const runOutcome = await runAgentTurnWithFallback({
-      commandBody,
+      commandBody,  // Use original commandBody
       followupRun,
       sessionCtx,
       opts,
@@ -388,9 +411,6 @@ export async function runReplyAgent(params: {
       cliSessionId,
     });
 
-    // Drain any late tool/block deliveries before deciding there's "nothing to send".
-    // Otherwise, a late typing trigger (e.g. from a tool callback) can outlive the run and
-    // keep the typing indicator stuck.
     if (payloadArray.length === 0)
       return finalizeWithFollowup(undefined, queueKey, runFollowupTurn);
 
@@ -480,7 +500,6 @@ export async function runReplyAgent(params: {
       if (formatted) responseUsageLine = formatted;
     }
 
-    // If verbose is enabled and this is a new session, prepend a session hint.
     let finalPayloads = replyPayloads;
     const verboseEnabled = resolvedVerboseLevel !== "off";
     if (autoCompactionCompleted) {
@@ -501,6 +520,12 @@ export async function runReplyAgent(params: {
     if (responseUsageLine) {
       finalPayloads = appendUsageLine(finalPayloads, responseUsageLine);
     }
+
+    // Save conversation for learning
+    saveKumarConversation(
+      commandBody,
+      replyPayloads.map(p => p.text || '').join('\n')
+    ).catch(() => {});
 
     return finalizeWithFollowup(
       finalPayloads.length === 1 ? finalPayloads[0] : finalPayloads,

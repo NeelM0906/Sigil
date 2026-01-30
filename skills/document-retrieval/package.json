@@ -1,0 +1,12 @@
+{
+  "name": "document-store",
+  "version": "1.0.0",
+  "description": "Store and retrieve documents with hybrid search",
+  "main": "index.js",
+  "dependencies": {
+    "pdf-parse": "^1.1.1",
+    "mammoth": "^1.6.0",
+    "@xenova/transformers": "^2.17.0",
+    "natural": "^6.10.0"
+  }
+}
